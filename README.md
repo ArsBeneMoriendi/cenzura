@@ -1,1 +1,1 @@
-wkrótce... czy jak to sie pisze, nie wie
+wkrótce... czy jak to sie pisze, nie wiem
