@@ -37,7 +37,7 @@ def load(gateway, discord):
             "discord": discord
         }
 
-        exec(compile(parsed, filename="<ast>", mode="exec"), env)
+        exec(compile(parsed, filename="siema", mode="exec"), env)
 
         try:
             result = eval("_eval_()", env)
