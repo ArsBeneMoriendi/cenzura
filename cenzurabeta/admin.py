@@ -11,8 +11,9 @@ def load(gateway, discord):
         if not len(ctx.data["mentions"]) == 1:
             return handler.error_handler(ctx, "arguments", "kick (osoba) [powód]")
 
-        if len(ctx.args) == 2:
-            reason = ctx.args[1]
+        if len(ctx.args) >= 2:
+            ctx.args = " ".join(ctx.args)
+            reason = ctx.args
         else:
             reason = "nie podano powodu"
 
@@ -33,8 +34,9 @@ def load(gateway, discord):
         if not len(ctx.data["mentions"]) == 1:
             return handler.error_handler(ctx, "arguments", "ban (osoba) [powód]")
 
-        if len(ctx.args) == 2:
-            reason = ctx.args[1]
+        if len(ctx.args) >= 2:
+            ctx.args = " ".join(ctx.args)
+            reason = ctx.args
         else:
             reason = "nie podano powodu"
 
