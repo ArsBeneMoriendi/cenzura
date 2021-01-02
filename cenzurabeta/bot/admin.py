@@ -374,6 +374,56 @@ def load(gateway, discord):
 
         guilds[guild]["warns"][ctx.data["mentions"][0]["id"]].append(reason)
 
+        if "warnsevent" in guilds[guild] and "kick" in guilds[guild]["warnsevent"] and guilds[guild]["warnsevent"]["kick"] == str(len(guilds[guild]["warns"][ctx.data["mentions"][0]["id"]])): 
+            status = discord.remove_guild_member(ctx.data["guild_id"], ctx.data["mentions"][0]["id"])
+            if not status.status_code == 204:
+                return handler.error_handler(ctx, 6)
+
+            discord.create_message(ctx.data["channel_id"], {
+                "content": f"Wyrzucono użytkownika `{ctx.data['mentions'][0]['username']}`"
+            })
+
+        elif "warnsevent" in guilds[guild] and "ban" in guilds[guild]["warnsevent"] and guilds[guild]["warnsevent"]["ban"] == str(len(guilds[guild]["warns"][ctx.data["mentions"][0]["id"]])): 
+            status = discord.create_guild_ban(ctx.data["guild_id"], ctx.data["mentions"][0]["id"], reason)
+            if not status.status_code == 204:
+                return handler.error_handler(ctx, 6)
+
+            discord.create_message(ctx.data["channel_id"], {
+                "content": f"Zbanowano użytkownika `{ctx.data['mentions'][0]['username']}`"
+            })
+
+        elif "warnsevent" in guilds[guild] and "mute" in guilds[guild]["warnsevent"] and guilds[guild]["warnsevent"]["mute"] == str(len(guilds[guild]["warns"][ctx.data["mentions"][0]["id"]])): 
+            if not "mute_role" in guilds[guild]:
+                role = discord.create_guild_role(guild, {
+                    "name": "muted"
+                }).json()
+
+                guilds[guild]["mute_role"] = role["id"]
+                
+                channels = discord.get_guild_channels(guild)
+                for channel in channels:
+                    if channel["type"] == 0:
+                        a = discord.edit_channel_permissions(channel["id"], role["id"], {
+                            "deny": permissions.permissions["SEND_MESSAGES"],
+                            "allow": permissions.permissions["ADD_REACTIONS"],
+                            "type": 0
+                        })
+                    elif channel["type"] == 2:
+                        discord.edit_channel_permissions(channel["id"], role["id"], {
+                            "deny": permissions.permissions["SPEAK"],
+                            "allow": permissions.permissions["VIEW_CHANNEL"],
+                            "type": 0
+                        })
+
+                status = discord.add_guild_member_role(guild, ctx.data["mentions"][0]["id"], guilds[guild]["mute_role"])
+
+                if not status.status_code == 204:
+                    return handler.error_handler(ctx, 6)
+
+                discord.create_message(ctx.data["channel_id"], {
+                    "content": "Zmutowano użytkownika"
+                })
+
         discord.create_message(ctx.data["channel_id"], {
             "content": f"Użytkownik `{ctx.data['mentions'][0]['username']}` dostał ostrzeżenie z powodu `{reason}`".replace("@", "@\u200b")
         })
@@ -445,6 +495,47 @@ def load(gateway, discord):
 
         discord.create_message(ctx.data["channel_id"], {
             "content": "Wyczyszczono ostrzeżenia"
+        })
+
+        functions.write_json("guilds", guilds)
+
+    @gateway.command(description="Dodaje event na X warnów", usage="warnsevent (kick/ban/mute) (ilość warnów)", category="Admin", _default=False)
+    def warnsevent(ctx):
+        if not functions.has_permission(ctx):
+            return handler.error_handler(ctx, "nopermission", ctx.command)
+
+        if not len(ctx.args) == 2 or ctx.args[0] not in ["kick", "ban", "mute"]:
+            return handler.error_handler(ctx, "arguments", "warnsevent (kick/ban/mute) (ilość warnów)")
+
+        guild = ctx.data["guild_id"]
+        guilds = functions.read_json("guilds")
+
+        if not "warnsevent" in guilds[guild]:
+            guilds[guild]["warnsevent"] = {}
+
+        guilds[guild]["warnsevent"][ctx.args[0]] = str(ctx.args[1])
+
+        discord.create_message(ctx.data["channel_id"], {
+            "content": "Dodano event"
+        })
+
+        functions.write_json("guilds", guilds)
+
+    @gateway.command(description="Usuwa event na X warnów", usage="removewarnsevent (kick/ban/mute)", category="Admin", _default=False)
+    def removewarnsevent(ctx):
+        if not functions.has_permission(ctx):
+            return handler.error_handler(ctx, "nopermission", ctx.command)
+
+        if not len(ctx.args) == 1 or ctx.args[0] not in ["kick", "ban", "mute"]:
+            return handler.error_handler(ctx, "arguments", "warnsevent (kick/ban/mute)")
+
+        guild = ctx.data["guild_id"]
+        guilds = functions.read_json("guilds")
+
+        del guilds[guild]["warnsevent"][ctx.args[0]]
+
+        discord.create_message(ctx.data["channel_id"], {
+            "content": "Usunięto event"
         })
 
         functions.write_json("guilds", guilds)
