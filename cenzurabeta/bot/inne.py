@@ -234,7 +234,7 @@ def load(gateway, discord):
                             "url": f"http://cdn.discordapp.com/avatars/{user['id']}/{user['avatar']}.png?size=2048"
                         },
                         "footer": {
-                            "text": f"Wywołane przez {ctx.data['id']}"
+                            "text": f"Wywołane przez {ctx.data['author']['id']}"
                         }
                     }
                 })
