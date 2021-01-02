@@ -348,3 +348,103 @@ def load(gateway, discord):
         discord.create_message(ctx.data["channel_id"], {
             "content": "Odmutowano użytkownika"
         })
+
+    @gateway.command(description="Daje ostrzeżenie", usage="warn (osoba) [powód]", category="Admin", _default=False)
+    def warn(ctx):
+        if not functions.has_permission(ctx):
+            return handler.error_handler(ctx, "nopermission", ctx.command)
+
+        if not len(ctx.data["mentions"]) == 1:
+            return handler.error_handler(ctx, "arguments", "warn (osoba) [powód]")
+
+        if len(ctx.args) >= 2:
+            ctx.args = " ".join(ctx.args[1:])
+            reason = ctx.args
+        else:
+            reason = "nie podano powodu"
+
+        guild = ctx.data["guild_id"]
+        guilds = functions.read_json("guilds")
+
+        if not "warns" in guilds[guild]:
+            guilds[guild]["warns"] = {}
+
+        if not ctx.data["mentions"][0]["id"] in guilds[guild]["warns"]:
+            guilds[guild]["warns"][ctx.data["mentions"][0]["id"]] = []
+
+        guilds[guild]["warns"][ctx.data["mentions"][0]["id"]].append(reason)
+
+        discord.create_message(ctx.data["channel_id"], {
+            "content": f"Użytkownik `{ctx.data['mentions'][0]['username']}` dostał ostrzeżenie z powodu `{reason}`".replace("@", "@\u200b")
+        })
+
+        functions.write_json("guilds", guilds)
+
+    @gateway.command(description="Pokazuje ostrzeżena", usage="warns (osoba)", category="Admin", _default=False)
+    def warns(ctx):
+        if not functions.has_permission(ctx):
+            return handler.error_handler(ctx, "nopermission", ctx.command)
+
+        if not len(ctx.data["mentions"]) == 1:
+            return handler.error_handler(ctx, "arguments", "warns (osoba)")
+
+        guild = ctx.data["guild_id"]
+        guilds = functions.read_json("guilds")
+
+        if not "warns" in guilds[guild] or not ctx.data["mentions"][0]["id"] in guilds[guild]["warns"]:
+            return handler.error_handler(ctx, "notfound")
+
+        discord.create_message(ctx.data["channel_id"], {
+            "embed": {
+                "title": f"Warny użytkownika {ctx.data['mentions'][0]['username']}:",
+                "description": "\n".join([f"{guilds[guild]['warns'][ctx.data['mentions'][0]['id']].index(i)}. {i}" for i in guilds[guild]["warns"][ctx.data["mentions"][0]["id"]]]),
+                "color": 0xe74c3c,
+                "footer": {
+                    "text": f"Wywołane przez {ctx.data['author']['id']}"
+                }
+            }
+        })
+
+    @gateway.command(description="Usuwa ostrzeżenie", usage="removewarn (osoba) (id)", category="Admin", _default=False)
+    def removewarn(ctx):
+        if not functions.has_permission(ctx):
+            return handler.error_handler(ctx, "nopermission", ctx.command)
+
+        if not len(ctx.args) == 2:
+            return handler.error_handler(ctx, "arguments", "removewarn (osoba) (id)")
+
+        guild = ctx.data["guild_id"]
+        guilds = functions.read_json("guilds")
+
+        if not "warns" in guilds[guild] or not ctx.data["mentions"][0]["id"] in guilds[guild]["warns"]:
+            return handler.error_handler(ctx, "notfound")
+
+        del guilds[guild]["warns"][ctx.data["mentions"][0]["id"]][int(ctx.args[1])]
+
+        discord.create_message(ctx.data["channel_id"], {
+            "content": "Usunięto ostrzeżenie"
+        })
+
+        functions.write_json("guilds", guilds)
+
+    @gateway.command(description="Usuwa ostrzeżenie", usage="clearwarns (osoba)", category="Admin", _default=False)
+    def clearwarns(ctx):
+        if not functions.has_permission(ctx):
+            return handler.error_handler(ctx, "nopermission", ctx.command)
+
+        if not len(ctx.args) == 1:
+            return handler.error_handler(ctx, "arguments", "clearwarns (osoba)")
+
+        guild = ctx.data["guild_id"]
+        guilds = functions.read_json("guilds")
+
+        if not "warns" in guilds[guild] or not ctx.data["mentions"][0]["id"] in guilds[guild]["warns"]:
+            return handler.error_handler(ctx, "notfound")
+
+        del guilds[guild]["warns"][ctx.data["mentions"][0]["id"]]
+
+        discord.create_message(ctx.data["channel_id"], {
+            "content": "Wyczyszczono ostrzeżenia"
+        })
+
+        functions.write_json("guilds", guilds)
