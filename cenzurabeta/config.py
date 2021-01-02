@@ -1,3 +1,0 @@
-prefix = "!!"
-token = ""
-owners = []
