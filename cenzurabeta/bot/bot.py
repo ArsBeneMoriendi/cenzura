@@ -21,7 +21,7 @@ def status(ws):
     while True:
         statuses = [
             {
-                "name": f"{len(discord.get_current_user_guilds())} pustych serwerów",
+                "name": f"{gateway.ctx.guilds} pustych serwerów",
                 "type": 2
             },
             {
