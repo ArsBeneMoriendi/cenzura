@@ -103,8 +103,8 @@ def on_message(ws, msg):
                 "intents": 32767,
                 "properties": {
                     "$os": "linux",
-                    "$browser": "cenzura",
-                    "$device": "cenzura"
+                    "$browser": "cenzuralib",
+                    "$device": "cenzuralib"
                 }
             }
         }
