@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>CENZURA - Bot discord</title>
+    <meta name="description" content="Bot, który dba o przejrzystość Twoich serwerów.">
+    <meta property="og:title" content="CENZURA">
+    <meta name="keywords" content="cenzura, discord, bot">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta property="og:description" content="Bot, który dba o przejrzystość Twoich serwerów.">
+    <meta property="og:image" content="{{ url_for('static', filename='img/logo.png') }}">
+    <meta name="theme-color" content="#e74c3c">
+    
+    <link href="{{ url_for('static', filename='img/logo.png') }}" rel="icon">
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Raleway:300,300i,400,400i,500,500i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
+    <link href="{{ url_for('static', filename='styles/style.css') }}" rel="stylesheet">
+  </head>
+
+  <body>
+    <header id="header">
+      <div>
+        <h1 class="kutas"><img src="{{ url_for('static', filename='img/logo.png') }}"> CENZURA</h1>
+        <h2>Bot, który dba o <span class="kutas">przejrzystość</span> Twoich serwerów.</h2>
+
+        <div class="social-links">
+          <a href="https://discord.com/api/oauth2/authorize?client_id=791708331458691124&permissions=60486&scope=bot">Dodaj bota</a>
+          <a href="https://discord.gg/kJuGceekR5">Serwer support</a>
+          <a href="/docs">Dokumentacja</a>
+        </div>
+      </div>
+    </header>
+  </body>
+</html>
