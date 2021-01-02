@@ -7,8 +7,8 @@ import os
 url = "https://discord.com/api/v8"
 
 app = flask.Flask(__name__)
-CLIENT_PUBLIC_KEY = "234531ebcd68b50ec442212248b412b8c9fa3f0d6b1d0ee4ad29da05ac693cad"
-token = "NzA1NTUyOTUyNjAwOTUyOTYw.XqtXZA.eGBjj3jv3fNDqOX_PlbjaqBexSk"
+CLIENT_PUBLIC_KEY = ""
+token = ""
 
 @app.route("/", methods=["GET"])
 def main():
