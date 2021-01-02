@@ -22,6 +22,7 @@ class ctx:
     commands = {}
     events = {}
     default = []
+    guilds = 0
 
 def command(description, usage, category, _default):
     def _command(func):
@@ -100,7 +101,7 @@ def on_message(ws, msg):
             "op": 2,
             "d": {
                 "token": f"Bot {ctx.token}",
-                "intents": 32767,
+                "intents": 32511,
                 "properties": {
                     "$os": "linux",
                     "$browser": "cenzuralib",
@@ -113,10 +114,15 @@ def on_message(ws, msg):
         ws.send(data)
 
         threading.Thread(target=heartbeat, args=(ws,)).start()
-
+        
         if "ready" in events:
             ctx.data = {"ws": ws}
             events["ready"](ctx)
+
+    if msg["t"] == "GUILD_CREATE":
+        ctx.guilds += 1
+    elif msg["t"] == "GUILD_DELETE":
+        ctx.guilds -= 1
     elif msg["t"] == "MESSAGE_CREATE":
         ctx.data = msg["d"]
 
