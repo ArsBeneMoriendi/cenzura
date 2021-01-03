@@ -1,4 +1,5 @@
 import functions
+import config
 
 def load(gateway, discord):
     @gateway.command(description="Pokazuje pomoc", usage="help", category="help", _default=True)
@@ -24,7 +25,7 @@ def load(gateway, discord):
         if guild in guilds and "prefix" in guilds[guild]:
             prefix = guilds[guild]["prefix"]
         else:
-            prefix = "!!"
+            prefix = config.prefix
         
         blacklist = ["help", "dev"]
 

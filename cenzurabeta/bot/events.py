@@ -1,5 +1,6 @@
 import lib.permissions as permissions
 import functions
+import config
 
 badwords_list = ["CHUJ","CHUJA", "CHUJEK", "CHUJU", "CHUJEM", "CHUJNIA",
 "CHUJOWY", "CHUJOWA", "CHUJOWE", "CIPA", "CIPĘ", "CIPE", "CIPĄ",
@@ -197,7 +198,7 @@ def load(gateway, discord):
             if guild in guilds and "prefix" in guilds[guild]:
                 prefix = guilds[guild]["prefix"]
             else:
-                prefix = "!!"
+                prefix = config.prefix
 
             return discord.create_message(ctx.data["channel_id"], {
                 "content": f"Mój prefix na tym serwerze to `{prefix}`"
