@@ -48,17 +48,6 @@ def load(gateway, discord):
             "content": f"```{result}```"
         })
 
-    @gateway.command(description="Wykonuje komende za kogoś innego", usage="su (osoba) (komenda) [argumenty]", category="dev", _default=False)
-    def su(ctx):
-        if not ctx.data["author"]["id"] in config.owners:
-            return handler.error_handler(ctx, "nopermission", ctx.command)
-
-        command = ctx.commands[ctx.args[1]]
-        ctx.data["author"] = ctx.data["mentions"][0]
-        ctx.args = ctx.args[2:]
-
-        command["function"](ctx)
-
     @gateway.command(description="Zatrzymuje cały proces", usage="stop", category="dev", _default=False)
     def stop(ctx):
         if not ctx.data["author"]["id"] in config.owners:
