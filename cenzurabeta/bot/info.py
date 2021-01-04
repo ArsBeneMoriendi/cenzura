@@ -8,7 +8,7 @@ def load(gateway, discord):
         discord.create_message(ctx.data["channel_id"], {
             "embed": {
                 "title": "Statystyki bota:",
-                "description": f"Serwery: `{ctx.guilds}`\n\nKomendy: `{len(ctx.commands)}`\n\nWersja Python: `{platform.python_version()}`\nWersja cenzuralib: `0.1`\n\nRAM: `{humanize.naturalsize(psutil.Process().memory_full_info().rss)}`\nProcesor: `{psutil.cpu_percent()}%`",
+                "description": f"Serwery: `{len(ctx.guilds)}`\n\nKomendy: `{len(ctx.commands)}`\n\nWersja Python: `{platform.python_version()}`\nWersja cenzuralib: `0.1`\n\nRAM: `{humanize.naturalsize(psutil.Process().memory_full_info().rss)}`\nProcesor: `{psutil.cpu_percent()}%`",
                 "color": 0xe74c3c
             }
         })
