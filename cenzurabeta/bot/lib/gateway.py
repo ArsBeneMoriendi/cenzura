@@ -22,7 +22,8 @@ class ctx:
     commands = {}
     events = {}
     default = []
-    guilds = 0
+    guilds = []
+    users = []
 
 def command(description, usage, category, _default):
     def _command(func):
@@ -120,9 +121,9 @@ def on_message(ws, msg):
             events["ready"](ctx)
 
     if msg["t"] == "GUILD_CREATE":
-        ctx.guilds += 1
+        ctx.guilds.append(msg["d"])
     elif msg["t"] == "GUILD_DELETE":
-        ctx.guilds -= 1
+        ctx.guilds.remove(msg["d"])
     elif msg["t"] == "MESSAGE_CREATE":
         ctx.data = msg["d"]
 
@@ -145,6 +146,7 @@ def on_message(ws, msg):
             ctx.commands = commands
             ctx.events = events
             ctx.default = default
+            ctx.ws = ws
 
             if command in commands:
                 commands[command]["function"](ctx)
