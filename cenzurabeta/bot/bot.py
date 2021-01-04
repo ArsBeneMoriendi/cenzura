@@ -21,7 +21,7 @@ def status(ws):
     while True:
         statuses = [
             {
-                "name": f"{gateway.ctx.guilds} pustych serwerów",
+                "name": f"{len(gateway.ctx.guilds)} pustych serwerów",
                 "type": 2
             },
             {
