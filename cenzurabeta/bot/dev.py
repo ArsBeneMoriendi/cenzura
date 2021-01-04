@@ -24,7 +24,7 @@ def load(gateway, discord):
         ctx.args = " ".join(ctx.args)
 
         code = "\n".join(f"    {x}" for x in ctx.args.splitlines())
-        body = f"def _eval_():\n{code}"
+        body = f"def elo():\n{code}"
 
         parsed = ast.parse(body)
         body = parsed.body[0].body
@@ -40,7 +40,7 @@ def load(gateway, discord):
         exec(compile(parsed, filename="siema", mode="exec"), env)
 
         try:
-            result = eval("_eval_()", env)
+            result = eval("elo()", env)
         except Exception as e:
             result = traceback.format_exc()
 
