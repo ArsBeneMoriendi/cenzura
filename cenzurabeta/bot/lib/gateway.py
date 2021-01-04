@@ -164,7 +164,7 @@ def on_message(ws, msg):
 def on_close(ws):
     if ctx.running:
         time.sleep(10)
-        ctx.guilds = 0
+        ctx.guilds = []
         run()
     else:
         exit(0)
