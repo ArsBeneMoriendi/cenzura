@@ -25,7 +25,7 @@ def status(ws):
                 "type": 2
             },
             {
-                "name": "czubixa jak trzepie freda",
+                "name": "cenzurabot.pl",
                 "type": 3
             },
             {
