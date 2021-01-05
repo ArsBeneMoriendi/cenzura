@@ -27,7 +27,7 @@ def has_permission(ctx):
         if role in guilds[guild]["permissions"] and ctx.command in guilds[guild]["permissions"][role] and guilds[guild]["permissions"][role][ctx.command]:
             return True
         else:
-            if ctx.commands in ctx.default:
+            if ctx.command in ctx.default:
                 return True
 
     return False
