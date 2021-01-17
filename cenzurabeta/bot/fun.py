@@ -370,6 +370,8 @@ def load(gateway, discord):
                     letter = other[letter]
                 letter = "garfield_" + letter
                 text += f"<:{letter}:{emotes[letter]}>"
+            elif letter in ["`", "\\"]:
+                text += ""
             elif letter == " ":
                 text += f"<:space:{emotes[' ']}>"
             else:
