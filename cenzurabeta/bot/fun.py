@@ -7,6 +7,7 @@ from PIL import Image
 import os
 import pyfiglet
 import functions
+import config
 
 def load(gateway, discord):
     @gateway.command(description="Wysyła link google", usage="google (zapytanie)", category="Fun", _default=True)
@@ -296,4 +297,84 @@ def load(gateway, discord):
 
         discord.create_message(ctx.data["channel_id"], None, {
             "file": ("achievement.png", image, "multipart/form-data")
+        })
+
+    @gateway.command(description="Wysyła tekst w emotkach garfield", usage="garfield (tekst)", category="Fun", _default=True)
+    def garfield(ctx):
+        if not functions.has_permission(ctx):
+            return handler.error_handler(ctx, "nopermission", ctx.command)
+
+        ctx.args = (" ".join(ctx.args)).lower()
+        if not ctx.args:
+            return handler.error_handler(ctx, "arguments", "garfield (tekst)")
+        elif len(ctx.args) > 100:
+            return handler.error_handler(ctx, "toolongtext", 100)
+
+        emotes = {
+            "garfield_e": "800427649214054450",
+            "garfield_z": "800427648898826263",
+            "garfield_d": "800427649226899471",
+            "garfield_r": "800427648681377803",
+            "garfield_v": "800427648454361159",
+            "garfield_c": "800427649037238303",
+            "garfield_9": "800427648500105245",
+            "garfield_l": "800427649239220284",
+            "garfield_8": "800427648332857374",
+            "garfield_2": "800427648378732544",
+            "garfield_t": "800427648563544064",
+            "garfield_u": "800427648664207400",
+            "garfield_1": "800427648316080140",
+            "garfield_3": "800427648437321728",
+            "garfield_4": "800427648119603202",
+            "garfield_h": "800427649175650354",
+            "garfield_g": "800427649171718184",
+            "garfield_f": "800427649214054460",
+            "garfield_b": "800427648861077587",
+            "garfield_a": "800427648983629846",
+            "garfield_7": "800427648332988417",
+            "garfield_6": "800427648446758922",
+            "garfield_5": "800427648429588550",
+            "garfield_i": "800427648810876969",
+            "garfield_j": "800427649222443068",
+            "garfield_k": "800427648861601824",
+            "garfield_m": "800427649225719903",
+            "garfield_n": "800427649235288096",
+            "garfield_o": "800427649263468554",
+            "garfield_p": "800427649012334614",
+            "garfield_q": "800427648672202792",
+            "garfield_s": "800427649180762162",
+            "garfield_w": "800427648626196540",
+            "garfield_x": "800427648463011881",
+            "garfield_y": "800427649381826610",
+            "garfield_0": "800427648508624926",
+            " ": "800433791289917470"
+        }
+
+        other = {
+            "ą": "a",
+            "ś": "s",
+            "ó": "o",
+            "ł": "l",
+            "ę": "e",
+            "ń": "n",
+            "ź": "z",
+            "ż": "z",
+            "ć": "c"
+        }
+
+        text = ""
+
+        for letter in ctx.args:
+            if ("garfield_" + letter in emotes) or (letter in other):
+                if letter in other:
+                    letter = other[letter]
+                letter = "garfield_" + letter
+                text += f"<:{letter}:{emotes[letter]}>"
+            elif letter == " ":
+                text += f"<:space:{emotes[' ']}>"
+            else:
+                text += letter
+
+        discord.create_message(ctx.data["channel_id"], {
+            "content": text
         })
