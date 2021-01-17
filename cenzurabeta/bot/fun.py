@@ -380,3 +380,22 @@ def load(gateway, discord):
         discord.create_message(ctx.data["channel_id"], {
             "content": text
         })
+
+    @gateway.command(description="Kalkulator", usage="calc (działanie matematyczne)", category="Fun", _default=True)
+    def calc(ctx):
+        if not functions.has_permission(ctx):
+            return handler.error_handler(ctx, "nopermission", ctx.command)
+
+        ctx.args = " ".join(ctx.args)
+        allowed = "1234567890+-/*^() "
+
+        if not ctx.args:
+            return handler.error_handler(ctx, "arguments", "calc (działanie matematyczne)")
+
+        for letter in ctx.args:
+            if not letter in allowed:
+                return handler.error_handler(ctx, "arguments", "calc (działanie matematyczne)")
+
+        discord.create_message(ctx.data["channel_id"], {
+            "content": eval(ctx.args.replace("^", "**"))
+        })
