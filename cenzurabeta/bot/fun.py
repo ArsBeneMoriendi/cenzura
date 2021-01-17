@@ -396,6 +396,11 @@ def load(gateway, discord):
             if not letter in allowed:
                 return handler.error_handler(ctx, "arguments", "calc (działanie matematyczne)")
 
+        try:
+            result = eval(ctx.args.replace("^", "**"))
+        except:
+            result = "błąd"
+
         discord.create_message(ctx.data["channel_id"], {
-            "content": eval(ctx.args.replace("^", "**"))
+            "content": result
         })
