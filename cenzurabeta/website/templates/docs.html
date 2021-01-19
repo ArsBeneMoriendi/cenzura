@@ -4,7 +4,7 @@
     <title>CENZURA - Dokumentacja</title>
     <meta name="description" content="Dokumentacja bota.">
     <meta property="og:title" content="CENZURA">
-    <meta name="keywords" content="cenzura, discord, bot">
+    <meta name="keywords" content="cenzura, bot">
     <meta property="og:description" content="Dokumentacja bota.">
     <meta property="og:image" content="{{ url_for('static', filename='img/logo.png') }}">
     <meta name="theme-color" content="#e74c3c">
@@ -27,13 +27,24 @@
             margin: 0 !important;
         }
 
+        body::before {
+            background-image: none;
+            background-color: #121212;
+        }
+
         th {
-            padding-top: 20px;
-            text-align: left;
+            text-align: center;
+            padding: 20px;
         }
 
         td {
-            padding: 5px;
+            padding: 10px;
+            padding-top: 15px;
+            padding-bottom: 15px;
+        }
+
+        tr:hover {
+            background: #303030 !important;
         }
 
         .info {
@@ -42,21 +53,21 @@
         }
 
         tr:first-child {background: #101010}
-        tr:nth-child(2n+1) {background: #202020}
+        tr:nth-child(2n+1) {background: #181818}
     </style>
   </head>
 
   <body>
     <div>
         <table cellspacing=0 cellpadding=6>
-            <tr style="text-align:left;font-size:20px;">
+            <tr style="text-align:left;font-size:25px;background:rgba(0, 0, 0, 0);">
                 <th>Nazwa komendy</th>
                 <th>Opis</th>
                 <th>Użycie</th>
             </tr>
             {% for category in categories %}
-                <tr>
-                    <td style="text-align:left;font-size:20px;"><b>{{ category }}:</b></td>
+                <tr style="background:#ffffff00;">
+                    <td style="text-align:left;font-size:22px;color:#ED1D46;"><b>{{ category }}:</b></td>
                     <td></td>
                     <td></td>
                 </tr>
@@ -68,14 +79,15 @@
                     </tr>
                 {% endfor %}
             {% endfor %}
-            <tr>
-                <td style="text-align:left;font-size:20px;"><b>Argumenty:</b></td>
+            <tr style="background:#ffffff00;">
+                <td style="text-align:left;font-size:22px;color:#ED1D46;"><b>Argumenty:</b></td>
                 <td></td>
                 <td></td>
             </tr>
             <tr>
                 <td>() - obowiązkowy argument</div></td>
                 <td>[] - nieobowiązkowy argument</td>
+                <td></td>
             </tr>
         </table>
     </div>
