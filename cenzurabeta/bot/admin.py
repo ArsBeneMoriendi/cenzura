@@ -13,7 +13,7 @@ def load(gateway, discord):
             return handler.error_handler(ctx, "arguments", "kick (osoba) [powód]")
 
         if len(ctx.args) >= 2:
-            ctx.args = " ".join(ctx.args)
+            ctx.args = " ".join(ctx.args[1:])
             reason = ctx.args
         else:
             reason = "nie podano powodu"
@@ -36,7 +36,7 @@ def load(gateway, discord):
             return handler.error_handler(ctx, "arguments", "ban (osoba) [powód]")
 
         if len(ctx.args) >= 2:
-            ctx.args = " ".join(ctx.args)
+            ctx.args = " ".join(ctx.args[1:])
             reason = ctx.args
         else:
             reason = "nie podano powodu"
