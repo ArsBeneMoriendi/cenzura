@@ -2,6 +2,7 @@ import functions
 import handler
 import functions
 import lib.permissions as permissions
+from datetime import datetime
 
 def load(gateway, discord):
     @gateway.command(description="Wywala osobe z serwera", usage="kick (osoba) [powód]", category="Admin", _default=False)
@@ -171,6 +172,11 @@ def load(gateway, discord):
                     {
                         "name": "Ilość emotek:",
                         "value": len(guild["emojis"]),
+                        "inline": False
+                    },
+                    {
+                        "name": "Został stworzony:",
+                        "value": str(datetime.fromtimestamp(((int(ctx.data["guild_id"]) >> 22) + 1420070400000) / 1000)).split(".")[0],
                         "inline": False
                     }
                 ],
