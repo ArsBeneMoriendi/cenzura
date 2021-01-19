@@ -50,23 +50,36 @@ def load(gateway, discord):
             "content": f"Zbanowano użytkownika `{ctx.data['mentions'][0]['username']}` z powodu `{reason}`".replace("@", "@\u200b")
         })
 
-    @gateway.command(description="Usuwa wiadomości na kanale", usage="clear (ilość wiadomości 1-99)", category="Admin", _default=False)
+    @gateway.command(description="Usuwa wiadomości na kanale", usage="clear (ilość wiadomości 1-99) [osoba]", category="Admin", _default=False)
     def clear(ctx):
         if not functions.has_permission(ctx):
             return handler.error_handler(ctx, "nopermission", ctx.command)
 
-        if not len(ctx.args) == 1 or int(ctx.args[0]) >= 100:
-            return handler.error_handler(ctx, "arguments", "clear (ilość wiadomości 1-99)")
+        if not len(ctx.args) <= 1 and int(ctx.args[0]) >= 100:
+            return handler.error_handler(ctx, "arguments", "clear (ilość wiadomości 1-99) [osoba]")
 
         ctx.args[0] = int(ctx.args[0]) + 1
-
         messages = list(map(lambda x: x["id"], discord.get_messages(ctx.data["channel_id"], ctx.args[0])))
+
+        if len(ctx.data["mentions"]) == 1:
+            x = []
+            ctx.args[0] = int(ctx.args[0]) - 1
+            for message in messages:
+                message = discord.get_message(ctx.data["channel_id"], message)
+                if message["author"]["id"] == ctx.data["mentions"][0]["id"]:
+                    x.append(message["id"])
+
+            messages = x
+            message = f"Usunięto `{ctx.args[0]}` wiadomości użytkownika `{ctx.data['mentions'][0]['username']}`"
+        else:
+            message = f"Usunięto `{ctx.args[0]}` wiadomości"
+
         bulk_delete = discord.bulk_delete_messages(ctx.data["channel_id"], {
             "messages": messages
         })
 
         discord.create_message(ctx.data["channel_id"], {
-            "content": f"Usunięto `{ctx.args[0]}` wiadomości"
+            "content": message
         })
 
     @gateway.command(description="Pokazuje informacje o użytkowniku", usage="userinfo [osoba]", category="Admin", _default=True)
