@@ -19,18 +19,19 @@
   <body>
     <header id="header">
       <div>
-        <h1 class="gradient"><img src="{{ url_for('static', filename='img/logo.png') }}" alt="cenzura logo"> CENZURA</h1>
-        <h2>Bot, który dba o <span class="gradient">przejrzystość</span> Twoich serwerów.</h2>
+        <h1 id="title" class="gradient"><img id="logo" src="{{ url_for('static', filename='img/logo.png') }}" alt="cenzura logo"> CENZURA</h1>
+        <h2 id="opis">Bot, który dba o <span class="gradient">przejrzystość</span> Twoich serwerów.</h2>
 
         <div class="social-links">
-          <a href="/invite">Dodaj bota</a>
-          <a href="/discord">Serwer support</a>
-          <a href="/docs">Dokumentacja</a>
+          <a class="button" href="/invite">Dodaj bota</a>
+          <a class="button" href="/discord">Serwer support</a>
+          <a class="button" href="/docs">Dokumentacja</a>
         </div>
       </div>
-      <div style="margin-left: auto; margin-right: 10%;">
+      <div id="video" style="margin-left: auto; margin-right: 10%;">
         <iframe width="560" height="315" src="https://www.youtube.com/embed/b3Dz0Nx64zk" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
       </div>
     </header>
+    <script src="{{ url_for('static', filename='js/dzawaskrypt.js') }}"></script>
   </body>
 </html>
