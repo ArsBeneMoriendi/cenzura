@@ -61,7 +61,7 @@ h1, h2 {
 }
 
 #header .social-links {
-  margin-top: 40px;
+  margin-top: 20px;
   display: flex;
   text-decoration: none;
 }
@@ -79,6 +79,7 @@ h1, h2 {
   padding: 10px;
   transition: all 0.2s ease;
   text-decoration: none;
+  width: 130px;
 }
 
 #header .social-links a:hover {
@@ -86,7 +87,7 @@ h1, h2 {
   text-decoration: none;
 }
 
-.kutas {
+.gradient {
   -webkit-background-clip: text;
   background-clip: text;
   background-image: linear-gradient(to left, #fc2948, #9b0356);
