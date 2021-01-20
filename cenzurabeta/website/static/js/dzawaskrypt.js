@@ -1,4 +1,8 @@
 if (typeof window.orientation !== "undefined") {
+    if (location.href.split("/")[3] == "docs") {
+        location.href = "/";
+    }
+    
     const video = document.getElementById("video");
     const logo = document.getElementById("logo");
     const opis = document.getElementById("opis");
@@ -16,4 +20,7 @@ if (typeof window.orientation !== "undefined") {
         buttons[i].style.width = "80px";
         buttons[i].style.height = "20px";
     }
+
+    buttons[2].href = "/sourcecode";
+    buttons[2].innerHTML = "Kod bota";
 }
