@@ -3,6 +3,7 @@ import lib.discord as discord
 import json
 import threading
 import time
+import random
 
 modules = [
     "events",
@@ -19,39 +20,18 @@ gateway.register_modules(modules, gateway, discord)
 
 def status(ws):
     while True:
-        statuses = [
-            {
-                "name": f"{len(gateway.ctx.guilds)} pustych serwerów",
-                "type": 2
-            },
-            {
-                "name": "cenzurabot.pl",
-                "type": 3
-            },
-            {
-                "name": "Fortnite w usłudze GeForce NOW",
-                "type": 5
-            },
-            {
-                "name": "kanał Kamuś",
-                "type": 3
-            },
-            {
-                "name": "jak papież tańczy",
-                "type": 3
-            },
-            {
-                "name": "NEKOPARA Vol. 1",
-                "type": 1
-            }
-        ]
+        quotes = open("quotes.txt", "r")
+        statuses = quotes.read().splitlines()
 
         for _status in statuses:
             data = {
                 "op": 3,
                 "d": {
                     "since": 91879201,
-                    "activities": [_status],
+                    "activities": [{
+                        "name": _status,
+                        "type": random.randint(1, 5)
+                    }],
                     "status": "dnd",
                     "afk": False
                 }
