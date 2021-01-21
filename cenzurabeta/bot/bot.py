@@ -3,6 +3,7 @@ import lib.discord as discord
 import json
 import threading
 import time
+import random
 
 modules = [
     "events",
@@ -22,23 +23,22 @@ def status(ws):
         quotes = open("quotes.txt", "r")
         statuses = quotes.read().splitlines()
 
-        for _status in statuses:
-            data = {
-                "op": 3,
-                "d": {
-                    "since": 91879201,
-                    "activities": [{
-                        "name": _status,
-                        "type": 1
-                    }],
-                    "status": "dnd",
-                    "afk": False
-                }
+        data = {
+            "op": 3,
+            "d": {
+                "since": 91879201,
+                "activities": [{
+                    "name": random.choice(statuses),
+                    "type": random.randint(1, 5)
+                }],
+                "status": "dnd",
+                "afk": False
             }
-            
-            data = json.dumps(data)
-            ws.send(data)
-            time.sleep(10)
+        }
+        
+        data = json.dumps(data)
+        ws.send(data)
+        time.sleep(10)
 
 @gateway.event
 def ready(ctx):
