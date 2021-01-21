@@ -3,7 +3,6 @@ import lib.discord as discord
 import json
 import threading
 import time
-import random
 
 modules = [
     "events",
@@ -30,7 +29,7 @@ def status(ws):
                     "since": 91879201,
                     "activities": [{
                         "name": _status,
-                        "type": random.randint(1, 5)
+                        "type": 1
                     }],
                     "status": "dnd",
                     "afk": False
