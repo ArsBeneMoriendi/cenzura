@@ -8,6 +8,7 @@ import os
 import pyfiglet
 import functions
 import config
+import time
 
 def load(gateway, discord):
     @gateway.command(description="Wysyła link google", usage="google (zapytanie)", category="Fun", _default=True)
@@ -403,4 +404,148 @@ def load(gateway, discord):
 
         discord.create_message(ctx.data["channel_id"], {
             "content": result
+        })
+
+    _characters = {
+        "a": "\u200b",
+        "b": "\u200b" * 2,
+        "c": "\u200b" * 3,
+        "d": "\u200b" * 4,
+        "e": "\u200b" * 5,
+        "f": "\u200b" * 6,
+        "g": "\u200b" * 7,
+        "h": "\u200b" * 8,
+        "i": "\u200b" * 9,
+        "j": "\u200b" * 10,
+        "k": "\u200b" * 11,
+        "l": "\u200b" * 12,
+        "m": "\u200b" * 13,
+        "n": "\u200b" * 14,
+        "o": "\u200b" * 15,
+        "p": "\u200b" * 16,
+        "q": "\u200b" * 17,
+        "r": "\u200b" * 18,
+        "s": "\u200c",
+        "t": "\u200c" * 2,
+        "u": "\u200c" * 3,
+        "v": "\u200c" * 4,
+        "w": "\u200c" * 5,
+        "x": "\u200c" * 6,
+        "y": "\u200c" * 7,
+        "z": "\u200c" * 8,
+        "1": "\u200d",
+        "2": "\u200d" * 2,
+        "3": "\u200d" * 3,
+        "4": "\u200d" * 4,
+        "5": "\u200d" * 5,
+        "6": "\u200d" * 6,
+        "7": "\u200d" * 7,
+        "8": "\u200d" * 8,
+        "9": "\u200d" * 9,
+        "0": "\u200d" * 10,
+        "!": "\u200e",
+        "@": "\u200e" * 2,
+        "#": "\u200e" * 3,
+        "%": "\u200e" * 4,
+        "^": "\u200e" * 5,
+        "&": "\u200e" * 6,
+        "*": "\u200e" * 7,
+        "(": "\u200e" * 8,
+        ")": "\u200e" * 9,
+        "-": "\u200e" * 10,
+        "_": "\u200e" * 11,
+        "=": "\u200e" * 12,
+        "+": "\u200e" * 13,
+        "[": "\u200e" * 14,
+        "]": "\u200e" * 15,
+        "{": "\u200e" * 16,
+        "}": "\u200e" * 17,
+        ";": "\u200e" * 18,
+        "'": "\u200e" * 19,
+        ":": "\u200e" * 20,
+        "\"": "\u200e" * 21,
+        ",": "\u200e" * 22,
+        ".": "\u200e" * 23,
+        "/": "\u200e" * 24,
+        "<": "\u200e" * 25,
+        ">": "\u200e" * 26,
+        "?": "\u200e" * 27,
+        "\\": "\u200e" * 28,
+        "|": "\u200e" * 29,
+        " ": "\u200e" * 30
+    }
+
+    @gateway.command(description="Ukrywa tekst w tekście", usage="encode (tekst wyświetlany) | (tekst ukryty)", category="Fun", _default=True)
+    def encode(ctx):
+        if not functions.has_permission(ctx):
+            return handler.error_handler(ctx, "nopermission", ctx.command)
+
+        ctx.args = " ".join(ctx.args).lower().split(" | ")
+        if not len(ctx.args) == 2:
+            return handler.error_handler(ctx, "arguments", "encode (tekst wyświetlany) | (tekst ukryty)")
+
+        text = ctx.args[0][0]
+
+        other = {
+            "ą": "a",
+            "ś": "s",
+            "ó": "o",
+            "ł": "l",
+            "ę": "e",
+            "ń": "n",
+            "ź": "z",
+            "ż": "z",
+            "ć": "c"
+        }
+
+        for char in ctx.args[1]:
+            if char in other:
+                ctx.args[1] = ctx.args[1].replace(char, other[char])
+
+        for char in ctx.args[1]:
+            if char in _characters:
+                text += _characters[char] + "\u200f"
+
+        text += ctx.args[0][1:]
+
+        discord.create_message(ctx.data["channel_id"], {
+            "embed": {
+                "title": "Wpisz decode (tekst który jest poniżej) aby zobaczyć ukryty tekst",
+                "description": "```" + text + "```",
+                "color": 0xe74c3c,
+                "footer": {
+                    "text": f"Wywołane przez {ctx.data['author']['id']}"
+                }
+            }
+        })
+
+    @gateway.command(description="Pokazuje ukryty tekst", usage="decode (tekst)", category="Fun", _default=True)
+    def decode(ctx):
+        if not functions.has_permission(ctx):
+            return handler.error_handler(ctx, "nopermission", ctx.command)
+
+        ctx.args = " ".join(ctx.args)
+        if not ctx.args:
+            return handler.error_handler(ctx, "arguments", "encode (tekst wyświetlany) | (tekst ukryty)")
+
+        text = ""
+        letter = ""
+        chars = {value:key for key, value in _characters.items()}
+
+        for char in ctx.args:
+            if char in chars or char == "\u200f":
+                if char == "\u200f":
+                    text += chars[letter]
+                    letter = ""
+                else:
+                    letter += char
+        
+        discord.create_message(ctx.data["channel_id"], {
+            "embed": {
+                "description": "```" + text + "```",
+                "color": 0xe74c3c,
+                "footer": {
+                    "text": f"Wywołane przez {ctx.data['author']['id']}"
+                }
+            }
         })
