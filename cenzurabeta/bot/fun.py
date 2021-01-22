@@ -539,6 +539,11 @@ def load(gateway, discord):
                     letter = ""
                 else:
                     letter += char
+
+        if not text:
+            return discord.create_message(ctx.data["channel_id"], {
+                "content": "W tej wiadomości nie ma ukrytego tekstu"
+            })
         
         discord.create_message(ctx.data["channel_id"], {
             "embed": {
