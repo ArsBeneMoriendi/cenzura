@@ -510,7 +510,7 @@ def load(gateway, discord):
 
         discord.create_message(ctx.data["channel_id"], {
             "embed": {
-                "title": "Wpisz decode (tekst który jest poniżej) aby zobaczyć ukryty tekst",
+                "title": "Skopiuj tekst poniżej i wpisz decode (wklej tu tekst) aby otrzymać ukryty tekst",
                 "description": "```" + text + "```",
                 "color": 0xe74c3c,
                 "footer": {
