@@ -24,8 +24,8 @@ def has_permission(ctx):
     ctx.data["member"]["roles"].append(ctx.data["guild_id"])
 
     for role in ctx.data["member"]["roles"]:
-        if role in guilds[guild]["permissions"] and ctx.command in guilds[guild]["permissions"][role] and guilds[guild]["permissions"][role][ctx.command]:
-            return True
+        if role in guilds[guild]["permissions"] and ctx.command in guilds[guild]["permissions"][role]:
+            return guilds[guild]["permissions"][role][ctx.command]
         else:
             if ctx.command in ctx.default:
                 return True
