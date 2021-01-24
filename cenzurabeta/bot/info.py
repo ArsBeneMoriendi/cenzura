@@ -17,8 +17,7 @@ def load(gateway, discord):
     def authors(ctx):
         _authors = {
             "636096693712060416": "developer",
-            "264905890824585216": "pomocnik",
-            "651511209585147904": "grafik"
+            "264905890824585216": "pomocnik"
         }
 
         discord.create_message(ctx.data["channel_id"], {
