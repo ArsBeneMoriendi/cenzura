@@ -49,7 +49,10 @@ def load(gateway, discord):
                     "content": "Tej komendy nie można dodać/odebrać!"
                 })
 
-            del guilds[guild]["permissions"][ctx.data["mention_roles"][0]][ctx.args[2]]
+            if not ctx.data["mention_roles"][0] in guilds[guild]["permissions"]:
+                guilds[guild]["permissions"][ctx.data["mention_roles"][0]] = {}
+
+            guilds[guild]["permissions"][ctx.data["mention_roles"][0]][ctx.args[2]] = False
 
             discord.create_message(ctx.data["channel_id"], {
                 "content": "Usunięto permisje"
