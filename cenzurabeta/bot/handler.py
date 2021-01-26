@@ -2,7 +2,18 @@ import lib.gateway as gateway
 import lib.discord as discord
 
 def error_handler(ctx, error, data=None):
-    if error == "arguments":
+    if error == "error":
+        return discord.create_message(ctx.data["channel_id"], {
+            "embed": {
+                "title": "Wystąpił nieoczekiwany błąd...",
+                "description": "Wejdź na serwer support i zgłoś go.\n```" + data + "```",
+                "color": 0xe74c3c,
+                "footer": {
+                    "text": f"Wywołane przez {ctx.data['author']['id']}"
+                }
+            }
+        })
+    elif error == "arguments":
         return discord.create_message(ctx.data["channel_id"], {
             "content": f"Poprawne użycie komendy to `{data}`"
         })
