@@ -2,13 +2,14 @@ import websocket
 import json
 import threading
 import time
-from datetime import datetime
 import config
 from . import discord
 import functions
 import json
 import copy
 import handler
+from datetime import datetime
+import traceback
 
 gateway = "wss://gateway.discord.gg/?v=6&encoding=json"
 commands = {}
@@ -24,6 +25,7 @@ class ctx:
     default = []
     guilds = []
     users = []
+    ws = None
 
 def command(description, usage, category, _default):
     def _command(func):
@@ -122,7 +124,9 @@ def on_message(ws, msg):
 
     if msg["t"] == "GUILD_CREATE":
         ctx.guilds.append(msg["d"])
+        open(config.folder + "logs.txt", "a").write(f"{msg['t']} : {msg['d']['name']} ({msg['d']['id']})\n")
     elif msg["t"] == "GUILD_DELETE":
+        open(config.folder + "logs.txt", "a").write(f"{msg['t']} : {[x['name'] for x in ctx.guilds if x['id'] == msg['d']['id']][0]} ({msg['d']['id']})\n")
         ctx.guilds.remove(msg["d"])
     elif msg["t"] == "MESSAGE_CREATE":
         ctx.data = msg["d"]
@@ -149,7 +153,12 @@ def on_message(ws, msg):
             ctx.ws = ws
 
             if command in commands:
-                commands[command]["function"](ctx)
+                try:
+                    commands[command]["function"](ctx)
+                    open(config.folder + "logs.txt", "a").write(f"{msg['t']} : {msg['d']['author']['username']} executed {command} command\n")
+                except:
+                    handler.error_handler(ctx, "error", traceback.format_exc())
+                    open(config.folder + "logs.txt", "a").write(f"{msg['t']} : {msg['d']['author']['username']} executed {command} command : ERROR: {traceback.format_exc()}\n")
             else:
                 handler.error_handler(ctx, "commandnotfound")
         else:
@@ -162,6 +171,7 @@ def on_message(ws, msg):
             events[msg["t"]](ctx)
 
 def on_close(ws):
+    open(config.folder + "logs.txt", "a").write(f"\nCONNECTION CLOSED {datetime.now()}\n\n")
     if ctx.running:
         time.sleep(10)
         ctx.guilds = []
