@@ -67,7 +67,7 @@ def load(gateway, discord):
             ctx.args[0] = int(ctx.args[0]) - 1
             for message in messages:
                 message = discord.get_message(ctx.data["channel_id"], message)
-                if message["author"]["id"] == ctx.data["mentions"][0]["id"]:
+                if "author" in message and message["author"]["id"] == ctx.data["mentions"][0]["id"]:
                     x.append(message["id"])
 
             messages = x
