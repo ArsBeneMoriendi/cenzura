@@ -39,10 +39,7 @@ def load(gateway, discord):
 
         exec(compile(parsed, filename="siema", mode="exec"), env)
 
-        try:
-            result = eval("elo()", env)
-        except Exception as e:
-            result = traceback.format_exc()
+        result = eval("elo()", env)
 
         discord.create_message(ctx.data["channel_id"], {
             "content": f"```{result}```"
