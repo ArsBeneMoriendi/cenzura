@@ -26,6 +26,8 @@ class ctx:
     guilds = []
     users = []
     ws = None
+    bot_start = datetime.now()
+    connection_start = datetime
 
 def command(description, usage, category, _default):
     def _command(func):
@@ -182,4 +184,5 @@ def on_close(ws):
 def run():
     ws = websocket.WebSocketApp(gateway, on_message=on_message, on_close=on_close)
     ctx.ws = ws
+    ctx.connection_start = datetime.now()
     ws.run_forever()
