@@ -11,15 +11,15 @@ def load(gateway, discord):
         connection_start = relativedelta(datetime.now(), ctx.connection_start)
         description = f"""Serwery: `{len(ctx.guilds)}`
         
-        Komendy: `{len(ctx.commands)}`
+Komendy: `{len(ctx.commands)}`
         
-        Wersja Python: `{platform.python_version()}`
+Wersja Python: `{platform.python_version()}`
 
-        RAM: `{humanize.naturalsize(psutil.Process().memory_full_info().rss)}`
-        Procesor: `{psutil.cpu_percent()}%`
+RAM: `{humanize.naturalsize(psutil.Process().memory_full_info().rss)}`
+Procesor: `{psutil.cpu_percent()}%`
         
-        Uptime bota: `{bot_start.days} dni, {bot_start.hours} godzin, {bot_start.minutes} minut, {bot_start.seconds} sekund`
-        Uptime połączenia: `{connection_start.days} dni, {connection_start.hours} godzin, {connection_start.minutes} minut, {connection_start.seconds} sekund`"""
+Uptime bota: `{bot_start.days} dni, {bot_start.hours} godzin, {bot_start.minutes} minut, {bot_start.seconds} sekund`
+Uptime połączenia: `{connection_start.days} dni, {connection_start.hours} godzin, {connection_start.minutes} minut, {connection_start.seconds} sekund`"""
 
         discord.create_message(ctx.data["channel_id"], {
             "embed": {
