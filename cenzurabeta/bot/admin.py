@@ -2,6 +2,7 @@ import functions
 import handler
 import functions
 import lib.permissions as permissions
+import lib.flags as flags
 from datetime import datetime
 
 def load(gateway, discord):
@@ -126,6 +127,11 @@ def load(gateway, discord):
                     {
                         "name": "Utworzył konto:",
                         "value": str(datetime.fromtimestamp(((int(ctx.data["author"]["id"]) >> 22) + 1420070400000) / 1000)).split(".")[0],
+                        "inline": False
+                    },
+                    {
+                        "name": "Odznaki:",
+                        "value": ", ".join(flags.user_flags(user["user"]["public_flags"])),
                         "inline": False
                     }
                 ],
