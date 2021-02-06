@@ -122,6 +122,11 @@ def load(gateway, discord):
                         "name": "Dołączył na serwer:",
                         "value": user["joined_at"][0] + " " + user["joined_at"][1].split(".")[0],
                         "inline": False
+                    },
+                    {
+                        "name": "Utworzył konto:",
+                        "value": str(datetime.fromtimestamp(((int(ctx.data["author"]["id"]) >> 22) + 1420070400000) / 1000)).split(".")[0],
+                        "inline": False
                     }
                 ],
                 "thumbnail": {
@@ -177,6 +182,11 @@ def load(gateway, discord):
                     {
                         "name": "Został stworzony:",
                         "value": str(datetime.fromtimestamp(((int(ctx.data["guild_id"]) >> 22) + 1420070400000) / 1000)).split(".")[0],
+                        "inline": False
+                    },
+                    {
+                        "name": "Boosty:",
+                        "value": f"{guild['premium_subscription_count']} boosty / {guild['premium_tier']} poziom",
                         "inline": False
                     }
                 ],
