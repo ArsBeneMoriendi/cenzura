@@ -44,9 +44,14 @@ def load(gateway, discord):
         except:
             result = traceback.format_exc()
 
-        discord.create_message(ctx.data["channel_id"], {
+        response = discord.create_message(ctx.data["channel_id"], {
             "content": f"```{result}```"
         })
+
+        if not response.status_code == 200:
+            discord.create_message(ctx.data["channel_id"], {
+                "content": f"```{response.json()}```"
+            })
 
     @gateway.command(description="Zatrzymuje cały proces", usage="stop", category="dev", _default=False)
     def stop(ctx):
