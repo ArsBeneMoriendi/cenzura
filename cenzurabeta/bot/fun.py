@@ -3,7 +3,7 @@ import requests
 import random
 import json
 import handler
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 import os
 import pyfiglet
 import functions
@@ -553,4 +553,78 @@ def load(gateway, discord):
                     "text": f"Wywołane przez {ctx.data['author']['id']}"
                 }
             }
+        })
+
+    @gateway.command(description="\"nie widać mnie\" mem z poligonu", usage="cantseeme [tekst/osoba/obrazek/url z obrazkiem]", category="Fun", _default=True)
+    def cantseeme(ctx):
+        if not functions.has_permission(ctx):
+            return handler.error_handler(ctx, "nopermission", ctx.command)
+
+        formats = ("image/png", "image/jpeg", "image/gif", "image/webp")
+
+        if not ctx.args:
+            message_type = "image"
+            content = requests.get(f"https://cdn.discordapp.com/avatars/{ctx.data['author']['id']}/{ctx.data['author']['avatar']}.png?size=2048").content
+            open("image.png", "wb").write(content)
+
+        elif (len(ctx.data["mentions"]) and len(ctx.args)) == 1:
+            message_type = "image"
+            content = requests.get(f"https://cdn.discordapp.com/avatars/{ctx.data['mentions'][0]['id']}/{ctx.data['mentions'][0]['avatar']}.png?size=2048").content
+            open("image.png", "wb").write(content)
+
+        elif len(ctx.data["attachments"]) == 1:
+            req = requests.get(ctx.data["acttachments"][0]["url"])
+            message_type = "text"
+            if req.headers["content-type"] in formats:
+                message_type = "image"
+                open("image.png", "wb").write(req.content)
+
+        elif len(ctx.args) == 1 and ctx.args[0].startswith(("https://", "http://")):
+            req = requests.get(ctx.args[0])
+            message_type = "text"
+            if req.headers["content-type"] in formats:
+                message_type = "image"
+                open("image.png", "wb").write(req.content)
+
+        elif len(ctx.args) >= 1:
+            message_type = "text"
+
+        krzak = Image.open("krzak.png")
+        image = Image.open("image.png")
+
+        if message_type == "text":
+            ctx.args = " ".join(ctx.args)
+            center = [round(krzak.size[0] / 2) - 50, round(krzak.size[1] / 2) - 60]
+            if len(ctx.args) > 15:
+                i = ""
+                for _ in range(3):
+                    for char in range(15):
+                        i += ctx.args[char]
+                        center[0] -= 0.5
+                    i += "\n"
+                ctx.args = i
+
+            draw = ImageDraw.Draw(krzak)
+            font = ImageFont.truetype("arial.ttf", 30)
+
+            center = (round(center[0]), round(center[1]))
+
+            draw.text(center, ctx.args, font=font)
+
+        elif message_type == "image":
+            width, height = image.size
+            if width > 150:
+                width = 150
+            if height > 100:
+                height = 100
+
+            image.thumbnail((width, height))
+
+            center = (round(krzak.size[0] / 2) - round(image.size[0] / 2), round(krzak.size[1] / 2) - round(image.size[1] / 2) - 30)
+            krzak.paste(image, center)
+            
+        krzak.save("cantseeme.png")
+
+        discord.create_message(ctx.data["channel_id"], None, {
+            "file": ("cantseeme.png", open("cantseeme.png", "rb"), "multipart/form-data")
         })
