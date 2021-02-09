@@ -562,18 +562,13 @@ def load(gateway, discord):
 
         formats = ("image/png", "image/jpeg", "image/gif", "image/webp")
 
-        if not ctx.args:
-            message_type = "image"
-            content = requests.get(f"https://cdn.discordapp.com/avatars/{ctx.data['author']['id']}/{ctx.data['author']['avatar']}.png?size=2048").content
-            open("image.png", "wb").write(content)
-
-        elif (len(ctx.data["mentions"]) and len(ctx.args)) == 1:
+        if (len(ctx.data["mentions"]) and len(ctx.args)) == 1:
             message_type = "image"
             content = requests.get(f"https://cdn.discordapp.com/avatars/{ctx.data['mentions'][0]['id']}/{ctx.data['mentions'][0]['avatar']}.png?size=2048").content
             open("image.png", "wb").write(content)
 
         elif len(ctx.data["attachments"]) == 1:
-            req = requests.get(ctx.data["acttachments"][0]["url"])
+            req = requests.get(ctx.data["attachments"][0]["url"])
             message_type = "text"
             if req.headers["content-type"] in formats:
                 message_type = "image"
@@ -588,6 +583,11 @@ def load(gateway, discord):
 
         elif len(ctx.args) >= 1:
             message_type = "text"
+
+        elif not ctx.args:
+            message_type = "image"
+            content = requests.get(f"https://cdn.discordapp.com/avatars/{ctx.data['author']['id']}/{ctx.data['author']['avatar']}.png?size=2048").content
+            open("image.png", "wb").write(content)
 
         krzak = Image.open("krzak.png")
         image = Image.open("image.png")
