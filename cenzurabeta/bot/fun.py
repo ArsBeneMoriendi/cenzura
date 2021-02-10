@@ -3,7 +3,7 @@ import requests
 import random
 import json
 import handler
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont, ImageOps
 import os
 import pyfiglet
 import functions
@@ -597,11 +597,9 @@ def load(gateway, discord):
             center = [round(krzak.size[0] / 2) - 50, round(krzak.size[1] / 2) - 60]
             if len(ctx.args) > 15:
                 i = ""
-                for _ in range(3):
-                    for char in range(15):
-                        i += ctx.args[char]
-                        center[0] -= 0.5
-                    i += "\n"
+                for char in range(15):
+                    i += ctx.args[char]
+                    center[0] -= 0.5
                 ctx.args = i
 
             draw = ImageDraw.Draw(krzak)
