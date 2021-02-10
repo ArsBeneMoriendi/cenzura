@@ -604,7 +604,7 @@ def load(gateway, discord):
                         new_args += char
                     else:
                         x = 0
-                        new_args += "\n"
+                        new_args += f"{char}\n"
 
                 ctx.args = new_args
 
