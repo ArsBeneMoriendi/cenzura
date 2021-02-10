@@ -53,6 +53,21 @@ def load(gateway, discord):
                 "content": f"```{response.json()}```"
             })
 
+    @gateway.command(description="Przeładowuje moduł", usage="reload (moduł)", category="dev", _default=False)
+    def reload(ctx):
+        if not ctx.data["author"]["id"] in config.owners:
+            return handler.error_handler(ctx, "nopermission", ctx.command)
+
+        try:
+            gateway.register_module(ctx.args[0], gateway, discord)
+            result = f"Przeładowano `{ctx.args[0]}`"
+        except:
+            result = "```" + traceback.format_exc() + "```"
+
+        discord.create_message(ctx.data["channel_id"], {
+            "content": result
+        })
+
     @gateway.command(description="Zatrzymuje cały proces", usage="stop", category="dev", _default=False)
     def stop(ctx):
         if not ctx.data["author"]["id"] in config.owners:
