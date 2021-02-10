@@ -10,6 +10,7 @@ import copy
 import handler
 from datetime import datetime
 import traceback
+import importlib
 
 gateway = "wss://gateway.discord.gg/?v=6&encoding=json"
 commands = {}
@@ -76,7 +77,9 @@ def register_modules(modules: list, _gateway, _discord):
         __import__(module).load(_gateway, _discord)
 
 def register_module(module, _gateway, _discord):
-    __import__(module).load(_gateway, _discord)
+    _module = __import__(module)
+    importlib.reload(_module)
+    _module.load(_gateway, _discord)
 
 def heartbeat(ws):
     while True:
