@@ -596,11 +596,17 @@ def load(gateway, discord):
             ctx.args = " ".join(ctx.args)
             center = [round(krzak.size[0] / 2) - 50, round(krzak.size[1] / 2) - 60]
             if len(ctx.args) > 15:
-                i = ""
-                for char in range(15):
-                    i += ctx.args[char]
-                    center[0] -= 0.5
-                ctx.args = i
+                new_args = ""
+                x = 0
+                for char in ctx.args:
+                    x += 1
+                    if not x == 15:
+                        new_args += char
+                    else:
+                        x = 0
+                        new_args += "\n"
+
+                ctx.args = new_args
 
             draw = ImageDraw.Draw(krzak)
             font = ImageFont.truetype("arial.ttf", 30)
