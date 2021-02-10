@@ -1,6 +1,8 @@
 import functions
 import handler
-from PIL import Image, ImageDraw, ImageFont, ImageOps
+from PIL import Image, ImageDraw, ImageFont, ImageOps, ImageFilter
+import requests
+import re
 
 def load(gateway, discord):
     @gateway.command(description="Pokazuje liste ostatnich usuniętych wiadomości", usage="snipe", category="Inne", _default=True)
@@ -203,40 +205,72 @@ def load(gateway, discord):
             gender = "nie podano" if not "gender" in users[user["id"]]["profile"] else users[user["id"]]["profile"]["gender"]
             age = "nie podano" if not "age" in users[user["id"]]["profile"] else users[user["id"]]["profile"]["age"]
             orientation = "nie podano" if not "orientation" in users[user["id"]]["profile"] else users[user["id"]]["profile"]["orientation"]
+            description = "nie podano" if not "description" in users[user["id"]]["profile"] else users[user["id"]]["profile"]["description"]
+            color = "0;0;0" if not "color" in users[user["id"]]["profile"] else users[user["id"]]["profile"]["color"]
 
-            discord.create_message(ctx.data["channel_id"], {
-                "embed": {
-                    "title": f"Profil użytkownika {user['username']}:",
-                    "color": 0xe74c3c,
-                    "fields": [
-                        {
-                            "name": "Imie:",
-                            "value": name,
-                            "inline": False
-                        },
-                        {
-                            "name": "Płeć:",
-                            "value": gender,
-                            "inline": False
-                        },
-                        {
-                            "name": "Wiek:",
-                            "value": age,
-                            "inline": False
-                        },
-                        {
-                            "name": "Orientacja:",
-                            "value": orientation,
-                            "inline": False
-                        }
-                    ],
-                    "thumbnail": {
-                        "url": f"http://cdn.discordapp.com/avatars/{user['id']}/{user['avatar']}.png?size=2048"
-                    },
-                    "footer": {
-                        "text": f"Wywołane przez {ctx.data['author']['id']}"
-                    }
-                }
+            polish_chars = {
+                "ą": "a",
+                "ś": "s",
+                "ó": "o",
+                "ł": "l",
+                "ę": "e",
+                "ń": "n",
+                "ź": "z",
+                "ż": "z",
+                "ć": "c"
+            }
+
+            for char in polish_chars:
+                name = name.replace(char, polish_chars[char])
+                gender = gender.replace(char, polish_chars[char])
+                age = age.replace(char, polish_chars[char])
+                orientation = orientation.replace(char, polish_chars[char])
+                description = description.replace(char, polish_chars[char])
+
+            new_description = ""
+
+            if len(description) > 20:
+                x = 0
+                for i in description:
+                    if not x == 23:
+                        new_description += i
+                    else:
+                        new_description += f"{i}\n"
+                        x = 0
+                    x += 1
+
+                description = new_description
+
+            avatar = requests.get(f"https://cdn.discordapp.com/avatars/{user['id']}/{user['avatar']}.png?size=512").content
+            open("image.png", "wb").write(avatar)
+                    
+            image = Image.new("RGBA", (512, 512), tuple(map(lambda x: int(x), color.split(";"))))
+            avatar = Image.open("image.png").convert("RGBA")
+            avatar.thumbnail((75, 75))
+
+            image = image.filter(ImageFilter.GaussianBlur(12))
+
+            username = user["username"] + "#" + user["discriminator"]
+            image.paste(avatar, (10, 10), avatar)
+
+            size = 40
+            for char in username:
+                size -= 0.5
+
+            draw = ImageDraw.Draw(image)
+            username_font = ImageFont.truetype("Poppins-Bold.ttf", round(size))
+            description_font = ImageFont.truetype("Poppins-Bold.ttf", 30)
+
+            draw.text((100, 14), username, font=username_font, fill="black")
+            draw.text((99, 15), username, font=username_font)
+
+            draw.text((10, 99), f"Imie: {name}\nPlec: {gender}\nWiek: {age}\nOrientacja: {orientation}\nOpis: {description}", font=description_font, fill="black")
+            draw.text((9, 100), f"Imie: {name}\nPlec: {gender}\nWiek: {age}\nOrientacja: {orientation}\nOpis: {description}", font=description_font)
+
+            image.save("profile.png")
+
+            discord.create_message(ctx.data["channel_id"], None, {
+                "file": ("profile.png", open("profile.png", "rb"), "multipart/form-data")
             })
         
         elif ctx.args[0] == "set":
@@ -244,7 +278,7 @@ def load(gateway, discord):
                 return discord.create_message(ctx.data["channel_id"], {
                     "embed": {
                         "title": "Komendy profile set:",
-                        "description": "> `profile set name (imie)`, `profile set gender (m/k)`, `profile set age (wiek)`, `profile set orientation (hetero/bi/homo)`",
+                        "description": "> `profile set name (imie)`, `profile set gender (m/k)`, `profile set age (wiek)`, `profile set orientation (hetero/bi/homo)`, `profile set description (opis)`, `profile set color (hex/rgb)`",
                         "color": 0xe74c3c
                     }
                 })
@@ -319,12 +353,36 @@ def load(gateway, discord):
                     "content": "Ustawiono orientacje"
                 })
 
+            elif ctx.args[1] == "description":
+                if len(" ".join(ctx.args[2:])) > 300:
+                    return handler.error_handler(ctx, "toolong", 300)
+
+                users[user]["profile"]["description"] = " ".join(ctx.args[2:])
+
+                discord.create_message(ctx.data["channel_id"], {
+                    "content": "Ustawiono opis"
+                })
+
+            elif ctx.args[1] == "color":
+                if re.search(r"^#(?:[0-9a-fA-F]{3}){1,2}$", ctx.args[2]):
+                    color = ";".join(tuple(str(int(ctx.args[2][1:][i:i+2], 16)) for i in (0, 2, 4)))
+                elif len(ctx.args[2:]) == 3 and (not False in ((x.isdigit() and int(x) <= 255) for x in ctx.args[2:])):
+                    color = ";".join(ctx.args[2:])
+                else:
+                    return handler.error_handler(ctx, "arguments", "profile set color (hex/rgb)")
+
+                users[user]["profile"]["color"] = color
+
+                discord.create_message(ctx.data["channel_id"], {
+                    "content": "Ustawiono kolor"
+                })
+
         elif ctx.args[0] == "remove":
             if not len(ctx.args) <= 3:
                 return discord.create_message(ctx.data["channel_id"], {
                     "embed": {
                         "title": "Komendy profile remove:",
-                        "description": "> `profile remove name`, `profile remove gender`, `profile remove age`, `profile remove orientation`",
+                        "description": "> `profile remove name`, `profile remove gender`, `profile remove age`, `profile remove orientation`, `profile remove description`, `profile remove color`",
                         "color": 0xe74c3c
                     }
                 })
@@ -355,6 +413,20 @@ def load(gateway, discord):
 
                 discord.create_message(ctx.data["channel_id"], {
                     "content": "Usunięto orientacje z twojego profilu"
+                })
+
+            elif ctx.args[1] == "description":
+                del users[user]["profile"]["description"]
+
+                discord.create_message(ctx.data["channel_id"], {
+                    "content": "Usunięto opis z twojego profilu"
+                })
+
+            elif ctx.args[1] == "color":
+                del users[user]["profile"]["color"]
+
+                discord.create_message(ctx.data["channel_id"], {
+                    "content": "Usunięto kolor z twojego profilu"
                 })
 
         functions.write_json("users", users)
