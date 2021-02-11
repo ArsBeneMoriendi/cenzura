@@ -1,6 +1,6 @@
 import functions
 import handler
-from PIL import Image, ImageDraw, ImageFont, ImageOps, ImageFilter
+from PIL import Image, ImageDraw, ImageFont
 import requests
 import re
 
@@ -202,9 +202,9 @@ def load(gateway, discord):
                     functions.write_json("users", users)
 
             name = "nie podano" if not "name" in users[user["id"]]["profile"] else users[user["id"]]["profile"]["name"]
-            gender = "nie podano" if not "gender" in users[user["id"]]["profile"] else users[user["id"]]["profile"]["gender"]
+            gender = "" if not "gender" in users[user["id"]]["profile"] else users[user["id"]]["profile"]["gender"]
             age = "nie podano" if not "age" in users[user["id"]]["profile"] else users[user["id"]]["profile"]["age"]
-            orientation = "nie podano" if not "orientation" in users[user["id"]]["profile"] else users[user["id"]]["profile"]["orientation"]
+            orientation = "" if not "orientation" in users[user["id"]]["profile"] else users[user["id"]]["profile"]["orientation"]
             description = "nie podano" if not "description" in users[user["id"]]["profile"] else users[user["id"]]["profile"]["description"]
             color = "0;0;0" if not "color" in users[user["id"]]["profile"] else users[user["id"]]["profile"]["color"]
 
@@ -229,10 +229,10 @@ def load(gateway, discord):
 
             new_description = ""
 
-            if len(description) > 20:
+            if len(description) >= 40:
                 x = 0
                 for i in description:
-                    if x == 24:
+                    if x == 30:
                         new_description += "\n"
                         x = 0
 
@@ -247,28 +247,43 @@ def load(gateway, discord):
             image = Image.new("RGBA", (512, 512), tuple(map(lambda x: int(x), color.split(";"))))
             avatar = Image.open("image.png").convert("RGBA")
             cenzura = Image.open("cenzura.png").convert("RGBA")
-            avatar.thumbnail((75, 75))
-            cenzura.thumbnail((30, 30))
+            prostokaty = Image.open("prostokaty.png").convert("RGBA")
 
-            image = image.filter(ImageFilter.GaussianBlur(12))
+            avatar.thumbnail((125, 125))
+            cenzura.thumbnail((30, 30))
+            prostokaty.thumbnail((512, 512))
 
             username = user["username"] + "#" + user["discriminator"]
+            image.paste(prostokaty, (0, 0), prostokaty)
             image.paste(avatar, (10, 10), avatar)
 
-            size = 40
+            size = 50
             for char in username:
-                size -= 0.5
+                size -= 1
 
             draw = ImageDraw.Draw(image)
             username_font = ImageFont.truetype("Poppins-Bold.ttf", round(size))
-            description_font = ImageFont.truetype("Poppins-Bold.ttf", 30)
+            genderorientation_font = ImageFont.truetype("Poppins-Bold.ttf", 20)
+            text1_font = ImageFont.truetype("Poppins-Bold.ttf", 15)
+            text2_font = ImageFont.truetype("Poppins-Bold.ttf", 20)
             invoked_font = ImageFont.truetype("Poppins-Bold.ttf", 20)
 
-            draw.text((100, 14), username, font=username_font, fill="black")
-            draw.text((99, 15), username, font=username_font)
+            draw.text((150, 44), gender, font=genderorientation_font, fill="black")
+            draw.text((149, 45), gender, font=genderorientation_font)
 
-            draw.text((10, 99), f"Imie: {name}\nPlec: {gender}\nWiek: {age}\nOrientacja: {orientation}\nOpis: {description}", font=description_font, fill="black")
-            draw.text((9, 100), f"Imie: {name}\nPlec: {gender}\nWiek: {age}\nOrientacja: {orientation}\nOpis: {description}", font=description_font)
+            draw.text((150, 54), username, font=username_font, fill="black")
+            draw.text((149, 55), username, font=username_font)
+
+            draw.text((150, 99), orientation, font=genderorientation_font, fill="black")
+            draw.text((149, 100), orientation, font=genderorientation_font)
+
+            draw.text((40, 190), "Imie:", font=text1_font)
+            draw.text((275, 190), "Wiek:", font=text1_font)
+            draw.text((40, 293), "Opis:", font=text1_font)
+
+            draw.text((40, 215), name, font=text2_font)
+            draw.text((275, 215), age, font=text2_font)
+            draw.text((40, 318), description, font=text2_font)
             
             draw.text((50, image.size[1] - 35), "Wywołane przez " + ctx.data["author"]["id"], font=invoked_font, fill="black")
             draw.text((49, image.size[1] - 34), "Wywołane przez " + ctx.data["author"]["id"], font=invoked_font)
@@ -361,8 +376,8 @@ def load(gateway, discord):
                 })
 
             elif ctx.args[1] == "description":
-                if len(" ".join(ctx.args[2:])) > 100:
-                    return handler.error_handler(ctx, "toolongtext", 300)
+                if len(" ".join(ctx.args[2:])) > 150:
+                    return handler.error_handler(ctx, "toolongtext", 150)
 
                 users[user]["profile"]["description"] = " ".join(ctx.args[2:])
 
