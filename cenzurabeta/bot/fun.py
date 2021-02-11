@@ -599,12 +599,12 @@ def load(gateway, discord):
                 new_args = ""
                 x = 0
                 for char in ctx.args:
-                    x += 1
-                    if not x == 15:
-                        new_args += char
-                    else:
+                    if x == 16:
+                        new_args += "\n"
                         x = 0
-                        new_args += f"{char}\n"
+
+                    new_args += char
+                    x += 1
 
                 ctx.args = new_args
 
