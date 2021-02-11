@@ -232,11 +232,11 @@ def load(gateway, discord):
             if len(description) > 20:
                 x = 0
                 for i in description:
-                    if not x == 23:
-                        new_description += i
-                    else:
-                        new_description += f"{i}\n"
+                    if x == 24:
+                        new_description += "\n"
                         x = 0
+
+                    new_description += i
                     x += 1
 
                 description = new_description
@@ -246,7 +246,9 @@ def load(gateway, discord):
                     
             image = Image.new("RGBA", (512, 512), tuple(map(lambda x: int(x), color.split(";"))))
             avatar = Image.open("image.png").convert("RGBA")
+            cenzura = Image.open("cenzura.png").convert("RGBA")
             avatar.thumbnail((75, 75))
+            cenzura.thumbnail((30, 30))
 
             image = image.filter(ImageFilter.GaussianBlur(12))
 
@@ -260,12 +262,17 @@ def load(gateway, discord):
             draw = ImageDraw.Draw(image)
             username_font = ImageFont.truetype("Poppins-Bold.ttf", round(size))
             description_font = ImageFont.truetype("Poppins-Bold.ttf", 30)
+            invoked_font = ImageFont.truetype("Poppins-Bold.ttf", 20)
 
             draw.text((100, 14), username, font=username_font, fill="black")
             draw.text((99, 15), username, font=username_font)
 
             draw.text((10, 99), f"Imie: {name}\nPlec: {gender}\nWiek: {age}\nOrientacja: {orientation}\nOpis: {description}", font=description_font, fill="black")
             draw.text((9, 100), f"Imie: {name}\nPlec: {gender}\nWiek: {age}\nOrientacja: {orientation}\nOpis: {description}", font=description_font)
+            
+            draw.text((50, image.size[1] - 35), "Wywołane przez " + ctx.data["author"]["id"], font=invoked_font, fill="black")
+            draw.text((49, image.size[1] - 34), "Wywołane przez " + ctx.data["author"]["id"], font=invoked_font)
+            image.paste(cenzura, (10, image.size[1] - 35), cenzura)
 
             image.save("profile.png")
 
@@ -288,7 +295,7 @@ def load(gateway, discord):
                     return handler.error_handler(ctx, "arguments", "profile set name (imie)")
 
                 if not len(ctx.args[2]) < 10:
-                    return handler.error_handler(ctx, "toolong", 10)
+                    return handler.error_handler(ctx, "toolongtext", 10)
 
                 users[user]["profile"]["name"] = ctx.args[2]
 
@@ -354,8 +361,8 @@ def load(gateway, discord):
                 })
 
             elif ctx.args[1] == "description":
-                if len(" ".join(ctx.args[2:])) > 300:
-                    return handler.error_handler(ctx, "toolong", 300)
+                if len(" ".join(ctx.args[2:])) > 100:
+                    return handler.error_handler(ctx, "toolongtext", 300)
 
                 users[user]["profile"]["description"] = " ".join(ctx.args[2:])
 
