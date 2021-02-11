@@ -386,7 +386,7 @@ def load(gateway, discord):
                 return discord.create_message(ctx.data["channel_id"], {
                     "embed": {
                         "title": "Komendy profile remove:",
-                        "description": "> `profile remove name`, `profile remove gender`, `profile remove age`, `profile remove orientation`, `profile remove description`, `profile remove color`",
+                        "description": "> `profile remove name`, `profile remove gender`, `profile remove age`, `profile remove description`, `profile remove color`",
                         "color": 0xe74c3c
                     }
                 })
@@ -410,13 +410,6 @@ def load(gateway, discord):
 
                 discord.create_message(ctx.data["channel_id"], {
                     "content": "Usunięto wiek z twojego profilu"
-                })
-
-            elif ctx.args[1] == "orientation":
-                del users[user]["profile"]["orientation"]
-
-                discord.create_message(ctx.data["channel_id"], {
-                    "content": "Usunięto orientacje z twojego profilu"
                 })
 
             elif ctx.args[1] == "description":
