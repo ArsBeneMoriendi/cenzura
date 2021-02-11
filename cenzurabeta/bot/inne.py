@@ -277,8 +277,8 @@ def load(gateway, discord):
             draw.text((150, 54), username, font=username_font, fill="black")
             draw.text((149, 55), username, font=username_font)
 
-            draw.text((150, 99), orientation, font=genderorientation_font, fill="black")
-            draw.text((149, 100), orientation, font=genderorientation_font)
+            draw.text((150, 89), orientation, font=genderorientation_font, fill="black")
+            draw.text((149, 90), orientation, font=genderorientation_font)
 
             draw.text((40, 190), "Imie:", font=text1_font)
             draw.text((275, 190), "Wiek:", font=text1_font)
