@@ -632,3 +632,31 @@ def load(gateway, discord):
         discord.create_message(ctx.data["channel_id"], None, {
             "file": ("cantseeme.png", open("cantseeme.png", "rb"), "multipart/form-data")
         })
+
+    @gateway.command(description="Wysyła zatęczowany avatar", usage="gay [osoba]", category="Fun", _default=True)
+    def gay(ctx):
+        if not functions.has_permission(ctx):
+            return handler.error_handler(ctx, "nopermission", ctx.command)
+
+        if not ctx.data["mentions"]:
+            user = ctx.data["author"]["id"], ctx.data["author"]["avatar"]
+        else:
+            user = ctx.data["mentions"][0]["id"], ctx.data["mentions"][0]["avatar"]
+
+        content = requests.get(f"https://cdn.discordapp.com/avatars/{user[0]}/{user[1]}.png?size=2048").content
+        open("image.png", "wb").write(content)
+
+        image = Image.open("image.png").convert("RGBA")
+        lgbt = Image.open("lgbt.png").convert("RGBA")
+        
+        image = ImageOps.fit(image, (512, 512))
+        lgbt = ImageOps.fit(lgbt, (512, 512))
+
+        mask = Image.new("L", (512, 512), 128)
+
+        avatar = Image.composite(image, lgbt, mask)
+        avatar.save("gay.png")
+
+        discord.create_message(ctx.data["channel_id"], None, {
+            "file": ("gay.png", open("gay.png", "rb"), "multipart/form-data")
+        })
