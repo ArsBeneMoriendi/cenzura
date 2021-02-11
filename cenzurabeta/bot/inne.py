@@ -244,7 +244,8 @@ def load(gateway, discord):
             avatar = requests.get(f"https://cdn.discordapp.com/avatars/{user['id']}/{user['avatar']}.png?size=512").content
             open("image.png", "wb").write(avatar)
                     
-            image = Image.new("RGBA", (512, 512), tuple(map(lambda x: int(x), color.split(";"))))
+            image = Image.new("RGBA", (512, 512), (0, 0, 0))
+            color = Image.new("RGBA", (512, 160), tuple(map(lambda x: int(x), color.split(";"))))
             avatar = Image.open("image.png").convert("RGBA")
             cenzura = Image.open("cenzura.png").convert("RGBA")
             prostokaty = Image.open("prostokaty.png").convert("RGBA")
@@ -254,8 +255,10 @@ def load(gateway, discord):
             prostokaty.thumbnail((512, 512))
 
             username = user["username"] + "#" + user["discriminator"]
+            image.paste(color, (0, 0), color)
             image.paste(prostokaty, (0, 0), prostokaty)
             image.paste(avatar, (10, 10), avatar)
+            image.paste(cenzura, (10, image.size[1] - 40), cenzura)
 
             size = 50
             for char in username:
@@ -285,9 +288,8 @@ def load(gateway, discord):
             draw.text((275, 215), age, font=text2_font)
             draw.text((40, 318), description, font=text2_font)
             
-            draw.text((50, image.size[1] - 35), "Wywołane przez " + ctx.data["author"]["id"], font=invoked_font, fill="black")
-            draw.text((49, image.size[1] - 34), "Wywołane przez " + ctx.data["author"]["id"], font=invoked_font)
-            image.paste(cenzura, (10, image.size[1] - 35), cenzura)
+            draw.text((50, image.size[1] - 40), "Wywołane przez " + ctx.data["author"]["id"], font=invoked_font, fill="black")
+            draw.text((49, image.size[1] - 39), "Wywołane przez " + ctx.data["author"]["id"], font=invoked_font)
 
             image.save("profile.png")
 
