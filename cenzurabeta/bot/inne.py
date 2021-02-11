@@ -204,7 +204,6 @@ def load(gateway, discord):
             name = "nie podano" if not "name" in users[user["id"]]["profile"] else users[user["id"]]["profile"]["name"]
             gender = "" if not "gender" in users[user["id"]]["profile"] else users[user["id"]]["profile"]["gender"]
             age = "nie podano" if not "age" in users[user["id"]]["profile"] else users[user["id"]]["profile"]["age"]
-            orientation = "" if not "orientation" in users[user["id"]]["profile"] else users[user["id"]]["profile"]["orientation"]
             description = "nie podano" if not "description" in users[user["id"]]["profile"] else users[user["id"]]["profile"]["description"]
             color = "0;0;0" if not "color" in users[user["id"]]["profile"] else users[user["id"]]["profile"]["color"]
 
@@ -224,7 +223,6 @@ def load(gateway, discord):
                 name = name.replace(char, polish_chars[char])
                 gender = gender.replace(char, polish_chars[char])
                 age = age.replace(char, polish_chars[char])
-                orientation = orientation.replace(char, polish_chars[char])
                 description = description.replace(char, polish_chars[char])
 
             new_description = ""
@@ -266,19 +264,16 @@ def load(gateway, discord):
 
             draw = ImageDraw.Draw(image)
             username_font = ImageFont.truetype("Poppins-Bold.ttf", round(size))
-            genderorientation_font = ImageFont.truetype("Poppins-Bold.ttf", 20)
+            gender_font = ImageFont.truetype("Poppins-Bold.ttf", 20)
             text1_font = ImageFont.truetype("Poppins-Bold.ttf", 15)
             text2_font = ImageFont.truetype("Poppins-Bold.ttf", 20)
             invoked_font = ImageFont.truetype("Poppins-Bold.ttf", 20)
 
-            draw.text((150, 44), gender, font=genderorientation_font, fill="black")
-            draw.text((149, 45), gender, font=genderorientation_font)
+            draw.text((150, 44), gender, font=gender_font, fill="black")
+            draw.text((149, 45), gender, font=gender_font)
 
             draw.text((150, 54), username, font=username_font, fill="black")
             draw.text((149, 55), username, font=username_font)
-
-            draw.text((150, 89), orientation, font=genderorientation_font, fill="black")
-            draw.text((149, 90), orientation, font=genderorientation_font)
 
             draw.text((40, 190), "Imie:", font=text1_font)
             draw.text((275, 190), "Wiek:", font=text1_font)
@@ -302,7 +297,7 @@ def load(gateway, discord):
                 return discord.create_message(ctx.data["channel_id"], {
                     "embed": {
                         "title": "Komendy profile set:",
-                        "description": "> `profile set name (imie)`, `profile set gender (m/k)`, `profile set age (wiek)`, `profile set orientation (hetero/bi/homo)`, `profile set description (opis)`, `profile set color (hex/rgb)`",
+                        "description": "> `profile set name (imie)`, `profile set gender (m/k)`, `profile set age (wiek)`, `profile set description (opis)`, `profile set color (hex/rgb)`",
                         "color": 0xe74c3c
                     }
                 })
@@ -360,21 +355,6 @@ def load(gateway, discord):
 
                 discord.create_message(ctx.data["channel_id"], {
                     "content": "Ustawiono wiek"
-                })
-
-            elif ctx.args[1] == "orientation":
-                if not len(ctx.args) == 3:
-                    return handler.error_handler(ctx, "arguments", "profile set orientation (hetero/bi/homo)")
-
-                available = ["HETERO", "BI", "HOMO"]
-
-                if ctx.args[2].upper() in available:
-                    users[user]["profile"]["orientation"] = ctx.args[2].lower()
-                else:
-                    return handler.error_handler(ctx, "arguments", "profile set orientation (hetero/bi/homo)")
-
-                discord.create_message(ctx.data["channel_id"], {
-                    "content": "Ustawiono orientacje"
                 })
 
             elif ctx.args[1] == "description":
