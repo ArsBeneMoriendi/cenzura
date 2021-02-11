@@ -96,8 +96,8 @@ def load(gateway, discord):
             "file": ("avatar.png", image, "multipart/form-data")
         })
 
-    @gateway.command(description="Pokazuje w ilu procentach osoby sie kochają", usage="love (osoba) [osoba]", category="Fun", _default=True)
-    def love(ctx):
+    @gateway.command(description="Pokazuje w ilu procentach osoby sie kochają", usage="ship (osoba) [osoba]", category="Fun", _default=True)
+    def ship(ctx):
         if not functions.has_permission(ctx):
             return handler.error_handler(ctx, "nopermission", ctx.command)
 
@@ -112,20 +112,20 @@ def load(gateway, discord):
             m = ctx.data["mentions"][0]["id"], ctx.data["mentions"][0]["avatar"], ctx.data["mentions"][0]["username"]
             m_avatar = f"https://cdn.discordapp.com/avatars/{m[0]}/{m[1]}.png?size=2048"
         else:
-            return handler.error_handler(ctx, "arguments", "love (osoba 1) (osoba 2)")
+            return handler.error_handler(ctx, "arguments", "ship (osoba) [osoba]")
 
         open("member1.png", "wb").write(requests.get(m_avatar).content)
         open("member2.png", "wb").write(requests.get(me_avatar).content)
         
-        para = Image.open("para.png")
-        member1 = Image.open("member1.png")
-        member2 = Image.open("member2.png")
+        para = Image.open("para.png").convert("RGBA")
+        member1 = Image.open("member1.png").convert("RGBA")
+        member2 = Image.open("member2.png").convert("RGBA")
+
+        member1 = ImageOps.fit(member1, (300, 300))
+        member2 = ImageOps.fit(member2, (300, 300))
         
-        member1.thumbnail((300, 300))
-        member2.thumbnail((300, 300))
-        
-        para.paste(member1, (360, 250))
-        para.paste(member2, (890, 180))
+        para.paste(member1, (360, 250), member1)
+        para.paste(member2, (890, 180), member2)
         
         para.save("ship.png")
 
@@ -135,10 +135,6 @@ def load(gateway, discord):
         {
             "file": ("ship.png", open("ship.png", "rb"), "multipart/form-data")
         })
-
-        os.remove("member1.png")
-        os.remove("member2.png")
-        os.remove("ship.png")
 
     @gateway.command(description="Odpowiada na pytanie", usage="8ball (pytanie)", category="Fun", _default=True)
     def _8ball(ctx):
