@@ -66,4 +66,13 @@ def load(gateway, discord):
                 "content": "Usunięto role"
             })
 
+        else:
+             return discord.create_message(ctx.data["channel_id"], {
+                "embed": {
+                    "title": "Komendy pm:",
+                    "description": "> `pm add (rola) (komenda)`, `pm remove (rola) (komenda)`, `pm delete (rola)`",
+                    "color": 0xe74c3c
+                }
+            })
+
         functions.write_json("guilds", guilds)
