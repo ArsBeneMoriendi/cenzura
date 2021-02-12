@@ -19,7 +19,7 @@ def load(gateway, discord):
                 }
             })
 
-        blacklist = ["help", "botstats", "authors", "profile", "todo"]
+        blacklist = ["help", "botstats", "authors", "profile", "todo", "eval", "reload", "stop"]
 
         guild = ctx.data["guild_id"]
         guilds = functions.read_json("guilds")
