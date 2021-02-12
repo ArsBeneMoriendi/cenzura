@@ -172,6 +172,18 @@ def load(gateway, discord):
                 }
             })
 
+        else:
+            return discord.create_message(ctx.data["channel_id"], {
+                "embed": {
+                    "title": "Komendy cmd:",
+                    "description": "> `cmd add (komenda) (tekst)`, `cmd remove (komenda)`, `cmd info (komenda)`, `cmd list`",
+                    "color": 0xe74c3c,
+                    "footer": {
+                        "text": "<> = nazwa użytkownika, [] = wzmianka"
+                    }
+                }
+            })
+
         functions.write_json("guilds", guilds)
 
     @gateway.command(description="Profile", usage="profile", category="Inne", _default=True)
@@ -381,6 +393,15 @@ def load(gateway, discord):
                     "content": "Ustawiono kolor"
                 })
 
+            else:
+                return discord.create_message(ctx.data["channel_id"], {
+                    "embed": {
+                        "title": "Komendy profile set:",
+                        "description": "> `profile set name (imie)`, `profile set gender (m/k)`, `profile set age (wiek)`, `profile set description (opis)`, `profile set color (hex/rgb)`",
+                        "color": 0xe74c3c
+                    }
+                })
+
         elif ctx.args[0] == "remove":
             if not len(ctx.args) <= 3:
                 return discord.create_message(ctx.data["channel_id"], {
@@ -425,5 +446,23 @@ def load(gateway, discord):
                 discord.create_message(ctx.data["channel_id"], {
                     "content": "Usunięto kolor z twojego profilu"
                 })
+
+            else:
+                return discord.create_message(ctx.data["channel_id"], {
+                    "embed": {
+                        "title": "Komendy profile remove:",
+                        "description": "> `profile remove name`, `profile remove gender`, `profile remove age`, `profile remove description`, `profile remove color`",
+                        "color": 0xe74c3c
+                    }
+                })
+
+        else:
+            return discord.create_message(ctx.data["channel_id"], {
+                "embed": {
+                    "title": "Komendy profile:",
+                    "description": "> `profile view [osoba]`, `profile set`, `profile remove`",
+                    "color": 0xe74c3c
+                }
+            })
 
         functions.write_json("users", users)
