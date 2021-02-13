@@ -29,6 +29,7 @@ class ctx:
     ws = None
     bot_start = datetime.now()
     connection_start = datetime
+    ping = {}
 
 def command(description, usage, category, _default):
     def _command(func):
@@ -126,6 +127,22 @@ def on_message(ws, msg):
         if "ready" in events:
             ctx.data = {"ws": ws}
             events["ready"](ctx)
+
+    elif msg["op"] == 11:
+        try:
+            now = datetime.now()
+            channels = []
+            for channel in ctx.ping:
+                ping = now - ctx.ping[channel]["datetime"]
+                ping = int(ping.total_seconds() * 1000)
+                ctx.ping[channel]["data"]["content"] = ctx.ping[channel]["data"]["content"].replace("[]", str(ping))
+                discord.create_message(channel, ctx.ping[channel]["data"])
+                channels.append(channel)
+
+            for channel in channels:    
+                del ctx.ping[channel]
+        except:
+            print(traceback.format_exc())
 
     if msg["t"] == "GUILD_CREATE":
         ctx.guilds.append(msg["d"])
