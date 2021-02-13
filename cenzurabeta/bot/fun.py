@@ -17,7 +17,13 @@ def load(gateway, discord):
         ctx.ping[ctx.data["channel_id"]] = {
             "datetime": datetime.now(),
             "data": {
-                "content": "gateway `[]ms`"
+                "content": """```
+       Ping!       Pong!
+ 0 🏓          |             0
+/|   ---------------------  /|\\
+/ \\   |                 |   / \\
+              []ms
+```"""
             }
         }
 
