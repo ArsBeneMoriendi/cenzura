@@ -9,8 +9,26 @@ import pyfiglet
 import functions
 import config
 import time
+from datetime import datetime
 
 def load(gateway, discord):
+    @gateway.command(description="Pokazuje ping bota", usage="ping", category="Fun", _default=True)
+    def ping(ctx):
+        ctx.ping[ctx.data["channel_id"]] = {
+            "datetime": datetime.now(),
+            "data": {
+                "content": "gateway `[]ms`"
+            }
+        }
+
+        data = {
+            "op": 1,
+            "d": 251
+        }
+
+        data = json.dumps(data)
+        ctx.ws.send(data)
+
     @gateway.command(description="Wysyła link google", usage="google (zapytanie)", category="Fun", _default=True)
     def google(ctx):
         if not functions.has_permission(ctx):
