@@ -145,6 +145,9 @@ def on_message(ws, msg):
             prefix = config.prefix
 
         if msg["d"]["content"].startswith(prefix):
+            if "bot" in msg["d"]["author"]:
+                return
+                
             command = msg["d"]["content"].split(" ")[0][len(prefix)::]
             if command.startswith("_"):
                 command = command[1:]
