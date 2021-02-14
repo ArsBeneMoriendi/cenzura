@@ -23,8 +23,8 @@ def load(gateway, discord):
  0 🏓          |             0
 /|   ---------------------  /|\\
 / \\   |                 |   / \\
-```bot: `<>ms`
-gateway: `[]ms`"""
+```bot `<>ms`
+gateway `[]ms`"""
             }
         }
 
