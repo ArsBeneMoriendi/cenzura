@@ -133,10 +133,17 @@ def on_message(ws, msg):
             now = datetime.now()
             channels = []
             for channel in ctx.ping:
-                ping = now - ctx.ping[channel]["datetime"]
-                ping = int(ping.total_seconds() * 1000)
-                ctx.ping[channel]["data"]["content"] = ctx.ping[channel]["data"]["content"].replace("[]", str(ping))
-                discord.create_message(channel, ctx.ping[channel]["data"])
+                x = discord.create_message(channel, {"content": "obliczanie..."}).json()
+                gateway_ping = now - ctx.ping[channel]["datetime"]
+                gateway_ping = int(gateway_ping.total_seconds() * 1000)
+                x_timestamp = ((int(x["id"]) >> 22) + 1420070400000) / 1000
+                x_timestamp = datetime.fromtimestamp(x_timestamp)
+                i_timestamp = ((int(ctx.ping[channel]["ctx"]["id"]) >> 22) + 1420070400000) / 1000
+                i_timestamp = datetime.fromtimestamp(i_timestamp)
+                bot_ping = (x_timestamp - i_timestamp).total_seconds() * 1000
+                ctx.ping[channel]["data"]["content"] = ctx.ping[channel]["data"]["content"].replace("[]", str(gateway_ping))
+                ctx.ping[channel]["data"]["content"] = ctx.ping[channel]["data"]["content"].replace("<>", str(round(bot_ping)))
+                discord.edit_message(channel, x["id"], ctx.ping[channel]["data"])
                 channels.append(channel)
 
             for channel in channels:    
