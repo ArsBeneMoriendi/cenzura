@@ -16,14 +16,15 @@ def load(gateway, discord):
     def ping(ctx):
         ctx.ping[ctx.data["channel_id"]] = {
             "datetime": datetime.now(),
+            "ctx": ctx.data,
             "data": {
                 "content": """```
        Ping!       Pong!
  0 🏓          |             0
 /|   ---------------------  /|\\
 / \\   |                 |   / \\
-              []ms
-```"""
+```bot: `<>ms`
+gateway: `[]ms`"""
             }
         }
 
