@@ -41,7 +41,7 @@ def load(gateway, discord):
 
         try:
             result = eval("elo()", env)
-        except:
+        except Exception:
             result = traceback.format_exc()
 
         response = discord.create_message(ctx.data["channel_id"], {
