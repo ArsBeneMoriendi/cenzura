@@ -129,27 +129,24 @@ def on_message(ws, msg):
             events["ready"](ctx)
 
     elif msg["op"] == 11:
-        try:
-            now = datetime.now()
-            channels = []
-            for channel in ctx.ping:
-                x = discord.create_message(channel, {"content": "obliczanie..."}).json()
-                gateway_ping = now - ctx.ping[channel]["datetime"]
-                gateway_ping = int(gateway_ping.total_seconds() * 1000)
-                x_timestamp = ((int(x["id"]) >> 22) + 1420070400000) / 1000
-                x_timestamp = datetime.fromtimestamp(x_timestamp)
-                i_timestamp = ((int(ctx.ping[channel]["ctx"]["id"]) >> 22) + 1420070400000) / 1000
-                i_timestamp = datetime.fromtimestamp(i_timestamp)
-                bot_ping = (x_timestamp - i_timestamp).total_seconds() * 1000
-                ctx.ping[channel]["data"]["content"] = ctx.ping[channel]["data"]["content"].replace("[]", str(gateway_ping))
-                ctx.ping[channel]["data"]["content"] = ctx.ping[channel]["data"]["content"].replace("<>", str(round(bot_ping)))
-                discord.edit_message(channel, x["id"], ctx.ping[channel]["data"])
-                channels.append(channel)
+        now = datetime.now()
+        channels = []
+        for channel in ctx.ping:
+            x = discord.create_message(channel, {"content": "obliczanie..."}).json()
+            gateway_ping = now - ctx.ping[channel]["datetime"]
+            gateway_ping = int(gateway_ping.total_seconds() * 1000)
+            x_timestamp = ((int(x["id"]) >> 22) + 1420070400000) / 1000
+            x_timestamp = datetime.fromtimestamp(x_timestamp)
+            i_timestamp = ((int(ctx.ping[channel]["ctx"]["id"]) >> 22) + 1420070400000) / 1000
+            i_timestamp = datetime.fromtimestamp(i_timestamp)
+            bot_ping = (x_timestamp - i_timestamp).total_seconds() * 1000
+            ctx.ping[channel]["data"]["content"] = ctx.ping[channel]["data"]["content"].replace("[]", str(gateway_ping))
+            ctx.ping[channel]["data"]["content"] = ctx.ping[channel]["data"]["content"].replace("<>", str(round(bot_ping)))
+            discord.edit_message(channel, x["id"], ctx.ping[channel]["data"])
+            channels.append(channel)
 
-            for channel in channels:    
-                del ctx.ping[channel]
-        except:
-            print(traceback.format_exc())
+        for channel in channels:    
+            del ctx.ping[channel]
 
     if msg["t"] == "GUILD_CREATE":
         ctx.guilds.append(msg["d"])
@@ -188,7 +185,7 @@ def on_message(ws, msg):
                 try:
                     commands[command]["function"](ctx)
                     open(config.folder + "logs.txt", "a").write(f"{msg['t']} : {msg['d']['author']['username']} executed {command} command\n")
-                except:
+                except Exception:
                     handler.error_handler(ctx, "error", traceback.format_exc())
                     open(config.folder + "logs.txt", "a").write(f"{msg['t']} : {msg['d']['author']['username']} executed {command} command : ERROR: {traceback.format_exc()}\n")
             else:
