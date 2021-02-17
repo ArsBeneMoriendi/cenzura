@@ -37,3 +37,7 @@ def error_handler(ctx, error, data=None):
         return discord.create_message(ctx.data["channel_id"], {
             "content": "Bot nie ma uprawnień"
         })
+    elif error == "nsfw":
+        return discord.create_message(ctx.data["channel_id"], {
+            "content": "Kanał musi być nsfw"
+        })
