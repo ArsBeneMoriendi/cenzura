@@ -681,3 +681,19 @@ gateway `[]ms`"""
         discord.create_message(ctx.data["channel_id"], None, {
             "file": ("gay.png", open("gay.png", "rb"), "multipart/form-data")
         })
+
+    @gateway.command(description="Wysyła losowego mema z jbzd", usage="meme", category="Fun", _default=True)
+    def meme(ctx):
+        if not functions.has_permission(ctx):
+            return handler.error_handler(ctx, "nopermission", ctx.command)
+
+        channel = discord.get_channel(ctx.data["channel_id"])
+        if not channel["nsfw"]:
+            return handler.error_handler(ctx, "nsfw")
+
+        url = requests.get("https://cenzurabot.pl/api/meme").json()
+        image = requests.get(url["url"]).content
+        
+        discord.create_message(ctx.data["channel_id"], None, {
+            "file": ("meme.png", image, "multipart/form-data")
+        })
