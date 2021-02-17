@@ -45,15 +45,31 @@ def docs():
 
     return flask.render_template("docs.html", categories=categories)
 
-@app.route("/api/meme", methods=["GET"])
-def meme():
-    page = requests.get(f"https://jbzd.com.pl/str/{random.randint(1, 235)}").content
-    soup = BeautifulSoup(page, "html.parser")
+@app.route("/api/memes", methods=["GET"])
+def memes():
+    jbzd_page = requests.get(f"https://jbzd.com.pl/str/{random.randint(1, 235)}").content
+    kwejk_page = requests.get(f"https://kwejk.pl/strona/{random.randint(4, 4000)}").content
 
-    memes = soup.find_all("img", {"class":"article-image"})
-    memes = [meme["src"] for meme in memes]
+    jbzd_soup = BeautifulSoup(jbzd_page, "html.parser")
+    kwejk_soup = BeautifulSoup(kwejk_page, "html.parser")
 
-    return flask.jsonify(url=random.choice(memes))
+    jbzd = jbzd_soup.find_all("img", {"class":"article-image"})
+    jbzd = [meme["src"] for meme in jbzd]
+
+    kwejk = kwejk_soup.find_all("img", {"class":"full-image"})
+    kwejk = [meme["src"] for meme in kwejk]
+    
+    while not kwejk:
+        kwejk_page = requests.get(f"https://kwejk.pl/strona/{random.randint(4, 4000)}").content
+        kwejk_soup = BeautifulSoup(kwejk_page, "html.parser")
+
+        kwejk = kwejk_soup.find_all("img", {"class":"full-image"})
+        kwejk = [meme["src"] for meme in kwejk]
+
+    return flask.jsonify({
+        "jbzd": random.choice(jbzd),
+        "kwejk": random.choice(kwejk)
+    })
 
 @app.route("/sitemap.xml")
 def sitemap():
