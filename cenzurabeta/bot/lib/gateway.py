@@ -186,8 +186,8 @@ def on_message(ws, msg):
                     commands[command]["function"](ctx)
                     open(config.folder + "logs.txt", "a").write(f"{msg['t']} : {msg['d']['author']['username']} executed {command} command\n")
                 except Exception:
-                    handler.error_handler(ctx, "error", traceback.format_exc())
-                    open(config.folder + "logs.txt", "a").write(f"{msg['t']} : {msg['d']['author']['username']} executed {command} command : ERROR: {traceback.format_exc()}\n")
+                    handler.error_handler(ctx, "error", traceback.format_exc().splitlines()[-1])
+                    open(config.folder + "logs.txt", "a").write(f"{msg['t']} : {msg['d']['author']['username']} executed {command} command : ERROR: {traceback.format_exc().splitlines()[-1]}\n")
             else:
                 handler.error_handler(ctx, "commandnotfound")
         else:
