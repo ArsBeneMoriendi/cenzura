@@ -42,7 +42,7 @@ def load(gateway, discord):
         try:
             result = eval("elo()", env)
         except Exception:
-            result = traceback.format_exc()
+            result = traceback.format_exc().splitlines()[-1]
 
         response = discord.create_message(ctx.data["channel_id"], {
             "content": f"```{result}```"
@@ -62,7 +62,7 @@ def load(gateway, discord):
             gateway.register_module(ctx.args[0], gateway, discord)
             result = f"Przeładowano `{ctx.args[0]}`"
         except:
-            result = "```" + traceback.format_exc() + "```"
+            result = "```" + traceback.format_exc().splitlines()[-1] + "```"
 
         discord.create_message(ctx.data["channel_id"], {
             "content": result
