@@ -1,14 +1,28 @@
 import flask
 import json
 import os
+from bs4 import BeautifulSoup
+import random
+import requests
 
 url = "https://discord.com/api/v8"
-
 app = flask.Flask(__name__)
 
 @app.route("/", methods=["GET"])
 def main():
     return flask.render_template("index.html")
+
+@app.route("/discord", methods=["GET"])
+def discord():
+    return flask.redirect("https://discord.gg/kJuGceekR5")
+
+@app.route("/invite", methods=["GET"])
+def invite():
+    return flask.redirect("https://discord.com/api/oauth2/authorize?client_id=705552952600952960&permissions=268561494&scope=bot")
+
+@app.route("/sourcecode", methods=["GET"])
+def sourcecode():
+    return flask.redirect("https://github.com/CZUBIX/cenzura")
 
 @app.route("/docs", methods=["GET"])
 def docs():
@@ -31,9 +45,23 @@ def docs():
 
     return flask.render_template("docs.html", categories=categories)
 
+@app.route("/api/meme", methods=["GET"])
+def meme():
+    page = requests.get(f"https://jbzd.com.pl/str/{random.randint(1, 235)}").content
+    soup = BeautifulSoup(page, "html.parser")
+
+    memes = soup.find_all("img", {"class":"article-image"})
+    memes = [meme["src"] for meme in memes]
+
+    return flask.jsonify(url=random.choice(memes))
+
 @app.route("/sitemap.xml")
 def sitemap():
     return flask.send_from_directory("./", "sitemap.xml")
+
+@app.route("/robots.txt")
+def robots():
+    return flask.send_from_directory("./", "robots.txt")
 
 @app.context_processor
 def override_url_for():
@@ -43,8 +71,7 @@ def dated_url_for(endpoint, **values):
     if endpoint == "static":
         filename = values.get("filename", None)
         if filename:
-            file_path = os.path.join(app.root_path,
-                                 endpoint, filename)
+            file_path = os.path.join(app.root_path, endpoint, filename)
             values["q"] = int(os.stat(file_path).st_mtime)
 
     return flask.url_for(endpoint, **values)
