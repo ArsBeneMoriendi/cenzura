@@ -47,18 +47,16 @@ def docs():
 
 @app.route("/api/memes", methods=["GET"])
 def memes():
-    jbzd_page = requests.get(f"https://jbzd.com.pl/str/{random.randint(1, 235)}").content
-    kwejk_page = requests.get(f"https://kwejk.pl/strona/{random.randint(4, 4000)}").content
+    jbzd = []
+    kwejk = []
 
-    jbzd_soup = BeautifulSoup(jbzd_page, "html.parser")
-    kwejk_soup = BeautifulSoup(kwejk_page, "html.parser")
+    while not jbzd:
+        jbzd_page = requests.get(f"https://jbzd.com.pl/str/{random.randint(1, 235)}").content
+        jbzd_soup = BeautifulSoup(jbzd_page, "html.parser")
 
-    jbzd = jbzd_soup.find_all("img", {"class":"article-image"})
-    jbzd = [meme["src"] for meme in jbzd]
+        jbzd = jbzd_soup.find_all("img", {"class":"article-image"})
+        jbzd = [meme["src"] for meme in jbzd]
 
-    kwejk = kwejk_soup.find_all("img", {"class":"full-image"})
-    kwejk = [meme["src"] for meme in kwejk]
-    
     while not kwejk:
         kwejk_page = requests.get(f"https://kwejk.pl/strona/{random.randint(4, 4000)}").content
         kwejk_soup = BeautifulSoup(kwejk_page, "html.parser")
