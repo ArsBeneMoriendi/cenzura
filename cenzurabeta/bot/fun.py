@@ -692,8 +692,7 @@ gateway `{}ms`"""
             return handler.error_handler(ctx, "nsfw")
 
         url = requests.get("https://cenzurabot.pl/api/memes").json()
-        image = requests.get(url["jbzd"]).content
         
-        discord.create_message(ctx.data["channel_id"], None, {
-            "file": ("meme.png", image, "multipart/form-data")
+        discord.create_message(ctx.data["channel_id"], {
+            "content": url["jbzd"]
         })
