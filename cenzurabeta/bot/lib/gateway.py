@@ -139,9 +139,8 @@ def on_message(ws, msg):
             x_timestamp = datetime.fromtimestamp(x_timestamp)
             i_timestamp = ((int(ctx.ping[channel]["ctx"]["id"]) >> 22) + 1420070400000) / 1000
             i_timestamp = datetime.fromtimestamp(i_timestamp)
-            bot_ping = (x_timestamp - i_timestamp).total_seconds() * 1000
-            ctx.ping[channel]["data"]["content"] = ctx.ping[channel]["data"]["content"].replace("[]", str(gateway_ping))
-            ctx.ping[channel]["data"]["content"] = ctx.ping[channel]["data"]["content"].replace("<>", str(round(bot_ping)))
+            bot_ping = int((x_timestamp - i_timestamp).total_seconds() * 1000)
+            ctx.ping[channel]["data"]["content"] = ctx.ping[channel]["data"]["content"].format(bot_ping, gateway_ping)
             discord.edit_message(channel, x["id"], ctx.ping[channel]["data"])
             channels.append(channel)
 
