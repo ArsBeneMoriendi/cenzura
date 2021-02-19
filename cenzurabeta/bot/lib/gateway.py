@@ -154,45 +154,49 @@ def on_message(ws, msg):
         open(config.folder + "logs.txt", "a").write(f"{msg['t']} : {[x['name'] for x in ctx.guilds if x['id'] == msg['d']['id']][0]} ({msg['d']['id']})\n")
         ctx.guilds.remove(msg["d"])
     elif msg["t"] == "MESSAGE_CREATE":
-        ctx.data = msg["d"]
+        def worker():
+            ctx.data = msg["d"]
 
-        guild = ctx.data["guild_id"]
-        guilds = functions.read_json("guilds")
+            guild = ctx.data["guild_id"]
+            guilds = functions.read_json("guilds")
 
-        if guild in guilds and "prefix" in guilds[guild]:
-            prefix = guilds[guild]["prefix"]
-        else:
-            prefix = config.prefix
-
-        if msg["d"]["content"].startswith(prefix):
-            if "bot" in msg["d"]["author"]:
-                return
-                
-            command = msg["d"]["content"].split(" ")[0][len(prefix)::]
-            if command.startswith("_"):
-                command = command[1:]
-            args = msg["d"]["content"].split(" ")[1:]
-            
-            ctx.command = command
-            ctx.args = args
-            ctx.commands = commands
-            ctx.events = events
-            ctx.default = default
-            ctx.ws = ws
-
-            if command in commands:
-                try:
-                    commands[command]["function"](ctx)
-                    open(config.folder + "logs.txt", "a").write(f"{msg['t']} : {msg['d']['author']['username']} executed {command} command\n")
-                except Exception:
-                    handler.error_handler(ctx, "error", traceback.format_exc().splitlines()[-1])
-                    open(config.folder + "logs.txt", "a").write(f"{msg['t']} : {msg['d']['author']['username']} executed {command} command : ERROR: {traceback.format_exc().splitlines()[-1]}\n")
+            if guild in guilds and "prefix" in guilds[guild]:
+                prefix = guilds[guild]["prefix"]
             else:
-                handler.error_handler(ctx, "commandnotfound")
-        else:
-            if msg["t"] in events:
-                ctx.args = msg["d"]["content"].split(" ")
-                events[msg["t"]](ctx)
+                prefix = config.prefix
+
+            if msg["d"]["content"].startswith(prefix):
+                if "bot" in msg["d"]["author"]:
+                    return
+                    
+                command = msg["d"]["content"].split(" ")[0][len(prefix)::]
+                if command.startswith("_"):
+                    command = command[1:]
+                args = msg["d"]["content"].split(" ")[1:]
+                
+                ctx.command = command
+                ctx.args = args
+                ctx.commands = commands
+                ctx.events = events
+                ctx.default = default
+                ctx.ws = ws
+
+                if command in commands:
+                    try:
+                        commands[command]["function"](ctx)
+                        open(config.folder + "logs.txt", "a").write(f"{msg['t']} : {msg['d']['author']['username']} executed {command} command\n")
+                    except Exception:
+                        handler.error_handler(ctx, "error", traceback.format_exc().splitlines()[-1])
+                        open(config.folder + "logs.txt", "a").write(f"{msg['t']} : {msg['d']['author']['username']} executed {command} command : ERROR: {traceback.format_exc().splitlines()[-1]}\n")
+                else:
+                    handler.error_handler(ctx, "commandnotfound")
+            else:
+                if msg["t"] in events:
+                    ctx.args = msg["d"]["content"].split(" ")
+                    events[msg["t"]](ctx)
+
+        threading.Thread(target=worker).start()
+        
     else:
         if msg["t"] in events:
             ctx.data = msg["d"]
