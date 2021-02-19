@@ -17,11 +17,16 @@ def insert_returns(body):
         insert_returns(body[-1].body)
 
 def load(gateway, discord):
-    def add_to_env(key, value):
-        env[key] = value
+    def _env(option, key, value=None):
+        if option in ("ADD", "REPLACE"):
+            env[key] = value
+        elif option in ("REMOVE", "REM"):
+            del env[key]
+
+        return option, key, value
 
     env = {
-        "add_to_env": add_to_env
+        "env": _env
     }
 
     @gateway.command(description="Wywołuje skrypt", usage="eval (kod)", category="dev", _default=False)
