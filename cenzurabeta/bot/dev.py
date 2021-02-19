@@ -17,6 +17,13 @@ def insert_returns(body):
         insert_returns(body[-1].body)
 
 def load(gateway, discord):
+    def add_to_env(key, value):
+        env[key] = value
+
+    env = {
+        "add_to_env": add_to_env
+    }
+
     @gateway.command(description="Wywołuje skrypt", usage="eval (kod)", category="dev", _default=False)
     def _eval(ctx):
         if not ctx.data["author"]["id"] in config.owners:
@@ -32,11 +39,13 @@ def load(gateway, discord):
 
         insert_returns(body)
 
-        env = {
+        env2 = {
             "ctx": ctx,
             "gateway": gateway,
             "discord": discord
         }
+
+        env.update(env2)
 
         exec(compile(parsed, filename="siema", mode="exec"), env)
 
