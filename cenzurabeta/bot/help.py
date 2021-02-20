@@ -1,10 +1,14 @@
 import functions
 import config
+import handler
 
 def load(gateway, discord):
     @gateway.command(description="Pokazuje pomoc", usage="help", category="help", _default=True)
     def help(ctx):
         if len(ctx.args) == 1:
+            if not ctx.args[0] in ctx.commands:
+                return handler.error_handler(ctx, "commandnotfound")
+                
             return discord.create_message(ctx.data["channel_id"], {
                 "embed": {
                     "title": "POMOC:",
