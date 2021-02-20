@@ -41,3 +41,7 @@ def error_handler(ctx, error, data=None):
         return discord.create_message(ctx.data["channel_id"], {
             "content": "Kanał musi być nsfw"
         })
+    elif error == 8:
+        return discord.create_message(ctx.data["channel_id"], {
+            "content": "Wystąpił nieoczekiwany błąd"
+        })
