@@ -57,10 +57,14 @@ def load(gateway, discord):
         if not functions.has_permission(ctx):
             return handler.error_handler(ctx, "nopermission", ctx.command)
 
-        if not len(ctx.args) <= 1 and int(ctx.args[0]) >= 100:
+        try:
+            ctx.args[0] = int(ctx.args[0]) + 1
+        except:
             return handler.error_handler(ctx, "arguments", "clear (ilość wiadomości 1-99) [osoba]")
 
-        ctx.args[0] = int(ctx.args[0]) + 1
+        if not len(ctx.args) <= 1 and int(ctx.args[0]) > 100:
+            return handler.error_handler(ctx, "arguments", "clear (ilość wiadomości 1-99) [osoba]")
+
         messages = list(map(lambda x: x["id"], discord.get_messages(ctx.data["channel_id"], ctx.args[0])))
 
         if len(ctx.data["mentions"]) == 1:
@@ -79,6 +83,9 @@ def load(gateway, discord):
         bulk_delete = discord.bulk_delete_messages(ctx.data["channel_id"], {
             "messages": messages
         })
+
+        if not bulk_delete.status_code == 204:
+            return handler.error_handler(ctx, 8)
 
         discord.create_message(ctx.data["channel_id"], {
             "content": message
