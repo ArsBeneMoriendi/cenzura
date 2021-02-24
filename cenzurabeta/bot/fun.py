@@ -14,6 +14,9 @@ from datetime import datetime
 def load(gateway, discord):
     @gateway.command(description="Pokazuje ping bota", usage="ping", category="Fun", _default=True)
     def ping(ctx):
+        if not functions.has_permission(ctx):
+            return handler.error_handler(ctx, "nopermission", ctx.command)
+            
         ctx.ping[ctx.data["channel_id"]] = {
             "datetime": datetime.now(),
             "ctx": ctx.data,
