@@ -694,7 +694,7 @@ gateway `{}ms`"""
         if not channel["nsfw"]:
             return handler.error_handler(ctx, "nsfw")
 
-        url = requests.get("https://cenzurabot.pl/api/memes/jbzd").json()
+        url = requests.get("http://127.0.0.1:2137/api/memes/jbzd").json()
         
         discord.create_message(ctx.data["channel_id"], {
             "content": url["meme"]
