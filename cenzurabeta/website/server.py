@@ -9,7 +9,7 @@ import cchardet
 
 url = "https://discord.com/api/v8"
 app = flask.Flask(__name__)
-requests_session = requests.Session()
+session = requests.Session()
 
 @app.route("/", methods=["GET"])
 def main():
@@ -48,29 +48,31 @@ def docs():
 
     return flask.render_template("docs.html", categories=categories)
 
-@app.route("/api/memes", methods=["GET"])
-def memes():
-    jbzd = []
-    kwejk = []
+@app.route("/api/memes/jbzd", methods=["GET"])
+def jzbdmemes():
+    memes = []
 
-    while not jbzd:
-        jbzd_page = requests_session.get(f"https://jbzd.com.pl/str/{random.randint(1, 235)}").content
-        jbzd_soup = BeautifulSoup(jbzd_page, "lxml")
+    while not memes:
+        memes_page = session.get(f"https://jbzd.com.pl/str/{random.randint(1, 235)}").content
+        memes_soup = BeautifulSoup(memes_page, "lxml")
 
-        jbzd = jbzd_soup.find_all("img", {"class":"article-image"})
-        jbzd = [meme["src"] for meme in jbzd]
+        memes = memes_soup.find_all("img", {"class":"article-image"})
+        memes = [meme["src"] for meme in memes]
 
-    while not kwejk:
-        kwejk_page = requests_session.get(f"https://kwejk.pl/strona/{random.randint(4, 4000)}").content
-        kwejk_soup = BeautifulSoup(kwejk_page, "lxml")
+    return flask.jsonify(meme=random.choice(memes))
 
-        kwejk = kwejk_soup.find_all("img", {"class":"full-image"})
-        kwejk = [meme["src"] for meme in kwejk]
+@app.route("/api/memes/kwejk", methods=["GET"])
+def kwejkmemes():
+    memes = []
 
-    return flask.jsonify({
-        "jbzd": random.choice(jbzd),
-        "kwejk": random.choice(kwejk)
-    })
+    while not memes:
+        memes_page = session.get(f"https://kwejk.pl/strona/{random.randint(4, 4000)}").content
+        memes_soup = BeautifulSoup(memes_page, "lxml")
+
+        memes = memes_soup.find_all("img", {"class":"full-image"})
+        memes = [meme["src"] for meme in memes]
+
+    return flask.jsonify(meme=random.choice(memes))
 
 @app.route("/sitemap.xml")
 def sitemap():
