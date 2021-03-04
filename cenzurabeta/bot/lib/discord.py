@@ -15,7 +15,7 @@ def dupa(resp, endpoint):
     ratelimit.remove(url + endpoint)
 
 def request(method, endpoint, data=None, files=None):
-    if (url + endpoint) in ratelimit: return print("NIE MOZNA")
+    if (url + endpoint) in ratelimit: return
 
     try:
         if files:
