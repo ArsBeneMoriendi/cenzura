@@ -11,6 +11,7 @@ import handler
 from datetime import datetime
 import traceback
 import importlib
+import requests
 
 gateway = "wss://gateway.discord.gg/?v=6&encoding=json"
 commands = {}
@@ -21,6 +22,7 @@ class ctx:
     running = True
     token = config.token
     bot = discord.get_current_user()
+    requests = requests.Session()
     commands = {}
     events = {}
     default = []

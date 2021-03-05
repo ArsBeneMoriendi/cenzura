@@ -2,7 +2,6 @@ import handler
 import config
 import ast
 import traceback
-import requests
 
 def insert_returns(body):
     if isinstance(body[-1], ast.Expr):
@@ -89,8 +88,8 @@ def load(gateway, discord):
             return handler.error_handler(ctx, "nopermission", ctx.command)
 
         guilds = len(ctx.guilds)
-        requests.post(f"https://top.gg/api/bots/{ctx.bot['id']}/stats", headers={"authorization": config.topgg}, json={"server_count": guilds})
-        requests.post("https://api.dlist.top/v1/bots/stats", headers={"authorization": config.dlist}, json={"servers": guilds, "members": 0})
+        ctx.requests.post(f"https://top.gg/api/bots/{ctx.bot['id']}/stats", headers={"authorization": config.topgg}, json={"server_count": guilds})
+        ctx.requests.post("https://api.dlist.top/v1/bots/stats", headers={"authorization": config.dlist}, json={"servers": guilds, "members": 0})
 
         discord.create_message(ctx.data["channel_id"], {
             "content": "Zaktualizowano statystyki"

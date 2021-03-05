@@ -1,5 +1,4 @@
 import urllib.parse
-import requests
 import random
 import json
 import handler
@@ -118,7 +117,7 @@ gateway `{}ms`"""
         else:
             user = ctx.data["mentions"][0]["id"], ctx.data["mentions"][0]["avatar"]
 
-        image = requests.get(f"https://cdn.discordapp.com/avatars/{user[0]}/{user[1]}.png?size=2048").content
+        image = ctx.requests.get(f"https://cdn.discordapp.com/avatars/{user[0]}/{user[1]}.png?size=2048").content
 
         discord.create_message(ctx.data["channel_id"], None, {
             "file": ("avatar.png", image, "multipart/form-data")
@@ -142,8 +141,8 @@ gateway `{}ms`"""
         else:
             return handler.error_handler(ctx, "arguments", "ship (osoba) [osoba]")
 
-        open("member1.png", "wb").write(requests.get(m_avatar).content)
-        open("member2.png", "wb").write(requests.get(me_avatar).content)
+        open("member1.png", "wb").write(ctx.requests.get(m_avatar).content)
+        open("member2.png", "wb").write(ctx.requests.get(me_avatar).content)
         
         para = Image.open("para.png").convert("RGBA")
         member1 = Image.open("member1.png").convert("RGBA")
@@ -183,7 +182,7 @@ gateway `{}ms`"""
 
         guild = discord.get_guild(ctx.data["guild_id"])
 
-        image = requests.get(f"https://cdn.discordapp.com/icons/{ctx.data['guild_id']}/{guild['icon']}.png?size=2048").content
+        image = ctx.requests.get(f"https://cdn.discordapp.com/icons/{ctx.data['guild_id']}/{guild['icon']}.png?size=2048").content
 
         discord.create_message(ctx.data["channel_id"], None, {
             "file": ("servericon.png", image, "multipart/form-data")
@@ -197,8 +196,8 @@ gateway `{}ms`"""
         if not len(ctx.data["mentions"]) == 1:
             return handler.error_handler(ctx, "arguments", "slap (osoba)")
 
-        image_url = requests.get("https://nekos.life/api/v2/img/slap").json()["url"]
-        image = requests.get(image_url).content
+        image_url = ctx.requests.get("https://nekos.life/api/v2/img/slap").json()["url"]
+        image = ctx.requests.get(image_url).content
 
         discord.create_message(ctx.data["channel_id"], {
             "content": f"**{ctx.data['author']['username']}** uderzył **{ctx.data['mentions'][0]['username']}**!"
@@ -215,8 +214,8 @@ gateway `{}ms`"""
         if not len(ctx.data["mentions"]) == 1:
             return handler.error_handler(ctx, "arguments", "kiss (osoba)")
 
-        image_url = requests.get("https://nekos.life/api/kiss").json()["url"]
-        image = requests.get(image_url).content
+        image_url = ctx.requests.get("https://nekos.life/api/kiss").json()["url"]
+        image = ctx.requests.get(image_url).content
 
         discord.create_message(ctx.data["channel_id"], {
             "content": f"**{ctx.data['author']['username']}** pocałował **{ctx.data['mentions'][0]['username']}**!"
@@ -233,8 +232,8 @@ gateway `{}ms`"""
         if not len(ctx.data["mentions"]) == 1:
             return handler.error_handler(ctx, "arguments", "hug (osoba)")
 
-        image_url = requests.get("https://nekos.life/api/hug").json()["url"]
-        image = requests.get(image_url).content
+        image_url = ctx.requests.get("https://nekos.life/api/hug").json()["url"]
+        image = ctx.requests.get(image_url).content
 
         discord.create_message(ctx.data["channel_id"], {
             "content": f"**{ctx.data['author']['username']}** przytulił **{ctx.data['mentions'][0]['username']}**!"
@@ -248,8 +247,8 @@ gateway `{}ms`"""
         if not functions.has_permission(ctx):
             return handler.error_handler(ctx, "nopermission", ctx.command)
 
-        image_url = requests.get("https://some-random-api.ml/img/cat").json()["link"]
-        image = requests.get(image_url).content
+        image_url = ctx.requests.get("https://some-random-api.ml/img/cat").json()["link"]
+        image = ctx.requests.get(image_url).content
 
         discord.create_message(ctx.data["channel_id"], None, {
             "file": ("cat.png", image, "multipart/form-data")
@@ -260,8 +259,8 @@ gateway `{}ms`"""
         if not functions.has_permission(ctx):
             return handler.error_handler(ctx, "nopermission", ctx.command)
 
-        image_url = requests.get("https://some-random-api.ml/img/dog").json()["link"]
-        image = requests.get(image_url).content
+        image_url = ctx.requests.get("https://some-random-api.ml/img/dog").json()["link"]
+        image = ctx.requests.get(image_url).content
 
         discord.create_message(ctx.data["channel_id"], None, {
             "file": ("dog.png", image, "multipart/form-data")
@@ -272,8 +271,8 @@ gateway `{}ms`"""
         if not functions.has_permission(ctx):
             return handler.error_handler(ctx, "nopermission", ctx.command)
 
-        image_url = requests.get("https://some-random-api.ml/img/panda").json()["link"]
-        image = requests.get(image_url).content
+        image_url = ctx.requests.get("https://some-random-api.ml/img/panda").json()["link"]
+        image = ctx.requests.get(image_url).content
 
         discord.create_message(ctx.data["channel_id"], None, {
             "file": ("panda.png", image, "multipart/form-data")
@@ -318,7 +317,7 @@ gateway `{}ms`"""
 
         ctx.args = ctx.args.replace(" ", "+").replace("ś", "s").replace("ę", "e").replace("ż", "z").replace("ź", "z").replace("ł", "l").replace("ó", "o").replace("ą", "a").replace("ć", "c").replace("Ś", "S").replace("Ę", "E").replace("Ż", "Z").replace("Ź", "Z").replace("Ł", "L").replace("Ó", "O").replace("Ą", "A").replace("Ć", "C")
 
-        image = requests.get(f"https://minecraftskinstealer.com/achievement/{random.randint(1, 40)}/Achievement+Get%21/{ctx.args}").content
+        image = ctx.requests.get(f"https://minecraftskinstealer.com/achievement/{random.randint(1, 40)}/Achievement+Get%21/{ctx.args}").content
 
         discord.create_message(ctx.data["channel_id"], None, {
             "file": ("achievement.png", image, "multipart/form-data")
@@ -588,18 +587,18 @@ gateway `{}ms`"""
 
         if (len(ctx.data["mentions"]) and len(ctx.args)) == 1:
             message_type = "image"
-            content = requests.get(f"https://cdn.discordapp.com/avatars/{ctx.data['mentions'][0]['id']}/{ctx.data['mentions'][0]['avatar']}.png?size=2048").content
+            content = ctx.requests.get(f"https://cdn.discordapp.com/avatars/{ctx.data['mentions'][0]['id']}/{ctx.data['mentions'][0]['avatar']}.png?size=2048").content
             open("image.png", "wb").write(content)
 
         elif len(ctx.data["attachments"]) == 1:
-            req = requests.get(ctx.data["attachments"][0]["url"])
+            req = ctx.requests.get(ctx.data["attachments"][0]["url"])
             message_type = "text"
             if req.headers["content-type"] in formats:
                 message_type = "image"
                 open("image.png", "wb").write(req.content)
 
         elif len(ctx.args) == 1 and ctx.args[0].startswith(("https://", "http://")):
-            req = requests.get(ctx.args[0])
+            req = ctx.requests.get(ctx.args[0])
             message_type = "text"
             if req.headers["content-type"] in formats:
                 message_type = "image"
@@ -610,7 +609,7 @@ gateway `{}ms`"""
 
         elif not ctx.args:
             message_type = "image"
-            content = requests.get(f"https://cdn.discordapp.com/avatars/{ctx.data['author']['id']}/{ctx.data['author']['avatar']}.png?size=2048").content
+            content = ctx.requests.get(f"https://cdn.discordapp.com/avatars/{ctx.data['author']['id']}/{ctx.data['author']['avatar']}.png?size=2048").content
             open("image.png", "wb").write(content)
 
         krzak = Image.open("krzak.png")
@@ -667,7 +666,7 @@ gateway `{}ms`"""
         else:
             user = ctx.data["mentions"][0]["id"], ctx.data["mentions"][0]["avatar"]
 
-        content = requests.get(f"https://cdn.discordapp.com/avatars/{user[0]}/{user[1]}.png?size=2048").content
+        content = ctx.requests.get(f"https://cdn.discordapp.com/avatars/{user[0]}/{user[1]}.png?size=2048").content
         open("image.png", "wb").write(content)
 
         image = Image.open("image.png").convert("RGBA")
@@ -694,7 +693,7 @@ gateway `{}ms`"""
         if not channel["nsfw"]:
             return handler.error_handler(ctx, "nsfw")
 
-        url = requests.get("http://127.0.0.1:2137/api/memes/jbzd").json()
+        url = ctx.requests.get("http://127.0.0.1:2137/api/memes/jbzd").json()
         
         discord.create_message(ctx.data["channel_id"], {
             "content": url["meme"]

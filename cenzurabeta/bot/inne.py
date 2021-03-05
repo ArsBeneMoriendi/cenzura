@@ -1,7 +1,6 @@
 import functions
 import handler
 from PIL import Image, ImageDraw, ImageFont
-import requests
 import re
 
 def load(gateway, discord):
@@ -251,7 +250,7 @@ def load(gateway, discord):
 
                 description = new_description
 
-            avatar = requests.get(f"https://cdn.discordapp.com/avatars/{user['id']}/{user['avatar']}.png?size=512").content
+            avatar = ctx.requests.get(f"https://cdn.discordapp.com/avatars/{user['id']}/{user['avatar']}.png?size=512").content
             open("image.png", "wb").write(avatar)
                     
             image = Image.new("RGBA", (512, 512), (0, 0, 0))
