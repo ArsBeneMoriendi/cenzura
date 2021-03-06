@@ -146,8 +146,7 @@ def on_message(ws, msg):
             discord.edit_message(channel, x["id"], ctx.ping[channel]["data"])
             channels.append(channel)
 
-        for channel in channels:    
-            del ctx.ping[channel]
+        ctx.ping = {}
 
     if msg["t"] == "GUILD_CREATE":
         ctx.guilds.append(msg["d"])
