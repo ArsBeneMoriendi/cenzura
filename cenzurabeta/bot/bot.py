@@ -26,11 +26,13 @@ def status(ws):
         data = {
             "op": 3,
             "d": {
-                "since": 91879201,
-                "activities": [{
-                    "name": random.choice(statuses),
-                    "type": random.randint(1, 5)
-                }],
+                "since": None,
+                "activities": [
+                    {
+                        "name": random.choice(statuses),
+                        "type": random.choice(list(range(1, 4)) + [5])
+                    }
+                ],
                 "status": "dnd",
                 "afk": False
             }
