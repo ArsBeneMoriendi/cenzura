@@ -56,7 +56,7 @@ def jzbdmemes():
         memes_page = session.get(f"https://jbzd.com.pl/str/{random.randint(1, 235)}").content
         memes_soup = BeautifulSoup(memes_page, "lxml")
 
-        memes = memes_soup.find_all("img", {"class":"article-image"})
+        memes = memes_soup.find_all("img", {"class": "article-image"})
         memes = [meme["src"] for meme in memes]
 
     return flask.jsonify(meme=random.choice(memes))
@@ -69,7 +69,20 @@ def kwejkmemes():
         memes_page = session.get(f"https://kwejk.pl/strona/{random.randint(4, 4000)}").content
         memes_soup = BeautifulSoup(memes_page, "lxml")
 
-        memes = memes_soup.find_all("img", {"class":"full-image"})
+        memes = memes_soup.find_all("img", {"class": "full-image"})
+        memes = [meme["src"] for meme in memes]
+
+    return flask.jsonify(meme=random.choice(memes))
+
+@app.route("/api/memes/jeja", methods=["GET"])
+def jejamemes():
+    memes = []
+
+    while not memes:
+        memes_page = session.get(f"https://memy.jeja.pl/nowe,0,0,{random.randint(1, 34414)}.html").content
+        memes_soup = BeautifulSoup(memes_page, "lxml")
+
+        memes = memes_soup.find_all("img", {"class": "ob-left-image"})
         memes = [meme["src"] for meme in memes]
 
     return flask.jsonify(meme=random.choice(memes))
