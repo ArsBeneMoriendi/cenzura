@@ -19,10 +19,11 @@ modules = [
 gateway.register_modules(modules, gateway, discord)
 
 def status(ws):
-    while True:
-        quotes = open("quotes.txt", "r")
-        statuses = quotes.read().splitlines()
+    quotes = open("quotes.txt", "r")
+    statuses = quotes.read().splitlines()
+    quotes.close()
 
+    while True:
         data = {
             "op": 3,
             "d": {
