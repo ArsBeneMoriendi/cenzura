@@ -94,15 +94,3 @@ def load(bot, discord):
         discord.create_message(ctx.data["channel_id"], {
             "content": "Zaktualizowano statystyki"
         })
-
-    @bot.command(description="Zatrzymuje cały proces", usage="stop", category="dev", _default=False)
-    def stop(ctx):
-        if not ctx.data["author"]["id"] in config.owners:
-            return handler.error_handler(ctx, "nopermission", ctx.command)
-
-        discord.create_message(ctx.data["channel_id"], {
-            "content": "Zatrzymywanie bota..."
-        })
-
-        ctx.running = False
-        ctx.ws.close()
