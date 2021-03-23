@@ -1,0 +1,7 @@
+websocket-client
+requests
+psutil
+humanize
+pillow
+pyfiglet
+python-dateutil
