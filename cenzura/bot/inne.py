@@ -280,8 +280,8 @@ def load(bot, discord):
             text2_font = ImageFont.truetype("Poppins-Bold.ttf", 20)
             invoked_font = ImageFont.truetype("Poppins-Bold.ttf", 20)
 
-            draw.text((150, 44), gender, font=gender_font, fill="black")
-            draw.text((149, 45), gender, font=gender_font)
+            draw.text((150, 40), gender, font=gender_font, fill="black")
+            draw.text((149, 41), gender, font=gender_font)
 
             draw.text((150, 54), username, font=username_font, fill="black")
             draw.text((149, 55), username, font=username_font)
