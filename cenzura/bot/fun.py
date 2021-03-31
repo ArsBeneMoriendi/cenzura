@@ -79,7 +79,7 @@ def load(bot, discord):
         "|": "\u200e" * 29,
         " ": "\u200e" * 30
     }
-    
+
     @bot.command(description="Pokazuje ping bota", usage="ping", category="Fun", _default=True)
     def ping(ctx):
         if not functions.has_permission(ctx):
@@ -95,7 +95,7 @@ def load(bot, discord):
 /|   ---------------------  /|\\
 / \\   |                 |   / \\
 ```bot `{}ms`
-bot `{}ms`"""
+gateway `{}ms`"""
             }
         }
 
