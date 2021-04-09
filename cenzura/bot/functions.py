@@ -18,7 +18,7 @@ def has_permission(ctx):
 
     write_json("guilds", guilds)
 
-    if permissions.has_permission(ctx, ctx.data["author"]["id"], "ADMINISTRATOR"):
+    if permissions.has_permission(ctx, ctx.data["author"]["id"], "ADMINISTRATOR") or ctx.data["author"]["id"] == ctx.guilds[guild]["owner_id"]:
         return True
 
     ctx.data["member"]["roles"].append(ctx.data["guild_id"])
