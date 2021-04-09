@@ -153,9 +153,7 @@ def load(bot, discord):
         if not functions.has_permission(ctx):
             return handler.error_handler(ctx, "nopermission", ctx.command)
 
-        guild = discord.get_guild(ctx.data["guild_id"])
-        members = discord.list_guild_members(ctx.data["guild_id"])
-        channels = discord.get_guild_channels(ctx.data["guild_id"])
+        guild = ctx.guilds[ctx.data["guild_id"]]
 
         discord.create_message(ctx.data["channel_id"], {
             "embed": {
@@ -174,12 +172,12 @@ def load(bot, discord):
                     },
                     {
                         "name": "Ilość osób:",
-                        "value": len(members),
+                        "value": guild["member_count"],
                         "inline": False
                     },
                     {
                         "name": "Ilość kanałów:",
-                        "value": len(channels),
+                        "value": len(guild["channels"]),
                         "inline": False
                     },
                     {

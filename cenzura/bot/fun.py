@@ -9,77 +9,9 @@ import functions
 import config
 import time
 from datetime import datetime
+import arrays
 
 def load(bot, discord):
-    _characters = {
-        "a": "\u200b",
-        "b": "\u200b" * 2,
-        "c": "\u200b" * 3,
-        "d": "\u200b" * 4,
-        "e": "\u200b" * 5,
-        "f": "\u200b" * 6,
-        "g": "\u200b" * 7,
-        "h": "\u200b" * 8,
-        "i": "\u200b" * 9,
-        "j": "\u200b" * 10,
-        "k": "\u200b" * 11,
-        "l": "\u200b" * 12,
-        "m": "\u200b" * 13,
-        "n": "\u200b" * 14,
-        "o": "\u200b" * 15,
-        "p": "\u200b" * 16,
-        "q": "\u200b" * 17,
-        "r": "\u200b" * 18,
-        "s": "\u200c",
-        "t": "\u200c" * 2,
-        "u": "\u200c" * 3,
-        "v": "\u200c" * 4,
-        "w": "\u200c" * 5,
-        "x": "\u200c" * 6,
-        "y": "\u200c" * 7,
-        "z": "\u200c" * 8,
-        "1": "\u200d",
-        "2": "\u200d" * 2,
-        "3": "\u200d" * 3,
-        "4": "\u200d" * 4,
-        "5": "\u200d" * 5,
-        "6": "\u200d" * 6,
-        "7": "\u200d" * 7,
-        "8": "\u200d" * 8,
-        "9": "\u200d" * 9,
-        "0": "\u200d" * 10,
-        "!": "\u200e",
-        "@": "\u200e" * 2,
-        "#": "\u200e" * 3,
-        "%": "\u200e" * 4,
-        "^": "\u200e" * 5,
-        "&": "\u200e" * 6,
-        "*": "\u200e" * 7,
-        "(": "\u200e" * 8,
-        ")": "\u200e" * 9,
-        "-": "\u200e" * 10,
-        "_": "\u200e" * 11,
-        "=": "\u200e" * 12,
-        "+": "\u200e" * 13,
-        "[": "\u200e" * 14,
-        "]": "\u200e" * 15,
-        "{": "\u200e" * 16,
-        "}": "\u200e" * 17,
-        ";": "\u200e" * 18,
-        "'": "\u200e" * 19,
-        ":": "\u200e" * 20,
-        "\"": "\u200e" * 21,
-        ",": "\u200e" * 22,
-        ".": "\u200e" * 23,
-        "/": "\u200e" * 24,
-        "<": "\u200e" * 25,
-        ">": "\u200e" * 26,
-        "?": "\u200e" * 27,
-        "\\": "\u200e" * 28,
-        "|": "\u200e" * 29,
-        " ": "\u200e" * 30
-    }
-
     @bot.command(description="Pokazuje ping bota", usage="ping", category="Fun", _default=True)
     def ping(ctx):
         if not functions.has_permission(ctx):
@@ -403,46 +335,6 @@ gateway `{}ms`"""
         elif len(ctx.args) > 100:
             return handler.error_handler(ctx, "toolongtext", 100)
 
-        emotes = {
-            "garfield_e": "800427649214054450",
-            "garfield_z": "800427648898826263",
-            "garfield_d": "800427649226899471",
-            "garfield_r": "800427648681377803",
-            "garfield_v": "800427648454361159",
-            "garfield_c": "800427649037238303",
-            "garfield_9": "800427648500105245",
-            "garfield_l": "800427649239220284",
-            "garfield_8": "800427648332857374",
-            "garfield_2": "800427648378732544",
-            "garfield_t": "800427648563544064",
-            "garfield_u": "800427648664207400",
-            "garfield_1": "800427648316080140",
-            "garfield_3": "800427648437321728",
-            "garfield_4": "800427648119603202",
-            "garfield_h": "800427649175650354",
-            "garfield_g": "800427649171718184",
-            "garfield_f": "800427649214054460",
-            "garfield_b": "800427648861077587",
-            "garfield_a": "800427648983629846",
-            "garfield_7": "800427648332988417",
-            "garfield_6": "800427648446758922",
-            "garfield_5": "800427648429588550",
-            "garfield_i": "800427648810876969",
-            "garfield_j": "800427649222443068",
-            "garfield_k": "800427648861601824",
-            "garfield_m": "800427649225719903",
-            "garfield_n": "800427649235288096",
-            "garfield_o": "800427649263468554",
-            "garfield_p": "800427649012334614",
-            "garfield_q": "800427648672202792",
-            "garfield_s": "800427649180762162",
-            "garfield_w": "800427648626196540",
-            "garfield_x": "800427648463011881",
-            "garfield_y": "800427649381826610",
-            "garfield_0": "800427648508624926",
-            " ": "800433791289917470"
-        }
-
         other = {
             "ą": "a",
             "ś": "s",
@@ -458,15 +350,15 @@ gateway `{}ms`"""
         text = ""
 
         for letter in ctx.args:
-            if ("garfield_" + letter in emotes) or (letter in other):
+            if ("garfield_" + letter in arrays.emotes) or (letter in other):
                 if letter in other:
                     letter = other[letter]
                 letter = "garfield_" + letter
-                text += f"<:{letter}:{emotes[letter]}>"
+                text += f"<:{letter}:{arrays.emotes[letter]}>"
             elif letter in ["`", "\\"]:
                 text += ""
             elif letter == " ":
-                text += f"<:space:{emotes[' ']}>"
+                text += f"<:space:{arrays.emotes[' ']}>"
             else:
                 text += letter
 
@@ -526,8 +418,8 @@ gateway `{}ms`"""
                 ctx.args[1] = ctx.args[1].replace(char, other[char])
 
         for char in ctx.args[1]:
-            if char in _characters:
-                text += _characters[char] + "\u200f"
+            if char in arrays._characters:
+                text += arrays._characters[char] + "\u200f"
 
         text += ctx.args[0][1:]
 
@@ -553,7 +445,7 @@ gateway `{}ms`"""
 
         text = ""
         letter = ""
-        chars = {value:key for key, value in _characters.items()}
+        chars = {value:key for key, value in arrays._characters.items()}
 
         for char in ctx.args:
             if char in chars or char == "\u200f":
@@ -693,7 +585,7 @@ gateway `{}ms`"""
         if not channel["nsfw"]:
             return handler.error_handler(ctx, "nsfw")
 
-        url = ctx.requests.get("http://127.0.0.1:2137/api/memes/jbzd").json()
+        url = ctx.requests.get("https://cenzurabot.pl/api/memes/jbzd").json()
         
         discord.create_message(ctx.data["channel_id"], {
             "content": url["meme"]

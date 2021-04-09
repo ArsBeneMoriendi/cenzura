@@ -21,7 +21,7 @@ class ctx:
     commands = {}
     events = {}
     default = []
-    guilds = []
+    guilds = {}
     ws = None
     bot_start = datetime.now()
     connection_start = datetime
@@ -127,10 +127,10 @@ class Bot:
                 del ctx.ping[channel]
 
         if msg["t"] == "GUILD_CREATE":
-            ctx.guilds.append(msg["d"])
+            ctx.guilds[msg["d"]["id"]] = msg["d"]
 
         elif msg["t"] == "GUILD_DELETE":
-            ctx.guilds.remove(msg["d"])
+            del ctx.guilds[msg["d"]["id"]]
 
         elif msg["t"] == "MESSAGE_CREATE":
             ctx.data = msg["d"]
@@ -167,18 +167,15 @@ class Bot:
                 else:
                     handler.error_handler(ctx, "commandnotfound")
             else:
-                if msg["t"] in ctx.events:
-                    ctx.args = msg["d"]["content"].split(" ")
-                    ctx.events[msg["t"]](ctx)
-        else:
-            if msg["t"] in ctx.events:
-                ctx.data = msg["d"]
-                ctx.events[msg["t"]](ctx)
+                ctx.args = msg["d"]["content"].split(" ")
+
+        if msg["t"] in ctx.events:
+            ctx.data = msg["d"]
+            ctx.events[msg["t"]](ctx)
 
     def on_close(self):
         time.sleep(10)
         ctx.guilds = []
-
         self.ws = websocket.WebSocketApp(url, on_message=self.on_message, on_close=self.on_close)
         ctx.ws = self.ws
         ctx.connection_start = datetime.now()
