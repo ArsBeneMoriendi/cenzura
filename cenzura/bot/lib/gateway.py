@@ -175,7 +175,7 @@ class Bot:
 
     def on_close(self):
         time.sleep(10)
-        ctx.guilds = []
+        ctx.guilds = {}
         self.ws = websocket.WebSocketApp(url, on_message=self.on_message, on_close=self.on_close)
         ctx.ws = self.ws
         ctx.connection_start = datetime.now()
