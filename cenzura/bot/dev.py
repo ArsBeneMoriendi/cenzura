@@ -58,24 +58,13 @@ def load(bot, discord):
         except Exception:
             result = traceback.format_exc().splitlines()[-1]
 
-        pages = []
-        page = ""
+        response = discord.create_message(ctx.data["channel_id"], {
+            "content": f"```{result}```"
+        })
 
-        if len(result) > 1994:
-            for x in result:
-                if len(page) > 1993:
-                    pages.append(page)
-                    page = ""
-
-                page += x
-
-            pages.append(page)
-        else:
-            pages.append(result)
-
-        for page in pages:
+        if not response.status_code == 200:
             discord.create_message(ctx.data["channel_id"], {
-                "content": f"```{page}```"
+                "content": f"```{response.json()}```"
             })
 
     @bot.command(description="Przeładowuje moduł", usage="reload (moduł)", category="dev", _default=False)
