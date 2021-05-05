@@ -1,11 +1,9 @@
 if (typeof window.orientation !== "undefined") {
-    const video = document.getElementById("video");
     const logo = document.getElementById("logo");
     const opis = document.getElementById("opis");
     const title = document.getElementById("title");
     const buttons = document.getElementsByClassName("button");
 
-    video.style.display = "none";
     logo.style.width = "20px";
     logo.style.height = "20px";
     opis.style.fontSize = "14px";
