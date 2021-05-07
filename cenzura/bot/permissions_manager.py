@@ -7,7 +7,7 @@ def load(bot, discord):
     @bot.command(description="Zarządzanie permisjami", usage="pm", category="Zarządzanie permisjami", _default=False)
     def pm(ctx):
         permission = "ADMINISTRATOR"
-        if not permissions.has_permission(ctx, ctx.data["author"]["id"], permission):
+        if not (permissions.has_permission(ctx, ctx.data["author"]["id"], permission) or (ctx.data["author"]["id"] == ctx.guilds[ctx.data["guild_id"]]["owner_id"])):
             return handler.error_handler(ctx, "nopermission", permission)
 
         if not (ctx.args and ctx.data["mention_roles"]):
