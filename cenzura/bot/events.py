@@ -45,12 +45,6 @@ def load(bot, discord):
         if "bot" in ctx.data["author"]:
             return
 
-        text = f"{ctx.data['author']['username']}#{ctx.data['author']['discriminator']}: {ctx.data['content']}\n"
-
-        a = open("logs.txt", "a")
-        a.write(text)
-        a.close()
-
         user = ctx.data["author"]["id"]
         users = functions.read_json("users")
 
