@@ -49,19 +49,7 @@ gateway `{}ms`"""
             return handler.error_handler(ctx, "arguments", "google (zapytanie)")
 
         discord.create_message(ctx.data["channel_id"], {
-            "embed": {
-                "color": 0xe74c3c,
-                "fields": [
-                    {
-                        "name": "Twój wynik wyszukiwania:",
-                        "value": f"[{ctx.args}](https://google.com/search?q={urllib.parse.quote_plus(ctx.args)})",
-                        "inline": False
-                    }
-                ],
-                "footer": {
-                    "text": f"Wywołane przez {ctx.data['author']['id']}"
-                }
-            }
+            "content": f"https://google.com/search?q={urllib.parse.quote_plus(ctx.args)}"
         })
 
     @bot.command(description="Orzeł czy reszka", usage="coinflip", category="Fun", _default=True)
@@ -99,13 +87,7 @@ gateway `{}ms`"""
             return handler.error_handler(ctx, "arguments", "rchoice (a) | (b) | [c] itd.")
 
         discord.create_message(ctx.data["channel_id"], {
-            "embed": {
-                "description": random.choice(ctx.args),
-                "color": 0xe74c3c,
-                "footer": {
-                    "text": f"Wywołane przez {ctx.data['author']['id']}"
-                } 
-            }
+            "content": random.choice(ctx.args)
         })
 
     @bot.command(description="Pokazuje avatar", usage="avatar [osoba]", category="Fun", _default=True)
@@ -424,14 +406,7 @@ gateway `{}ms`"""
         text += ctx.args[0][1:]
 
         discord.create_message(ctx.data["channel_id"], {
-            "embed": {
-                "title": "Skopiuj tekst poniżej i wpisz decode (wklej tu tekst) aby otrzymać ukryty tekst",
-                "description": "```" + text + "```",
-                "color": 0xe74c3c,
-                "footer": {
-                    "text": f"Wywołane przez {ctx.data['author']['id']}"
-                }
-            }
+            "content": "`" + text + "`"
         })
 
     @bot.command(description="Pokazuje ukryty tekst", usage="decode (tekst)", category="Fun", _default=True)
@@ -461,13 +436,7 @@ gateway `{}ms`"""
             })
         
         discord.create_message(ctx.data["channel_id"], {
-            "embed": {
-                "description": "```" + text + "```",
-                "color": 0xe74c3c,
-                "footer": {
-                    "text": f"Wywołane przez {ctx.data['author']['id']}"
-                }
-            }
+            "content": "`" + text + "`"
         })
 
     @bot.command(description="\"nie widać mnie\" mem z poligonu", usage="cantseeme [tekst/osoba/obrazek/url z obrazkiem]", category="Fun", _default=True)

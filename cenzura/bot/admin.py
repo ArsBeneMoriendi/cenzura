@@ -488,10 +488,7 @@ def load(bot, discord):
             "embed": {
                 "title": f"Warny użytkownika {ctx.data['mentions'][0]['username']}:",
                 "description": "\n".join([f"{guilds[guild]['warns'][ctx.data['mentions'][0]['id']].index(i)}. {i}" for i in guilds[guild]["warns"][ctx.data["mentions"][0]["id"]]]),
-                "color": 0xe74c3c,
-                "footer": {
-                    "text": f"Wywołane przez {ctx.data['author']['id']}"
-                }
+                "color": 0xe74c3c
             }
         })
 

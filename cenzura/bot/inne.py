@@ -20,10 +20,7 @@ def load(bot, discord):
             "embed": {
                 "title": "Lista ostatnich usuniętych wiadomości:",
                 "description": "\n".join([f"<#{message['channel_id']}> <@{message['author']['id']}>: {message['content']}" for message in snipe]),
-                "color": 0xe74c3c,
-                "footer": {
-                    "text": f"Wywołane przez {ctx.data['author']['id']}"
-                }
+                "color": 0xe74c3c
             }
         })
 
@@ -68,10 +65,7 @@ def load(bot, discord):
                 "embed": {
                     "title": f"Todo użytkownika {user['username']}:",
                     "description": "\n".join([f"{users[user['id']]['todo'].index(i)}. {i}" for i in users[user["id"]]["todo"]]),
-                    "color": 0xe74c3c,
-                    "footer": {
-                        "text": f"Wywołane przez {ctx.data['author']['id']}"
-                    }
+                    "color": 0xe74c3c
                 }
             })
 
@@ -293,9 +287,6 @@ def load(bot, discord):
             draw.text((40, 215), name, font=text2_font)
             draw.text((275, 215), age, font=text2_font)
             draw.text((40, 318), description, font=text2_font)
-            
-            draw.text((50, image.size[1] - 40), "Wywołane przez " + ctx.data["author"]["id"], font=invoked_font, fill="black")
-            draw.text((49, image.size[1] - 39), "Wywołane przez " + ctx.data["author"]["id"], font=invoked_font)
 
             image.save("profile.png")
 

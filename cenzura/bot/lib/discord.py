@@ -1,7 +1,9 @@
+from . import gateway
 import requests
 import config
 import threading
 import time
+import json
 
 session = requests.Session()
 
@@ -12,7 +14,7 @@ ratelimit = []
 
 def dupa(resp, endpoint):
     time.sleep(resp["retry_after"])
-    ratelimit.remove(url + endpoint)
+    ratelimit.remove(endpoint)
 
 def request(method, endpoint, data=None, files=None):
     if (url + endpoint) in ratelimit: return
@@ -24,7 +26,7 @@ def request(method, endpoint, data=None, files=None):
             resp = session.request(method, url + endpoint, headers=headers, json=data)
 
         if resp.status_code == 429:
-            ratelimit.append(url + endpoint)
+            ratelimit.append(endpoint)
             threading.Thread(target=dupa, args=(resp.json(), endpoint)).start()
         
         return resp
@@ -44,6 +46,13 @@ def get_message(channel, message):
     return request("GET", "/channels/" + channel + "/messages/" + message).json()
 
 def create_message(channel, data, files=None):
+    if data and not files:
+        data["message_reference"] = {
+            "guild_id": gateway.ctx.data["guild_id"],
+            "channel_id": gateway.ctx.data["channel_id"],
+            "message_id": gateway.ctx.data["id"]
+        }
+
     return request("POST", "/channels/" + channel + "/messages", data, files)
 
 def edit_message(channel, message, data):

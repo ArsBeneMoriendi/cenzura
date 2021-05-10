@@ -6,10 +6,7 @@ def error_handler(ctx, error, data=None):
             "embed": {
                 "title": "Wystąpił nieoczekiwany błąd...",
                 "description": "Wejdź na [serwer support](https://discord.gg/kJuGceekR5) i zgłoś go.\n```" + data + "```",
-                "color": 0xe74c3c,
-                "footer": {
-                    "text": f"Wywołane przez {ctx.data['author']['id']}"
-                }
+                "color": 0xe74c3c
             }
         })
 
