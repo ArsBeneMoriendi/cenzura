@@ -47,6 +47,12 @@ def get_message(channel, message):
 
 def create_message(channel, data, files=None, reply=True):
     if reply and data and not files:
+        data["allowed_mentions"] = {
+            "parse": ["users", "roles", "everyone"],
+            "users": [],
+            "replied_user": False
+        }
+
         data["message_reference"] = {
             "guild_id": gateway.ctx.data["guild_id"],
             "channel_id": gateway.ctx.data["channel_id"],
@@ -56,6 +62,12 @@ def create_message(channel, data, files=None, reply=True):
     return request("POST", "/channels/" + channel + "/messages", data, files)
 
 def edit_message(channel, message, data):
+    data["allowed_mentions"] = {
+        "parse": ["users", "roles", "everyone"],
+        "users": [],
+        "replied_user": False
+    }
+
     return request("PATCH", "/channels/" + channel + "/messages/" + message, data)
 
 def delete_message(channel, message):
