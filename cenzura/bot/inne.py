@@ -250,18 +250,15 @@ def load(bot, discord):
             image = Image.new("RGBA", (512, 512), (0, 0, 0))
             color = Image.new("RGBA", (512, 160), tuple(map(lambda x: int(x), color.split(";"))))
             avatar = Image.open("image.png").convert("RGBA")
-            cenzura = Image.open("cenzura.png").convert("RGBA")
             prostokaty = Image.open("prostokaty.png").convert("RGBA")
 
             avatar.thumbnail((125, 125))
-            cenzura.thumbnail((30, 30))
             prostokaty.thumbnail((512, 512))
 
             username = user["username"] + "#" + user["discriminator"]
             image.paste(color, (0, 0), color)
             image.paste(prostokaty, (0, 0), prostokaty)
             image.paste(avatar, (10, 10), avatar)
-            image.paste(cenzura, (10, image.size[1] - 40), cenzura)
 
             size = 50
             for char in username:
@@ -299,7 +296,7 @@ def load(bot, discord):
                 return discord.create_message(ctx.data["channel_id"], {
                     "embed": {
                         "title": "Komendy profile set:",
-                        "description": "> `profile set name (imie)`, `profile set gender (m/k)`, `profile set age (wiek)`, `profile set description (opis)`, `profile set color (hex/rgb)`",
+                        "description": "> `profile set name (imie)`, `profile set gender (m/k)`, `profile set age (wiek)`, `profile set description (opis)`, `profile set color (#hex/rgb)`",
                         "color": 0xe74c3c
                     }
                 })
@@ -387,13 +384,13 @@ def load(bot, discord):
                 return discord.create_message(ctx.data["channel_id"], {
                     "embed": {
                         "title": "Komendy profile set:",
-                        "description": "> `profile set name (imie)`, `profile set gender (m/k)`, `profile set age (wiek)`, `profile set description (opis)`, `profile set color (hex/rgb)`",
+                        "description": "> `profile set name (imie)`, `profile set gender (m/k)`, `profile set age (wiek)`, `profile set description (opis)`, `profile set color (#hex/rgb)`",
                         "color": 0xe74c3c
                     }
                 })
 
         elif ctx.args[0] == "remove":
-            if not len(ctx.args) <= 3:
+            if not ctx.args[1:]:
                 return discord.create_message(ctx.data["channel_id"], {
                     "embed": {
                         "title": "Komendy profile remove:",
