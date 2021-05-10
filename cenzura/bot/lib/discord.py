@@ -45,8 +45,8 @@ def get_messages(channel, limit=100):
 def get_message(channel, message):
     return request("GET", "/channels/" + channel + "/messages/" + message).json()
 
-def create_message(channel, data, files=None):
-    if data and not files:
+def create_message(channel, data, files=None, reply=True):
+    if reply and data and not files:
         data["message_reference"] = {
             "guild_id": gateway.ctx.data["guild_id"],
             "channel_id": gateway.ctx.data["channel_id"],

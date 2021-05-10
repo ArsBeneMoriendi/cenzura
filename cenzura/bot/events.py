@@ -15,7 +15,7 @@ def load(bot, discord):
         if "welcomemsg" in guilds[guild]:
             discord.create_message(guilds[guild]["welcomemsg"]["channel_id"], {
                 "content": guilds[guild]["welcomemsg"]["text"].replace("<>", ctx.data["user"]["username"]).replace("[]", "<@" + ctx.data["user"]["id"] + ">").replace("{}", str(len(discord.list_guild_members(ctx.data["guild_id"]))))
-            })
+            }, None, False)
 
         if "autorole" in guilds[guild]:
             discord.add_guild_member_role(ctx.data["guild_id"], ctx.data["user"]["id"], guilds[guild]["autorole"])
@@ -31,7 +31,7 @@ def load(bot, discord):
         if "leavemsg" in guilds[guild]:
             discord.create_message(guilds[guild]["leavemsg"]["channel_id"], {
                 "content": guilds[guild]["leavemsg"]["text"].replace("<>", ctx.data["user"]["username"]).replace("[]", "<@" + ctx.data["user"]["id"] + ">").replace("{}", str(len(discord.list_guild_members(ctx.data["guild_id"]))))
-            })
+            }, None, False)
 
     @bot.event
     def MESSAGE_CREATE(ctx):
@@ -77,12 +77,12 @@ def load(bot, discord):
 
             return discord.create_message(ctx.data["channel_id"], {
                 "content": f"Mój prefix na tym serwerze to `{prefix}`"
-            })
+            }, None, False)
 
         if guild in guilds and "cmd" in guilds[guild] and ctx.data["content"] in guilds[guild]["cmd"]:
             discord.create_message(ctx.data["channel_id"], {
                 "content": guilds[guild]["cmd"][ctx.data["content"]]["text"].replace("<>", ctx.data["author"]["username"]).replace("[]", "<@" + ctx.data["author"]["id"] + ">")
-            })
+            }, None, False)
 
         if permissions.has_permission(ctx, ctx.data["author"]["id"], "ADMINISTRATOR"):
             return
@@ -98,7 +98,7 @@ def load(bot, discord):
                         if status.status_code == 204:
                             discord.create_message(ctx.data["channel_id"], {
                                 "content": "Na tym serwerze przeklinanie jest wyłączone"
-                            })
+                            }, None, False)
 
                     break
 
@@ -110,7 +110,7 @@ def load(bot, discord):
                     if status.status_code == 204:
                         discord.create_message(ctx.data["channel_id"], {
                             "content": "Na tym serwerze wysyłanie zaproszeń jest wyłączone"
-                        })
+                        }, None, False)
 
                     break
 
