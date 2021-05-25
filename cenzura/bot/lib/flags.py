@@ -8,7 +8,8 @@ flags = {
     "dom balance": 1 << 8,
     "wczesny sympatyk": 1 << 9,
     "bug hunter level 2": 1 << 14,
-    "developer zweryfikowanego bota": 1 << 17
+    "developer zweryfikowanego bota": 1 << 17,
+    "certyfikowany moderator": 1 << 18
 }
 
 def user_flags(_user_flags):
