@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="pl">
+  <head>
+    <title>CENZURA - Bot, który dba o przejrzystość Twoich serwerów.</title>
+    <meta name="description" content="Bot, który dba o przejrzystość Twoich serwerów.">
+    <meta property="og:title" content="CENZURA">
+    <meta name="keywords" content="cenzura, bot, przejrzystość, serwerów">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta property="og:description" content="Bot, który dba o przejrzystość Twoich serwerów.">
+    <meta property="og:image" content="{{ url_for('static', filename='img/logo.png') }}">
+    <meta name="theme-color" content="#e74c3c">
+    
+    <link href="{{ url_for('static', filename='img/logo.png') }}" rel="icon">
+    <link href="{{ url_for('static', filename='img/logo.png') }}" rel="favicon">
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Raleway:300,300i,400,400i,500,500i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
+    <link href="{{ url_for('static', filename='styles/style.css') }}" rel="stylesheet">
+  </head>
+
+  <body>
+    <header id="header">
+      <div>
+        <h1 id="title" class="gradient"><img id="logo" src="{{ url_for('static', filename='img/logo.png') }}" alt="cenzura logo"> CENZURA</h1>
+        <h2 id="opis">Bot, który dba o <span class="gradient">przejrzystość</span> Twoich serwerów.</h2>
+
+        <div class="social-links">
+          <a class="button" href="/invite">Dodaj bota</a>
+          <a class="button" href="/discord">Serwer support</a>
+          <a class="button" href="/sourcecode">Kod bota</a>
+        </div>
+      </div>
+    </header>
+    <script src="{{ url_for('static', filename='js/dzawaskrypt.js') }}"></script>
+  </body>
+</html>
