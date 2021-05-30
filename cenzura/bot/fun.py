@@ -385,11 +385,17 @@ gateway `{}ms`"""
                 results[message_id] += "."
             elif custom_id == "equal":
                 try:
-                    results[message_id] += "=" + str(eval(results[message_id]))
+                    result = eval(results[message_id])
+                    if type(result) == float:
+                        result = round(result, 2)
+                    results[message_id] += "=" + str(result)
                 except:
                     results[message_id] = ""
             elif custom_id == "add":
                 results[message_id] += "+"
+            elif custom_id == "0":
+                if not (results[message_id][0] == "0" and len(results[message_id]) == 1):
+                    results[message_id] += "0"
             else:
                 results[message_id] += custom_id
 
