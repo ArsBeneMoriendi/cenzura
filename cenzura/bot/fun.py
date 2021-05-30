@@ -11,6 +11,9 @@ import time
 from datetime import datetime
 import arrays
 
+interactions = []
+results = {}
+
 def load(bot, discord):
     @bot.command(description="Pokazuje ping bota", usage="ping", category="Fun", _default=True)
     def ping(ctx):
@@ -348,29 +351,225 @@ gateway `{}ms`"""
             "content": text
         })
 
+    @bot.event
+    def INTERACTION_CREATE(ctx):
+        if (ctx.data["member"]["user"]["id"], ctx.data["channel_id"], ctx.data["message"]["id"]) in interactions:
+            if not ctx.data["message"]["id"] in results:
+                results[ctx.data["message"]["id"]] = ""
+
+            custom_id = ctx.data["data"]["custom_id"]
+            message_id = ctx.data["message"]["id"]
+
+            if "=" in results[message_id]:
+                results[message_id] = ""
+
+            if custom_id == "leftbracket":
+                results[message_id] += "("
+            elif custom_id == "rightbracket":
+                results[message_id] += ")"
+            elif custom_id == "power":
+                results[message_id] += "**"
+            elif custom_id == "percent":
+                results[message_id] += "%"
+            elif custom_id == "backspace":
+                results[message_id] = results[message_id][:-1]
+            elif custom_id == "clear":
+                results[message_id] = ""
+            elif custom_id == "divide":
+                results[message_id] += "/"
+            elif custom_id == "multiply":
+                results[message_id] += "*"
+            elif custom_id == "minus":
+                results[message_id] += "-"
+            elif custom_id == "dot":
+                results[message_id] += "."
+            elif custom_id == "equal":
+                try:
+                    results[message_id] += "=" + str(eval(results[message_id]))
+                except:
+                    results[message_id] = ""
+            elif custom_id == "add":
+                results[message_id] += "+"
+            else:
+                results[message_id] += custom_id
+
+            ctx.requests.post(f"https://discord.com/api/v8/interactions/{ctx.data['id']}/{ctx.data['token']}/callback", json={
+                "type": 7,
+                "data": {
+                    "content": f"```{results[message_id] if results[message_id] else '0'}```"
+                }
+            })
+
     @bot.command(description="Kalkulator", usage="calc (działanie matematyczne)", category="Fun", _default=True)
     def calc(ctx):
         if not functions.has_permission(ctx):
             return handler.error_handler(ctx, "nopermission", ctx.command)
 
-        ctx.args = " ".join(ctx.args)
-        allowed = "1234567890+-/*^() "
-
-        if not ctx.args:
-            return handler.error_handler(ctx, "arguments", "calc (działanie matematyczne)")
-
-        for letter in ctx.args:
-            if not letter in allowed:
-                return handler.error_handler(ctx, "arguments", "calc (działanie matematyczne)")
-
-        try:
-            result = eval(ctx.args.replace("^", "**"))
-        except:
-            result = "błąd"
-
-        discord.create_message(ctx.data["channel_id"], {
-            "content": result
+        msg = discord.create_message(ctx.data["channel_id"], {
+            "content": "```0```",
+            "components": [
+                {
+                    "type": 1,
+                    "components": [
+                        {
+                            "type": 2,
+                            "label": "x\u02b8",
+                            "style": 2,
+                            "custom_id": "power"
+                        },
+                        {
+                            "type": 2,
+                            "label": "%",
+                            "style": 2,
+                            "custom_id": "percent"
+                        },
+                        {
+                            "type": 2,
+                            "label": "<-",
+                            "style": 2,
+                            "custom_id": "backspace"
+                        },
+                        {
+                            "type": 2,
+                            "label": "C",
+                            "style": 4,
+                            "custom_id": "clear"
+                        }
+                    ]
+                },
+                {
+                    "type": 1,
+                    "components": [
+                        {
+                            "type": 2,
+                            "label": "7",
+                            "style": 2,
+                            "custom_id": "7"
+                        },
+                        {
+                            "type": 2,
+                            "label": "8",
+                            "style": 2,
+                            "custom_id": "8"
+                        },
+                        {
+                            "type": 2,
+                            "label": "9",
+                            "style": 2,
+                            "custom_id": "9"
+                        },
+                        {
+                            "type": 2,
+                            "label": "/",
+                            "style": 2,
+                            "custom_id": "divide"
+                        },
+                        {
+                            "type": 2,
+                            "label": "(",
+                            "style": 2,
+                            "custom_id": "leftbracket"
+                        }
+                    ]
+                },
+                {
+                    "type": 1,
+                    "components": [
+                        {
+                            "type": 2,
+                            "label": "4",
+                            "style": 2,
+                            "custom_id": "4"
+                        },
+                        {
+                            "type": 2,
+                            "label": "5",
+                            "style": 2,
+                            "custom_id": "5"
+                        },
+                        {
+                            "type": 2,
+                            "label": "6",
+                            "style": 2,
+                            "custom_id": "6"
+                        },
+                        {
+                            "type": 2,
+                            "label": "*",
+                            "style": 2,
+                            "custom_id": "multiply"
+                        },
+                        {
+                            "type": 2,
+                            "label": ")",
+                            "style": 2,
+                            "custom_id": "rightbracket"
+                        }
+                    ]
+                },
+                {
+                    "type": 1,
+                    "components": [
+                        {
+                            "type": 2,
+                            "label": "1",
+                            "style": 2,
+                            "custom_id": "1"
+                        },
+                        {
+                            "type": 2,
+                            "label": "2",
+                            "style": 2,
+                            "custom_id": "2"
+                        },
+                        {
+                            "type": 2,
+                            "label": "3",
+                            "style": 2,
+                            "custom_id": "3"
+                        },
+                        {
+                            "type": 2,
+                            "label": "-",
+                            "style": 2,
+                            "custom_id": "minus"
+                        }
+                    ]
+                },
+                {
+                    "type": 1,
+                    "components": [
+                        {
+                            "type": 2,
+                            "label": "0",
+                            "style": 2,
+                            "custom_id": "0"
+                        },
+                        {
+                            "type": 2,
+                            "label": ".",
+                            "style": 2,
+                            "custom_id": "dot"
+                        },
+                        {
+                            "type": 2,
+                            "label": "=",
+                            "style": 1,
+                            "custom_id": "equal"
+                        },
+                        {
+                            "type": 2,
+                            "label": "+",
+                            "style": 2,
+                            "custom_id": "add"
+                        }
+                    ]
+                }
+            ]
         })
+
+        msg = msg.json()
+        interactions.append((ctx.data["author"]["id"], ctx.data["channel_id"], msg["id"]))
 
     @bot.command(description="Ukrywa tekst w tekście", usage="encode (tekst wyświetlany) | (tekst ukryty)", category="Fun", _default=True)
     def encode(ctx):
