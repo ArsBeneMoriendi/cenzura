@@ -400,7 +400,7 @@ gateway `{}ms`"""
                 }
             })
 
-    @bot.command(description="Kalkulator", usage="calc (działanie matematyczne)", category="Fun", _default=True)
+    @bot.command(description="Kalkulator", usage="calc", category="Fun", _default=True)
     def calc(ctx):
         if not functions.has_permission(ctx):
             return handler.error_handler(ctx, "nopermission", ctx.command)
