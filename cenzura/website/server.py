@@ -16,7 +16,7 @@ def main():
 
 @app.route("/discord", methods=["GET"])
 def discord():
-    return flask.redirect("https://discord.gg/kJuGceekR5")
+    return flask.redirect("https://discord.gg/tDQURnVtGC")
 
 @app.route("/invite", methods=["GET"])
 def invite():
