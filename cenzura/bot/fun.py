@@ -353,7 +353,7 @@ gateway `{}ms`"""
 
     @bot.event
     def INTERACTION_CREATE(ctx):
-        if (ctx.data["member"]["user"]["id"], ctx.data["channel_id"], ctx.data["message"]["id"]) in interactions:
+        if ("calc", ctx.data["member"]["user"]["id"], ctx.data["channel_id"], ctx.data["message"]["id"]) in interactions:
             if not ctx.data["message"]["id"] in results:
                 results[ctx.data["message"]["id"]] = ""
 
@@ -575,7 +575,7 @@ gateway `{}ms`"""
         })
 
         msg = msg.json()
-        interactions.append((ctx.data["author"]["id"], ctx.data["channel_id"], msg["id"]))
+        interactions.append(("calc", ctx.data["author"]["id"], ctx.data["channel_id"], msg["id"]))
 
     @bot.command(description="Ukrywa tekst w tekście", usage="encode (tekst wyświetlany) | (tekst ukryty)", category="Fun", _default=True)
     def encode(ctx):
