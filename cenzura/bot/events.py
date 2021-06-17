@@ -70,8 +70,8 @@ def load(bot, discord):
         }
 
         mentions = [user["id"] for user in ctx.data["mentions"]]
-
-        if ctx.bot["id"] in mentions and len(ctx.args) == 1:
+        
+        if ctx.bot["id"] in mentions and len(ctx.data["content"].split()) == 1:
             guild = ctx.data["guild_id"]
             guilds = functions.read_json("guilds")
 

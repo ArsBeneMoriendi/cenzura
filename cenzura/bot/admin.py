@@ -96,52 +96,67 @@ def load(bot, discord):
         if not functions.has_permission(ctx):
             return handler.error_handler(ctx, "nopermission", ctx.command)
 
-        if not len(ctx.data["mentions"]) == 1:
-            user = discord.get_guild_member(ctx.data["guild_id"], ctx.data["author"]["id"])
-        else:
+        user = None
+        member = True
+
+        if len(ctx.data["mentions"]) == 1:
             user = discord.get_guild_member(ctx.data["guild_id"], ctx.data["mentions"][0]["id"])
+        elif len(ctx.args) == 1:
+            user = discord.get_guild_member(ctx.data["guild_id"], ctx.args[0])
+        
+        if not user or "code" in user:
+            user = discord.get_guild_member(ctx.data["guild_id"], ctx.data["author"]["id"])
             
         user["joined_at"] = user["joined_at"].split("T")
 
         roles = discord.get_guild(ctx.data["guild_id"])["roles"]
         roles = [role["name"] for role in roles if role["id"] in user["roles"]]
+        
+        user_flags = flags.user_flags(user["user"]["public_flags"])
+
+        fields = [
+            {
+                "name": "ID:",
+                "value": user["user"]["id"],
+                "inline": False
+            },
+            {
+                "name": "Nick z tagiem:",
+                "value": user["user"]["username"] + "#" + user["user"]["discriminator"],
+                "inline": False
+            },
+            {
+                "name": "Role:",
+                "value": ", ".join(roles),
+                "inline": False
+            },
+            {
+                "name": "Dołączył na serwer:",
+                "value": user["joined_at"][0] + " " + user["joined_at"][1].split(".")[0],
+                "inline": False
+            },
+            {
+                "name": "Utworzył konto:",
+                "value": str(datetime.fromtimestamp(((int(user["user"]["id"]) >> 22) + 1420070400000) / 1000)).split(".")[0],
+                "inline": False
+            }
+        ]
+
+        if "bot" in user["user"]:
+            fields[-1]["name"] = "Stworzony dnia:"
+
+        if user_flags:
+            fields.append({
+                "name": "Odznaki:",
+                "value": ", ".join(user_flags),
+                "inline": False
+            })
 
         discord.create_message(ctx.data["channel_id"], {
             "embed": {
-                "title": f"Informacje o {user['user']['username']}{' (BOT)' if 'bot' in user['user'] else ''}:",
+                "title": f"Informacje o {user['user']['username']}{' (bot)' if 'bot' in user['user'] else ''}:",
                 "color": 0xe74c3c,
-                "fields": [
-                    {
-                        "name": "ID:",
-                        "value": user["user"]["id"],
-                        "inline": False
-                    },
-                    {
-                        "name": "Nick z tagiem:",
-                        "value": user["user"]["username"] + "#" + user["user"]["discriminator"],
-                        "inline": False
-                    },
-                    {
-                        "name": "Role:",
-                        "value": ", ".join(roles),
-                        "inline": False
-                    },
-                    {
-                        "name": "Dołączył na serwer:",
-                        "value": user["joined_at"][0] + " " + user["joined_at"][1].split(".")[0],
-                        "inline": False
-                    },
-                    {
-                        "name": "Utworzył konto:",
-                        "value": str(datetime.fromtimestamp(((int(ctx.data["author"]["id"]) >> 22) + 1420070400000) / 1000)).split(".")[0],
-                        "inline": False
-                    },
-                    {
-                        "name": "Odznaki:",
-                        "value": ", ".join(flags.user_flags(user["user"]["public_flags"])),
-                        "inline": False
-                    }
-                ],
+                "fields": fields,
                 "thumbnail": {
                     "url": f"http://cdn.discordapp.com/avatars/{user['user']['id']}/{user['user']['avatar']}.png?size=2048"
                 }
