@@ -11,28 +11,33 @@ from datetime import datetime
 import traceback
 import importlib
 import requests
+from . import intents
 
-url = "wss://gateway.discord.gg/?v=6&encoding=json"
+url = "wss://gateway.discord.gg/?v=9&encoding=json"
 
 class ctx:
-    running = True
     bot = discord.get_current_user()
     requests = requests.Session()
-    commands = {}
-    events = {}
-    default = []
-    guilds = {}
-    ws = None
+    data: dict = {}
+    commands: dict = {}
+    events: dict = {}
+    default: list = []
+    guilds: dict = {}
+    ws: websocket.WebSocketApp = None
     bot_start = datetime.now()
     connection_start = datetime
-    ping = {}
+    send = lambda *args, **kwargs: discord.send(ctx.data["channel_id"], *args, **kwargs)
 
 class Bot:
-    def __init__(self, prefix):
+    def __init__(self, prefix, intents):
         ws = websocket.WebSocketApp(url, on_message=self.on_message, on_close=self.on_close)
         self.ws = ws
         self.prefix = prefix
         self.token = None
+        self.intents: int = intents
+        self._heartbeat: threading.Thread = None
+        self.presence: dict = {}
+        self.ready = False
         ctx.ws = ws
         ctx.connection_start = datetime.now()
 
@@ -61,9 +66,38 @@ class Bot:
 
         return _command
 
+    def set_presence(self, name, *, status_type: int = 0, status: str = "online"):
+        self.presence = {
+            "name": name,
+            "status_type": status_type,
+            "status": status
+        }
+
+        data = {
+            "op": 3,
+            "d": {
+                "since": None,
+                "activities": [
+                    {
+                        "name": name,
+                        "type": status_type
+                    }
+                ],
+                "status": status,
+                "afk": False
+            }
+        }
+
+        data = json.dumps(data)
+        self.ws.send(data)
+
     def heartbeat(self):
+        t = threading.currentThread()
+        
         while True:
             time.sleep(41250 / 1000)
+            if t.stop:
+                break
 
             data = {
                 "op": 1,
@@ -71,7 +105,10 @@ class Bot:
             }
 
             data = json.dumps(data)
-            self.ws.send(data)
+            try:
+                self.ws.send(data)
+            except:
+                break
 
     def on_message(self, msg):
         msg = json.loads(msg)
@@ -89,7 +126,7 @@ class Bot:
                 "op": 2,
                 "d": {
                     "token": f"Bot {self.token}",
-                    "intents": 32511,
+                    "intents": self.intents,
                     "properties": {
                         "$os": "linux",
                         "$browser": "cenzuralib",
@@ -101,30 +138,18 @@ class Bot:
             data = json.dumps(data)
             self.ws.send(data)
 
-            threading.Thread(target=self.heartbeat).start()
+            t = threading.Thread(target=self.heartbeat)
+            t.start()
+            self._heartbeat = t
+            self._heartbeat.stop = False
+
+            if self.presence:
+                self.set_presence(**self.presence)
             
-            if "ready" in ctx.events:
+            if "ready" in ctx.events and not self.ready:
                 ctx.data = {"ws": self.ws}
                 ctx.events["ready"](ctx)
-                
-        elif msg["op"] == 11:
-            now = datetime.now()
-            channels = []
-            for channel in ctx.ping:
-                x = discord.create_message(channel, {"content": "obliczanie..."}).json()
-                gateway_ping = now - ctx.ping[channel]["datetime"]
-                gateway_ping = int(gateway_ping.total_seconds() * 1000)
-                x_timestamp = ((int(x["id"]) >> 22) + 1420070400000) / 1000
-                x_timestamp = datetime.fromtimestamp(x_timestamp)
-                i_timestamp = ((int(ctx.ping[channel]["ctx"]["id"]) >> 22) + 1420070400000) / 1000
-                i_timestamp = datetime.fromtimestamp(i_timestamp)
-                bot_ping = int((x_timestamp - i_timestamp).total_seconds() * 1000)
-                ctx.ping[channel]["data"]["content"] = ctx.ping[channel]["data"]["content"].format(bot_ping, gateway_ping)
-                discord.edit_message(channel, x["id"], ctx.ping[channel]["data"])
-                channels.append(channel)
-
-            for channel in channels:    
-                del ctx.ping[channel]
+                self.ready = True
 
         if msg["t"] == "GUILD_CREATE":
             ctx.guilds[msg["d"]["id"]] = msg["d"]
@@ -174,9 +199,11 @@ class Bot:
             ctx.events[msg["t"]](ctx)
 
     def on_close(self):
-        time.sleep(10)
+        time.sleep(5)
         ctx.guilds = {}
         self.ws = websocket.WebSocketApp(url, on_message=self.on_message, on_close=self.on_close)
+        self._heartbeat.stop = True
+        self._heartbeat = None
         ctx.ws = self.ws
         ctx.connection_start = datetime.now()
         self.ws.run_forever()

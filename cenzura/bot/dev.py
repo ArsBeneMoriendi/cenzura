@@ -58,14 +58,10 @@ def load(bot, discord):
         except Exception:
             result = traceback.format_exc().splitlines()[-1]
 
-        response = discord.create_message(ctx.data["channel_id"], {
-            "content": f"```{result}```"
-        })
+        response = ctx.send(result)
 
         if not response.status_code == 200:
-            discord.create_message(ctx.data["channel_id"], {
-                "content": f"```{response.json()}```"
-            })
+            ctx.send(f"```{response.json()}```")
 
     @bot.command(description="Przeładowuje moduł", usage="reload (moduł)", category="dev", _default=False)
     def reload(ctx):
@@ -78,9 +74,7 @@ def load(bot, discord):
         except:
             result = "```" + traceback.format_exc().splitlines()[-1] + "```"
 
-        discord.create_message(ctx.data["channel_id"], {
-            "content": result
-        })
+        ctx.send(result)
 
     @bot.command(description="Aktualizuje statystyki", usage="updatestats", category="dev", _default=False)
     def updatestats(ctx):
@@ -91,6 +85,4 @@ def load(bot, discord):
         ctx.requests.post(f"https://top.gg/api/bots/{ctx.bot['id']}/stats", headers={"authorization": config.topgg}, json={"server_count": guilds})
         ctx.requests.post("https://api.dlist.top/v1/bots/stats", headers={"authorization": config.dlist}, json={"servers": guilds, "members": 0})
 
-        discord.create_message(ctx.data["channel_id"], {
-            "content": "Zaktualizowano statystyki"
-        })
+        ctx.send("Zaktualizowano statystyki")

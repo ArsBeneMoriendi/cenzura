@@ -9,17 +9,15 @@ def load(bot, discord):
             if not ctx.args[0] in ctx.commands:
                 return handler.error_handler(ctx, "commandnotfound")
                 
-            return discord.create_message(ctx.data["channel_id"], {
-                "embed": {
-                    "title": "POMOC:",
-                    "description": f"Opis: `{ctx.commands[ctx.args[0]]['description']}`\nUżycie: `{ctx.commands[ctx.args[0]]['usage']}`",
-                    "color": 0xe74c3c,
-                    "thumbnail": {
-                        "url": f"http://cdn.discordapp.com/avatars/{ctx.bot['id']}/{ctx.bot['avatar']}.png?size=2048"
-                    },
-                    "footer": {
-                        "text": "() - obowiązkowe, [] - opcjonalne"
-                    }
+            return ctx.send(embed = {
+                "title": "POMOC:",
+                "description": f"Opis: `{ctx.commands[ctx.args[0]]['description']}`\nUżycie: `{ctx.commands[ctx.args[0]]['usage']}`",
+                "color": 0xe74c3c,
+                "thumbnail": {
+                    "url": f"http://cdn.discordapp.com/avatars/{ctx.bot['id']}/{ctx.bot['avatar']}.png?size=2048"
+                },
+                "footer": {
+                    "text": "() - obowiązkowe, [] - opcjonalne"
                 }
             })
 
@@ -56,11 +54,9 @@ def load(bot, discord):
                         "inline": False
                     })
 
-        discord.create_message(ctx.data["channel_id"], {
-            "embed": {
-                "title": "POMOC:",
-                "description": f"Prefix na tym serwerze to: `{prefix}`\nWpisz `pomoc [komenda]` by sprawdzić użycie danej komendy",
-                "color": 0xe74c3c,
-                "fields": fields
-            }
+        ctx.send(embed = {
+            "title": "POMOC:",
+            "description": f"Prefix na tym serwerze to: `{prefix}`\nWpisz `pomoc [komenda]` by sprawdzić użycie danej komendy",
+            "color": 0xe74c3c,
+            "fields": fields
         })

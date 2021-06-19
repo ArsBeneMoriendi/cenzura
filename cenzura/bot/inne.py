@@ -10,29 +10,23 @@ def load(bot, discord):
             return handler.error_handler(ctx, "nopermission", ctx.command)
 
         if not hasattr(ctx, "snipe"):
-            return discord.create_message(ctx.data["channel_id"], {
-                "content": "Nie udało sie złapać żadnej usuniętej wiadomości"
-            })
+            return ctx.send("Nie udało sie złapać żadnej usuniętej wiadomości")
 
         snipe = ctx.snipe[ctx.data["guild_id"]] if len(ctx.snipe[ctx.data["guild_id"]]) < 10 else [ctx.snipe[ctx.data["guild_id"]][::-1][_] for _ in range(10)][::-1]
 
-        discord.create_message(ctx.data["channel_id"], {
-            "embed": {
-                "title": "Lista ostatnich usuniętych wiadomości:",
-                "description": "\n".join([f"<#{message['channel_id']}> <@{message['author']['id']}>: {message['content']}" for message in snipe]),
-                "color": 0xe74c3c
-            }
+        ctx.send(embed = {
+            "title": "Lista ostatnich usuniętych wiadomości:",
+            "description": "\n".join([f"<#{message['channel_id']}> <@{message['author']['id']}>: {message['content']}" for message in snipe]),
+            "color": 0xe74c3c
         })
 
     @bot.command(description="Lista komend todo", usage="todo", category="Inne", _default=True)
     def todo(ctx):
         if not ctx.args:
-            return discord.create_message(ctx.data["channel_id"], {
-                "embed": {
-                    "title": "Komendy todo:",
-                    "description": "> `todo add (tekst)`, `todo view [osoba]`, `todo remove (id)`, `todo clear`",
-                    "color": 0xe74c3c
-                }
+            return ctx.send(embed = {
+                "title": "Komendy todo:",
+                "description": "> `todo add (tekst)`, `todo view [osoba]`, `todo remove (id)`, `todo clear`",
+                "color": 0xe74c3c
             })
 
         user = ctx.data["author"]["id"]
@@ -51,22 +45,18 @@ def load(bot, discord):
 
             users[user]["todo"].append(ctx.args)
             
-            discord.create_message(ctx.data["channel_id"], {
-                "content": "Dodano do todo"
-            })
-        
+            ctx.send("Dodano do todo")
+
         elif ctx.args[0] == "view":
             if len(ctx.data["mentions"]) == 1:
                 user = ctx.data["mentions"][0]["id"]
             
             user = discord.get_user(user)
 
-            discord.create_message(ctx.data["channel_id"], {
-                "embed": {
-                    "title": f"Todo użytkownika {user['username']}:",
-                    "description": "\n".join([f"{users[user['id']]['todo'].index(i)}. {i}" for i in users[user["id"]]["todo"]]),
-                    "color": 0xe74c3c
-                }
+            ctx.send(embed = {
+                "title": f"Todo użytkownika {user['username']}:",
+                "description": "\n".join([f"{users[user['id']]['todo'].index(i)}. {i}" for i in users[user["id"]]["todo"]]),
+                "color": 0xe74c3c
             })
 
         elif ctx.args[0] == "remove":
@@ -74,17 +64,11 @@ def load(bot, discord):
                 return handler.error_handler(ctx, "arguments", "todo remove (id)")
 
             del users[user]["todo"][int(ctx.args[1])]
-
-            discord.create_message(ctx.data["channel_id"], {
-                "content": "Usunięto z todo"
-            })
+            ctx.send("Usunięto z todo")
 
         elif ctx.args[0] == "clear":
             del users[user]["todo"]
-
-            discord.create_message(ctx.data["channel_id"], {
-                "content": "Wyczyszczono todo"
-            })
+            ctx.send("Wyczyszczono todo")
 
         functions.write_json("users", users)
 
@@ -100,14 +84,12 @@ def load(bot, discord):
             guilds[guild]["cmd"] = {}
 
         if not ctx.args:
-            return discord.create_message(ctx.data["channel_id"], {
-                "embed": {
-                    "title": "Komendy cmd:",
-                    "description": "> `cmd add (komenda) (tekst)`, `cmd remove (komenda)`, `cmd info (komenda)`, `cmd list`",
-                    "color": 0xe74c3c,
-                    "footer": {
-                        "text": "<> = nazwa użytkownika, [] = wzmianka"
-                    }
+            return ctx.send(embed = {
+                "title": "Komendy cmd:",
+                "description": "> `cmd add (komenda) (tekst)`, `cmd remove (komenda)`, `cmd info (komenda)`, `cmd list`",
+                "color": 0xe74c3c,
+                "footer": {
+                    "text": "<> = nazwa użytkownika, [] = wzmianka"
                 }
             })
 
@@ -119,61 +101,50 @@ def load(bot, discord):
             guilds[guild]["cmd"][ctx.args[1]]["author"] = ctx.data["author"]
             guilds[guild]["cmd"][ctx.args[1]]["text"] = ctx.args[2]
 
-            discord.create_message(ctx.data["channel_id"], {
-                "content": "Dodano komende"
-            })
+            ctx.send("Dodano komende")
 
         elif ctx.args[0] == "remove":
             if not len(ctx.args) == 2:
                 return handler.error_handler(ctx, "arguments", "cmd remove (nazwa komendy)")
 
             del guilds[guild]["cmd"][ctx.args[1]]
-
-            discord.create_message(ctx.data["channel_id"], {
-                "content": "Usunięto komende"
-            })
+            ctx.send("Usunięto komende")
 
         elif ctx.args[0] == "info":
             if not len(ctx.args) == 2:
                 return handler.error_handler(ctx, "arguments", "cmd info (nazwa komendy)")
 
-            discord.create_message(ctx.data["channel_id"], {
-                "embed": {
-                    "title": f"Informacje o {ctx.args[1]}:",
-                    "color": 0xe74c3c,
-                    "fields": [
-                        {
-                            "name": "Autor:",
-                            "value": f"{guilds[guild]['cmd'][ctx.args[1]]['author']['username']}#{guilds[guild]['cmd'][ctx.args[1]]['author']['discriminator']} ({guilds[guild]['cmd'][ctx.args[1]]['author']['id']})",
-                            "inline": False
-                        },
-                        {
-                            "name": "Tekst w komendzie:",
-                            "value": guilds[guild]["cmd"][ctx.args[1]]["text"],
-                            "inline": False
-                        }
-                    ]
-                }
+            ctx.send(embed = {
+                "title": f"Informacje o {ctx.args[1]}:",
+                "color": 0xe74c3c,
+                "fields": [
+                    {
+                        "name": "Autor:",
+                        "value": f"{guilds[guild]['cmd'][ctx.args[1]]['author']['username']}#{guilds[guild]['cmd'][ctx.args[1]]['author']['discriminator']} ({guilds[guild]['cmd'][ctx.args[1]]['author']['id']})",
+                        "inline": False
+                    },
+                    {
+                        "name": "Tekst w komendzie:",
+                        "value": guilds[guild]["cmd"][ctx.args[1]]["text"],
+                        "inline": False
+                    }
+                ]
             })
 
         elif ctx.args[0] == "list":
-            discord.create_message(ctx.data["channel_id"], {
-                "embed": {
-                    "title": f"Lista komend ({len(guilds[guild]['cmd'])}):",
-                    "description": "\n".join([x for x in guilds[guild]["cmd"]]),
-                    "color": 0xe74c3c
-                }
+            ctx.send(embed = {
+                "title": f"Lista komend ({len(guilds[guild]['cmd'])}):",
+                "description": "\n".join([x for x in guilds[guild]["cmd"]]),
+                "color": 0xe74c3c
             })
 
         else:
-            return discord.create_message(ctx.data["channel_id"], {
-                "embed": {
-                    "title": "Komendy cmd:",
-                    "description": "> `cmd add (komenda) (tekst)`, `cmd remove (komenda)`, `cmd info (komenda)`, `cmd list`",
-                    "color": 0xe74c3c,
-                    "footer": {
-                        "text": "<> = nazwa użytkownika, [] = wzmianka"
-                    }
+            return ctx.send(embed = {
+                "title": "Komendy cmd:",
+                "description": "> `cmd add (komenda) (tekst)`, `cmd remove (komenda)`, `cmd info (komenda)`, `cmd list`",
+                "color": 0xe74c3c,
+                "footer": {
+                    "text": "<> = nazwa użytkownika, [] = wzmianka"
                 }
             })
 
@@ -182,12 +153,10 @@ def load(bot, discord):
     @bot.command(description="Profile", usage="profile", category="Inne", _default=True)
     def profile(ctx):
         if not ctx.args:
-            return discord.create_message(ctx.data["channel_id"], {
-                "embed": {
-                    "title": "Komendy profile:",
-                    "description": "> `profile view [osoba]`, `profile set`, `profile remove`",
-                    "color": 0xe74c3c
-                }
+            return ctx.send(embed = {
+                "title": "Komendy profile:",
+                "description": "> `profile view [osoba]`, `profile set`, `profile remove`",
+                "color": 0xe74c3c
             })
 
         user = ctx.data["author"]["id"]
@@ -287,18 +256,14 @@ def load(bot, discord):
 
             image.save("images/profile.png")
 
-            discord.create_message(ctx.data["channel_id"], None, {
-                "file": ("images/profile.png", open("images/profile.png", "rb"), "multipart/form-data")
-            })
+            ctx.send(files=[("profile.png", open("images/profile.png", "rb"))])
         
         elif ctx.args[0] == "set":
             if not ctx.args[1:]:
-                return discord.create_message(ctx.data["channel_id"], {
-                    "embed": {
-                        "title": "Komendy profile set:",
-                        "description": "> `profile set name (imie)`, `profile set gender (m/k)`, `profile set age (wiek)`, `profile set description (opis)`, `profile set color (#hex/rgb)`",
-                        "color": 0xe74c3c
-                    }
+                return ctx.send(embed = {
+                    "title": "Komendy profile set:",
+                    "description": "> `profile set name (imie)`, `profile set gender (m/k)`, `profile set age (wiek)`, `profile set description (opis)`, `profile set color (#hex/rgb)`",
+                    "color": 0xe74c3c
                 })
 
             if ctx.args[1] == "name":
@@ -310,9 +275,7 @@ def load(bot, discord):
 
                 users[user]["profile"]["name"] = ctx.args[2]
 
-                discord.create_message(ctx.data["channel_id"], {
-                    "content": "Ustawiono imie"
-                })
+                ctx.send("Ustawiono imie")
 
             elif ctx.args[1] == "gender":
                 if not len(ctx.args) == 3:
@@ -330,9 +293,7 @@ def load(bot, discord):
                 else:
                     return handler.error_handler(ctx, "arguments", "profile set gender (m/k)")
 
-                discord.create_message(ctx.data["channel_id"], {
-                    "content": "Ustawiono płeć"
-                })
+                ctx.send("Ustawiono płeć")
 
             elif ctx.args[1] == "age":
                 if not len(ctx.args) == 3:
@@ -340,21 +301,15 @@ def load(bot, discord):
 
                 try:
                     if int(ctx.args[2]) > 100:
-                        return discord.create_message(ctx.data["channel_id"], {
-                            "content": "Za dużo"
-                        })
+                        return ctx.send("Za dużo")
                     elif int(ctx.args[2]) < 13:
-                        return discord.create_message(ctx.data["channel_id"], {
-                            "content": "Za mało"
-                        })
+                        return ctx.send("Za mało")
                 except:
                     return handler.error_handler(ctx, "arguments", "profile set age (wiek)")
 
                 users[user]["profile"]["age"] = ctx.args[2]
 
-                discord.create_message(ctx.data["channel_id"], {
-                    "content": "Ustawiono wiek"
-                })
+                ctx.send("Ustawiono wiek")
 
             elif ctx.args[1] == "description":
                 if len(" ".join(ctx.args[2:])) > 150:
@@ -362,9 +317,7 @@ def load(bot, discord):
 
                 users[user]["profile"]["description"] = " ".join(ctx.args[2:])
 
-                discord.create_message(ctx.data["channel_id"], {
-                    "content": "Ustawiono opis"
-                })
+                ctx.send("Ustawiono opis")
 
             elif ctx.args[1] == "color":
                 if re.search(r"^#(?:[0-9a-fA-F]{3}){1,2}$", ctx.args[2]):
@@ -376,80 +329,55 @@ def load(bot, discord):
 
                 users[user]["profile"]["color"] = color
 
-                discord.create_message(ctx.data["channel_id"], {
-                    "content": "Ustawiono kolor"
-                })
+                ctx.send("Ustawiono kolor")
 
             else:
-                return discord.create_message(ctx.data["channel_id"], {
-                    "embed": {
-                        "title": "Komendy profile set:",
-                        "description": "> `profile set name (imie)`, `profile set gender (m/k)`, `profile set age (wiek)`, `profile set description (opis)`, `profile set color (#hex/rgb)`",
-                        "color": 0xe74c3c
-                    }
+                return ctx.send(embed = {
+                    "title": "Komendy profile set:",
+                    "description": "> `profile set name (imie)`, `profile set gender (m/k)`, `profile set age (wiek)`, `profile set description (opis)`, `profile set color (#hex/rgb)`",
+                    "color": 0xe74c3c
                 })
 
         elif ctx.args[0] == "remove":
             if not ctx.args[1:]:
-                return discord.create_message(ctx.data["channel_id"], {
-                    "embed": {
-                        "title": "Komendy profile remove:",
-                        "description": "> `profile remove name`, `profile remove gender`, `profile remove age`, `profile remove description`, `profile remove color`",
-                        "color": 0xe74c3c
-                    }
+                return ctx.send(embed = {
+                    "title": "Komendy profile remove:",
+                    "description": "> `profile remove name`, `profile remove gender`, `profile remove age`, `profile remove description`, `profile remove color`",
+                    "color": 0xe74c3c
                 })
 
             if ctx.args[1] == "name":
                 del users[user]["profile"]["name"]
-
-                discord.create_message(ctx.data["channel_id"], {
-                    "content": "Usunięto imie z twojego profilu"
-                })
+                ctx.send("Usunięto imie z twojego profilu")
 
             elif ctx.args[1] == "gender":
                 del users[user]["profile"]["gender"]
-
-                discord.create_message(ctx.data["channel_id"], {
-                    "content": "Usunięto płeć z twojego profilu"
-                })
+                ctx.send("Usunięto płeć z twojego profilu")
 
             elif ctx.args[1] == "age":
                 del users[user]["profile"]["age"]
-
-                discord.create_message(ctx.data["channel_id"], {
-                    "content": "Usunięto wiek z twojego profilu"
-                })
+                ctx.send("Usunięto wiek z twojego profilu")
 
             elif ctx.args[1] == "description":
                 del users[user]["profile"]["description"]
-
-                discord.create_message(ctx.data["channel_id"], {
-                    "content": "Usunięto opis z twojego profilu"
-                })
+                ctx.send("Usunięto opis z twojego profilu")
 
             elif ctx.args[1] == "color":
                 del users[user]["profile"]["color"]
-
-                discord.create_message(ctx.data["channel_id"], {
-                    "content": "Usunięto kolor z twojego profilu"
-                })
+                ctx.send("Usunięto kolor z twojego profilu")
 
             else:
-                return discord.create_message(ctx.data["channel_id"], {
-                    "embed": {
-                        "title": "Komendy profile remove:",
-                        "description": "> `profile remove name`, `profile remove gender`, `profile remove age`, `profile remove description`, `profile remove color`",
-                        "color": 0xe74c3c
-                    }
+                return ctx.send(embed = {
+                    "title": "Komendy profile remove:",
+                    "description": "> `profile remove name`, `profile remove gender`, `profile remove age`, `profile remove description`, `profile remove color`",
+                    "color": 0xe74c3c
                 })
 
         else:
-            return discord.create_message(ctx.data["channel_id"], {
-                "embed": {
-                    "title": "Komendy profile:",
-                    "description": "> `profile view [osoba]`, `profile set`, `profile remove`",
-                    "color": 0xe74c3c
-                }
+            return ctx.send(embed = {
+                "title": "Komendy profile:",
+                "description": "> `profile view [osoba]`, `profile set`, `profile remove`",
+                "color": 0xe74c3c
             })
 
         functions.write_json("users", users)

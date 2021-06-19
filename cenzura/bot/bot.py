@@ -1,9 +1,9 @@
 from lib import gateway
 from lib import discord
-import json
+from lib import intents
 import config
 
-bot = gateway.Bot(prefix=config.prefix)
+bot = gateway.Bot(prefix=config.prefix, intents=intents.all_intents("GUILD_PRESENCES"))
 
 modules = [
     "events",
@@ -20,24 +20,7 @@ bot.register_modules(modules, bot, discord)
 
 @bot.event
 def ready(ctx):
-    data = {
-        "op": 3,
-        "d": {
-            "since": None,
-            "activities": [
-                {
-                    "name": "\u200b",
-                    "type": 1
-                }
-            ],
-            "status": "dnd",
-            "afk": False
-        }
-    }
-
-    data = json.dumps(data)
-    ctx.ws.send(data)
-
-    print("online")
+    bot.set_presence("\u200b", status="dnd")
+    print("im ready")
 
 bot.run(config.token)

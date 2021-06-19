@@ -7,7 +7,7 @@ import json
 
 session = requests.Session()
 
-url = "https://discord.com/api/v8"
+url = "https://discord.com/api/v9"
 headers = {"authorization": f"Bot {config.token}"}
 
 ratelimit = []
@@ -45,10 +45,12 @@ def get_messages(channel, limit=100):
 def get_message(channel, message):
     return request("GET", "/channels/" + channel + "/messages/" + message).json()
 
-def create_message(channel, data, files=None, reply=True):
-    if reply and data and not files:
+def send(channel, content = None, *, embed: dict = None, other_data: dict = None, files: list = None, reply = True, mentions: list = []):
+    data = {}
+
+    if reply and not files:
         data["allowed_mentions"] = {
-            "parse": ["users", "roles", "everyone"],
+            "parse": mentions,
             "users": [],
             "replied_user": False
         }
@@ -59,14 +61,34 @@ def create_message(channel, data, files=None, reply=True):
             "message_id": gateway.ctx.data["id"]
         }
 
+    if content:
+        data["content"] = content
+
+    if embed:
+        data["embed"] = embed
+    
+    if other_data:
+        data.update(other_data)
+
     return request("POST", "/channels/" + channel + "/messages", data, files)
 
-def edit_message(channel, message, data):
+def edit_message(channel, message, content = None, *, embed: dict = None, other_data: dict = None):
+    data = {}
+
     data["allowed_mentions"] = {
         "parse": ["users", "roles", "everyone"],
         "users": [],
         "replied_user": False
     }
+
+    if content:
+        data["content"] = content
+
+    if embed:
+        data["embed"] = embed
+    
+    if other_data:
+        data.update(other_data)
 
     return request("PATCH", "/channels/" + channel + "/messages/" + message, data)
 

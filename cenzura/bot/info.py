@@ -24,10 +24,8 @@ Procesor: `{psutil.cpu_percent()}%`
 Uptime bota: `{bot_start.days} dni, {bot_start.hours} godzin, {bot_start.minutes} minut, {bot_start.seconds} sekund`
 Uptime połączenia: `{connection_start.days} dni, {connection_start.hours} godzin, {connection_start.minutes} minut, {connection_start.seconds} sekund`"""
 
-        discord.create_message(ctx.data["channel_id"], {
-            "embed": {
-                "title": "Statystyki bota:",
-                "description": description,
-                "color": 0xe74c3c
-            }
+        ctx.send(embed = {
+            "title": "Statystyki bota:",
+            "description": description,
+            "color": 0xe74c3c
         })

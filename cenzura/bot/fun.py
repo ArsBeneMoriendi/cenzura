@@ -15,33 +15,6 @@ interactions = []
 results = {}
 
 def load(bot, discord):
-    @bot.command(description="Pokazuje ping bota", usage="ping", category="Fun", _default=True)
-    def ping(ctx):
-        if not functions.has_permission(ctx):
-            return handler.error_handler(ctx, "nopermission", ctx.command)
-            
-        ctx.ping[ctx.data["channel_id"]] = {
-            "datetime": datetime.now(),
-            "ctx": ctx.data,
-            "data": {
-                "content": """```
-       Ping!       Pong!
- 0 🏓          |             0
-/|   ---------------------  /|\\
-/ \\   |                 |   / \\
-```bot `{}ms`
-gateway `{}ms`"""
-            }
-        }
-
-        data = {
-            "op": 1,
-            "d": 251
-        }
-
-        data = json.dumps(data)
-        ctx.ws.send(data)
-
     @bot.command(description="Wysyła link google", usage="google (zapytanie)", category="Fun", _default=True)
     def google(ctx):
         if not functions.has_permission(ctx):
@@ -51,18 +24,7 @@ gateway `{}ms`"""
         if not ctx.args:
             return handler.error_handler(ctx, "arguments", "google (zapytanie)")
 
-        discord.create_message(ctx.data["channel_id"], {
-            "content": f"https://google.com/search?q={urllib.parse.quote_plus(ctx.args)}"
-        })
-
-    @bot.command(description="Orzeł czy reszka", usage="coinflip", category="Fun", _default=True)
-    def coinflip(ctx):
-        if not functions.has_permission(ctx):
-            return handler.error_handler(ctx, "nopermission", ctx.command)
-
-        discord.create_message(ctx.data["channel_id"], {
-            "content": random.choice(["Orzeł", "Reszka"])
-        })
+        ctx.send(f"https://google.com/search?q={urllib.parse.quote_plus(ctx.args)}")
 
     @bot.command(description="Losuje liczbe", usage="rnumber (od) (do)", category="Fun", _default=True)
     def rnumber(ctx):
@@ -74,9 +36,7 @@ gateway `{}ms`"""
 
         ctx.args = list(map(lambda x: int(x), ctx.args))
 
-        discord.create_message(ctx.data["channel_id"], {
-            "content": random.randint(ctx.args[0], ctx.args[1])
-        })
+        ctx.send(random.randint(ctx.args[0], ctx.args[1]))
 
     @bot.command(description="Losuje tekst z podanych", usage="rchoice (a) | (b) | [c] itd.", category="Fun", _default=True)
     def rchoice(ctx):
@@ -89,9 +49,7 @@ gateway `{}ms`"""
         if not len(ctx.args) >= 2:
             return handler.error_handler(ctx, "arguments", "rchoice (a) | (b) | [c] itd.")
 
-        discord.create_message(ctx.data["channel_id"], {
-            "content": random.choice(ctx.args)
-        })
+        ctx.send(random.choice(ctx.args))
 
     @bot.command(description="Pokazuje avatar", usage="avatar [osoba]", category="Fun", _default=True)
     def avatar(ctx):
@@ -105,9 +63,7 @@ gateway `{}ms`"""
 
         image = ctx.requests.get(f"https://cdn.discordapp.com/avatars/{user[0]}/{user[1]}.png?size=2048").content
 
-        discord.create_message(ctx.data["channel_id"], None, {
-            "file": ("images/avatar.png", image, "multipart/form-data")
-        })
+        ctx.send(files=[("avatar.png", image)])
 
     @bot.command(description="Pokazuje w ilu procentach osoby sie kochają", usage="ship (osoba) [osoba]", category="Fun", _default=True)
     def ship(ctx):
@@ -142,24 +98,7 @@ gateway `{}ms`"""
         
         para.save("images/ship.png")
 
-        discord.create_message(ctx.data["channel_id"], {
-            "content": f"**{m[2]}** + **{me[2]}** = **{m[2][:round(len(m[2]) / 2)].lower()}{me[2][round(len(me[2]) / 2):].lower()}**\nIch miłość jest równa **{random.randint(0, 100)}%**!"
-        },
-        {
-            "file": ("images/ship.png", open("images/ship.png", "rb"), "multipart/form-data")
-        })
-
-    @bot.command(description="Odpowiada na pytanie", usage="8ball (pytanie)", category="Fun", _default=True)
-    def _8ball(ctx):
-        if not functions.has_permission(ctx):
-            return handler.error_handler(ctx, "nopermission", ctx.command)
-
-        if not ctx.args:
-            return handler.error_handler(ctx, "arguments", "8ball (pytanie)")
-
-        discord.create_message(ctx.data["channel_id"], {
-            "content": random.choice("Tak, Nie, Możliwe że tak, Możliwe że nie, Możliwe lecz nie wiem, Raczej tak, Raczej nie, Oczywiście że tak, Oczywiście że nie, Na pewno tak, Na pewno nie, Jeszczee jak, Jak najbardziej".split(", "))
-        })
+        ctx.send(f"**{m[2]}** + **{me[2]}** = **{m[2][:round(len(m[2]) / 2)].lower()}{me[2][round(len(me[2]) / 2):].lower()}**\nIch miłość jest równa **{random.randint(0, 100)}%**!", files=[("ship.png", open("images/ship.png", "rb"))])
 
     @bot.command(description="Pokazuje ikone serwera", usage="servericon", category="Fun", _default=True)
     def servericon(ctx):
@@ -167,12 +106,9 @@ gateway `{}ms`"""
             return handler.error_handler(ctx, "nopermission", ctx.command)
 
         guild = discord.get_guild(ctx.data["guild_id"])
-
         image = ctx.requests.get(f"https://cdn.discordapp.com/icons/{ctx.data['guild_id']}/{guild['icon']}.png?size=2048").content
 
-        discord.create_message(ctx.data["channel_id"], None, {
-            "file": ("images/servericon.png", image, "multipart/form-data")
-        })
+        ctx.send(files=[("servericon.png", image)])
 
     @bot.command(description="Uderza osobe", usage="slap (osoba)", category="Fun", _default=True)
     def slap(ctx):
@@ -185,12 +121,7 @@ gateway `{}ms`"""
         image_url = ctx.requests.get("https://nekos.life/api/v2/img/slap").json()["url"]
         image = ctx.requests.get(image_url).content
 
-        discord.create_message(ctx.data["channel_id"], {
-            "content": f"**{ctx.data['author']['username']}** uderzył **{ctx.data['mentions'][0]['username']}**!"
-        },
-        {
-            "file": ("images/slap.gif", image, "multipart/form-data")
-        })
+        ctx.send(f"**{ctx.data['author']['username']}** uderzył **{ctx.data['mentions'][0]['username']}**!", files=[("slap.gif", image)])
 
     @bot.command(description="Całuje osobe", usage="kiss (osoba)", category="Fun", _default=True)
     def kiss(ctx):
@@ -203,12 +134,7 @@ gateway `{}ms`"""
         image_url = ctx.requests.get("https://nekos.life/api/kiss").json()["url"]
         image = ctx.requests.get(image_url).content
 
-        discord.create_message(ctx.data["channel_id"], {
-            "content": f"**{ctx.data['author']['username']}** pocałował **{ctx.data['mentions'][0]['username']}**!"
-        },
-        {
-            "file": ("images/kiss.gif", image, "multipart/form-data")
-        })
+        ctx.send(f"**{ctx.data['author']['username']}** pocałował **{ctx.data['mentions'][0]['username']}**!", files=[("kiss.gif", image)])
 
     @bot.command(description="Przytula osobe", usage="hug (osoba)", category="Fun", _default=True)
     def hug(ctx):
@@ -221,12 +147,7 @@ gateway `{}ms`"""
         image_url = ctx.requests.get("https://nekos.life/api/hug").json()["url"]
         image = ctx.requests.get(image_url).content
 
-        discord.create_message(ctx.data["channel_id"], {
-            "content": f"**{ctx.data['author']['username']}** przytulił **{ctx.data['mentions'][0]['username']}**!"
-        },
-        {
-            "file": ("images/hug.gif", image, "multipart/form-data")
-        })
+        ctx.send(f"**{ctx.data['author']['username']}** przytulił **{ctx.data['mentions'][0]['username']}**!", files=[("hug.gif", image)])
 
     @bot.command(description="Pokazuje losowe zdjęcie kota", usage="cat", category="Fun", _default=True)
     def cat(ctx):
@@ -236,9 +157,7 @@ gateway `{}ms`"""
         image_url = ctx.requests.get("https://some-random-api.ml/img/cat").json()["link"]
         image = ctx.requests.get(image_url).content
 
-        discord.create_message(ctx.data["channel_id"], None, {
-            "file": ("images/cat.png", image, "multipart/form-data")
-        })
+        ctx.send(files=[("cat.png", image)])
 
     @bot.command(description="Pokazuje losowe zdjęcie psa", usage="dog", category="Fun", _default=True)
     def dog(ctx):
@@ -248,9 +167,7 @@ gateway `{}ms`"""
         image_url = ctx.requests.get("https://some-random-api.ml/img/dog").json()["link"]
         image = ctx.requests.get(image_url).content
 
-        discord.create_message(ctx.data["channel_id"], None, {
-            "file": ("images/dog.png", image, "multipart/form-data")
-        })
+        ctx.send(files=[("dog.png", image)])
 
     @bot.command(description="Pokazuje losowe zdjęcie pandy", usage="panda", category="Fun", _default=True)
     def panda(ctx):
@@ -260,21 +177,17 @@ gateway `{}ms`"""
         image_url = ctx.requests.get("https://some-random-api.ml/img/panda").json()["link"]
         image = ctx.requests.get(image_url).content
 
-        discord.create_message(ctx.data["channel_id"], None, {
-            "file": ("images/panda.png", image, "multipart/form-data")
-        })
+        ctx.send(files=[("panda.png", image)])
 
     @bot.command(description="Generuje tekst w ascii", usage="ascii (tekst)", category="Fun", _default=True)
-    def ascii(ctx):
+    def _ascii(ctx):
         if not functions.has_permission(ctx):
             return handler.error_handler(ctx, "nopermission", ctx.command)
 
         if not ctx.args:
             return handler.error_handler(ctx, "arguments", "ascii (tekst)")
 
-        discord.create_message(ctx.data["channel_id"], {
-            "content": "```" + pyfiglet.Figlet().renderText(" ".join(ctx.args)) + "```"
-        })
+        ctx.send("```" + pyfiglet.Figlet().renderText(" ".join(ctx.args)) + "```")
 
     @bot.command(description="Pokazuje w ilu procentach jest sie gejem", usage="howgay [osoba]", category="Fun", _default=True)
     def howgay(ctx):
@@ -286,9 +199,7 @@ gateway `{}ms`"""
         else:
             user = ctx.data["mentions"][0]["username"]
 
-        discord.create_message(ctx.data["channel_id"], {
-            "content": f"{user} jest gejem w {random.randint(0, 100)}%!"
-        })
+        ctx.send(f"{user} jest gejem w {random.randint(0, 100)}%!")
 
     @bot.command(description="Wysyła obrazek \"Achievement Get!\"", usage="achievement (tekst)", category="Fun", _default=True)
     def achievement(ctx):
@@ -305,9 +216,7 @@ gateway `{}ms`"""
 
         image = ctx.requests.get(f"https://minecraftskinstealer.com/achievement/{random.randint(1, 40)}/Achievement+Get%21/{ctx.args}").content
 
-        discord.create_message(ctx.data["channel_id"], None, {
-            "file": ("images/achievement.png", image, "multipart/form-data")
-        })
+        ctx.send(files=[("achievement.png", image)])
 
     @bot.command(description="Wysyła tekst w emotkach garfield", usage="garfield (tekst)", category="Fun", _default=True)
     def garfield(ctx):
@@ -347,9 +256,7 @@ gateway `{}ms`"""
             else:
                 text += letter
 
-        discord.create_message(ctx.data["channel_id"], {
-            "content": text
-        })
+        ctx.send(text)
 
     @bot.event
     def INTERACTION_CREATE(ctx):
@@ -411,8 +318,7 @@ gateway `{}ms`"""
         if not functions.has_permission(ctx):
             return handler.error_handler(ctx, "nopermission", ctx.command)
 
-        msg = discord.create_message(ctx.data["channel_id"], {
-            "content": "```0```",
+        msg = ctx.send("```0```", other_data = {
             "components": [
                 {
                     "type": 1,
@@ -610,9 +516,7 @@ gateway `{}ms`"""
 
         text += ctx.args[0][1:]
 
-        discord.create_message(ctx.data["channel_id"], {
-            "content": "`" + text + "`"
-        })
+        ctx.send("`" + text + "`")
 
     @bot.command(description="Pokazuje ukryty tekst", usage="decode (tekst)", category="Fun", _default=True)
     def decode(ctx):
@@ -636,13 +540,9 @@ gateway `{}ms`"""
                     letter += char
 
         if not text:
-            return discord.create_message(ctx.data["channel_id"], {
-                "content": "W tej wiadomości nie ma ukrytego tekstu"
-            })
-        
-        discord.create_message(ctx.data["channel_id"], {
-            "content": "`" + text + "`"
-        })
+            return ctx.send("W tej wiadomości nie ma ukrytego tekstu")
+
+        ctx.send("`" + text + "`")
 
     @bot.command(description="\"nie widać mnie\" mem z poligonu", usage="cantseeme [tekst/osoba/obrazek/url z obrazkiem]", category="Fun", _default=True)
     def cantseeme(ctx):
@@ -717,10 +617,8 @@ gateway `{}ms`"""
             krzak.paste(image, center)
             
         krzak.save("images/cantseeme.png")
-
-        discord.create_message(ctx.data["channel_id"], None, {
-            "file": ("images/cantseeme.png", open("images/cantseeme.png", "rb"), "multipart/form-data")
-        })
+        
+        ctx.send(files=[("cantseeme.png", open("images/cantseeme.png", "rb"))])
 
     @bot.command(description="Wysyła zatęczowany avatar", usage="gay [osoba]", category="Fun", _default=True)
     def gay(ctx):
@@ -746,9 +644,7 @@ gateway `{}ms`"""
         avatar = Image.composite(image, lgbt, mask)
         avatar.save("images/gay.png")
 
-        discord.create_message(ctx.data["channel_id"], None, {
-            "file": ("images/gay.png", open("images/gay.png", "rb"), "multipart/form-data")
-        })
+        ctx.send(files=[("gay.png", open("images/gay.png", "rb"))])
 
     @bot.command(description="Wysyła losowego mema z jbzd", usage="meme", category="Fun", _default=True)
     def meme(ctx):
@@ -760,7 +656,4 @@ gateway `{}ms`"""
             return handler.error_handler(ctx, "nsfw")
 
         url = ctx.requests.get("https://cenzurabot.pl/api/memes/jbzd").json()
-        
-        discord.create_message(ctx.data["channel_id"], {
-            "content": url["meme"]
-        })
+        ctx.send(url["meme"])
