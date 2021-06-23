@@ -58,7 +58,7 @@ def load(bot, discord):
         except Exception:
             result = traceback.format_exc().splitlines()[-1]
 
-        response = ctx.send(result)
+        response = ctx.send(f"```{result}```")
 
         if not response.status_code == 200:
             ctx.send(f"```{response.json()}```")
