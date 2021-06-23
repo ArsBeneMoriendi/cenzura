@@ -41,14 +41,14 @@ class Bot:
         ctx.ws = ws
         ctx.connection_start = datetime.now()
 
-    def register_modules(self, modules: list, _gateway, _discord):
+    def register_modules(self, _discord, *modules):
         for module in modules:
-            __import__(module).load(_gateway, _discord)
+            __import__(module).load(self, _discord)
 
-    def register_module(self, module, _gateway, _discord):
+    def register_module(self, module, _discord):
         _module = __import__(module)
         importlib.reload(_module)
-        _module.load(_gateway, _discord)
+        _module.load(self, _discord)
 
     def event(self, func):
         ctx.events[func.__name__] = func
