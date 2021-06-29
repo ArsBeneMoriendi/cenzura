@@ -50,7 +50,7 @@ def load(bot, discord):
 
         fields.append({
                         "name": "\u200b",
-                        "value": f"\[ [Dodaj bota](https://discord.com/api/oauth2/authorize?client_id={ctx.bot['id']}&permissions=268561494&scope=bot) \] \[ [Support](https://discord.gg/tDQURnVtGC) \] \[ [Kod bota](https://github.com/CZUBIX/cenzura) \] \[ [Strona](https://cenzurabot.pl) \]",
+                        "value": f"\[ [Dodaj bota](https://discord.com/api/oauth2/authorize?client_id={ctx.bot['id']}&permissions=268561494&scope=bot) \] \[ [Support](https://discord.gg/tDQURnVtGC) \] \[ [Kod bota](https://github.com/CZUBIX/cenzura) \] \[ [Strona](https://cenzurabot.com) \]",
                         "inline": False
                     })
 
