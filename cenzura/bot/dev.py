@@ -69,7 +69,7 @@ def load(bot, discord):
             return handler.error_handler(ctx, "nopermission", ctx.command)
 
         try:
-            bot.register_module(ctx.args[0], bot, discord)
+            bot.register_module(ctx.args[0], discord)
             result = f"Przeładowano `{ctx.args[0]}`"
         except:
             result = "```" + traceback.format_exc().splitlines()[-1] + "```"
