@@ -1,6 +1,5 @@
 import json
 from lib import permissions
-from datetime import datetime
 
 def read_json(file):
     with open("json/" + file + ".json", "r") as f:
