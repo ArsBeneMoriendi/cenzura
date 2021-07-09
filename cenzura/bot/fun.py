@@ -8,14 +8,13 @@ import pyfiglet
 import functions
 import config
 import time
-from datetime import datetime
 import arrays
 
 interactions = []
 results = {}
 
 def load(bot, discord):
-    @bot.command(description="Wysyła link google", usage="google (zapytanie)", category="Fun", _default=True)
+    @bot.command(description="Wysyła link google", usage="google (zapytanie)", category="Fun", default=True)
     def google(ctx):
         if not functions.has_permission(ctx):
             return handler.error_handler(ctx, "nopermission", ctx.command)
@@ -26,7 +25,7 @@ def load(bot, discord):
 
         ctx.send(f"https://google.com/search?q={urllib.parse.quote_plus(ctx.args)}")
 
-    @bot.command(description="Losuje liczbe", usage="rnumber (od) (do)", category="Fun", _default=True)
+    @bot.command(description="Losuje liczbe", usage="rnumber (od) (do)", category="Fun", default=True)
     def rnumber(ctx):
         if not functions.has_permission(ctx):
             return handler.error_handler(ctx, "nopermission", ctx.command)
@@ -38,7 +37,7 @@ def load(bot, discord):
 
         ctx.send(random.randint(ctx.args[0], ctx.args[1]))
 
-    @bot.command(description="Losuje tekst z podanych", usage="rchoice (a) | (b) | [c] itd.", category="Fun", _default=True)
+    @bot.command(description="Losuje tekst z podanych", usage="rchoice (a) | (b) | [c] itd.", category="Fun", default=True)
     def rchoice(ctx):
         if not functions.has_permission(ctx):
             return handler.error_handler(ctx, "nopermission", ctx.command)
@@ -51,7 +50,7 @@ def load(bot, discord):
 
         ctx.send(random.choice(ctx.args))
 
-    @bot.command(description="Pokazuje avatar", usage="avatar [osoba]", category="Fun", _default=True)
+    @bot.command(description="Pokazuje avatar", usage="avatar [osoba]", category="Fun", default=True)
     def avatar(ctx):
         if not functions.has_permission(ctx):
             return handler.error_handler(ctx, "nopermission", ctx.command)
@@ -65,7 +64,7 @@ def load(bot, discord):
 
         ctx.send(files=[("avatar.png", image)])
 
-    @bot.command(description="Pokazuje w ilu procentach osoby sie kochają", usage="ship (osoba) [osoba]", category="Fun", _default=True)
+    @bot.command(description="Pokazuje w ilu procentach osoby sie kochają", usage="ship (osoba) [osoba]", category="Fun", default=True)
     def ship(ctx):
         if not functions.has_permission(ctx):
             return handler.error_handler(ctx, "nopermission", ctx.command)
@@ -100,7 +99,7 @@ def load(bot, discord):
 
         ctx.send(f"**{m[2]}** + **{me[2]}** = **{m[2][:round(len(m[2]) / 2)].lower()}{me[2][round(len(me[2]) / 2):].lower()}**\nIch miłość jest równa **{random.randint(0, 100)}%**!", files=[("ship.png", open("images/ship.png", "rb"))])
 
-    @bot.command(description="Pokazuje ikone serwera", usage="servericon", category="Fun", _default=True)
+    @bot.command(description="Pokazuje ikone serwera", usage="servericon", category="Fun", default=True)
     def servericon(ctx):
         if not functions.has_permission(ctx):
             return handler.error_handler(ctx, "nopermission", ctx.command)
@@ -110,7 +109,7 @@ def load(bot, discord):
 
         ctx.send(files=[("servericon.png", image)])
 
-    @bot.command(description="Uderza osobe", usage="slap (osoba)", category="Fun", _default=True)
+    @bot.command(description="Uderza osobe", usage="slap (osoba)", category="Fun", default=True)
     def slap(ctx):
         if not functions.has_permission(ctx):
             return handler.error_handler(ctx, "nopermission", ctx.command)
@@ -123,7 +122,7 @@ def load(bot, discord):
 
         ctx.send(f"**{ctx.data['author']['username']}** uderzył **{ctx.data['mentions'][0]['username']}**!", files=[("slap.gif", image)])
 
-    @bot.command(description="Całuje osobe", usage="kiss (osoba)", category="Fun", _default=True)
+    @bot.command(description="Całuje osobe", usage="kiss (osoba)", category="Fun", default=True)
     def kiss(ctx):
         if not functions.has_permission(ctx):
             return handler.error_handler(ctx, "nopermission", ctx.command)
@@ -136,7 +135,7 @@ def load(bot, discord):
 
         ctx.send(f"**{ctx.data['author']['username']}** pocałował **{ctx.data['mentions'][0]['username']}**!", files=[("kiss.gif", image)])
 
-    @bot.command(description="Przytula osobe", usage="hug (osoba)", category="Fun", _default=True)
+    @bot.command(description="Przytula osobe", usage="hug (osoba)", category="Fun", default=True)
     def hug(ctx):
         if not functions.has_permission(ctx):
             return handler.error_handler(ctx, "nopermission", ctx.command)
@@ -149,7 +148,7 @@ def load(bot, discord):
 
         ctx.send(f"**{ctx.data['author']['username']}** przytulił **{ctx.data['mentions'][0]['username']}**!", files=[("hug.gif", image)])
 
-    @bot.command(description="Pokazuje losowe zdjęcie kota", usage="cat", category="Fun", _default=True)
+    @bot.command(description="Pokazuje losowe zdjęcie kota", usage="cat", category="Fun", default=True)
     def cat(ctx):
         if not functions.has_permission(ctx):
             return handler.error_handler(ctx, "nopermission", ctx.command)
@@ -159,7 +158,7 @@ def load(bot, discord):
 
         ctx.send(files=[("cat.png", image)])
 
-    @bot.command(description="Pokazuje losowe zdjęcie psa", usage="dog", category="Fun", _default=True)
+    @bot.command(description="Pokazuje losowe zdjęcie psa", usage="dog", category="Fun", default=True)
     def dog(ctx):
         if not functions.has_permission(ctx):
             return handler.error_handler(ctx, "nopermission", ctx.command)
@@ -169,7 +168,7 @@ def load(bot, discord):
 
         ctx.send(files=[("dog.png", image)])
 
-    @bot.command(description="Pokazuje losowe zdjęcie pandy", usage="panda", category="Fun", _default=True)
+    @bot.command(description="Pokazuje losowe zdjęcie pandy", usage="panda", category="Fun", default=True)
     def panda(ctx):
         if not functions.has_permission(ctx):
             return handler.error_handler(ctx, "nopermission", ctx.command)
@@ -179,7 +178,7 @@ def load(bot, discord):
 
         ctx.send(files=[("panda.png", image)])
 
-    @bot.command(description="Generuje tekst w ascii", usage="ascii (tekst)", category="Fun", _default=True)
+    @bot.command(description="Generuje tekst w ascii", usage="ascii (tekst)", category="Fun", default=True)
     def _ascii(ctx):
         if not functions.has_permission(ctx):
             return handler.error_handler(ctx, "nopermission", ctx.command)
@@ -189,7 +188,7 @@ def load(bot, discord):
 
         ctx.send("```" + pyfiglet.Figlet().renderText(" ".join(ctx.args)) + "```")
 
-    @bot.command(description="Pokazuje w ilu procentach jest sie gejem", usage="howgay [osoba]", category="Fun", _default=True)
+    @bot.command(description="Pokazuje w ilu procentach jest sie gejem", usage="howgay [osoba]", category="Fun", default=True)
     def howgay(ctx):
         if not functions.has_permission(ctx):
             return handler.error_handler(ctx, "nopermission", ctx.command)
@@ -201,7 +200,7 @@ def load(bot, discord):
 
         ctx.send(f"{user} jest gejem w {random.randint(0, 100)}%!")
 
-    @bot.command(description="Wysyła obrazek \"Achievement Get!\"", usage="achievement (tekst)", category="Fun", _default=True)
+    @bot.command(description="Wysyła obrazek \"Achievement Get!\"", usage="achievement (tekst)", category="Fun", default=True)
     def achievement(ctx):
         if not functions.has_permission(ctx):
             return handler.error_handler(ctx, "nopermission", ctx.command)
@@ -218,7 +217,7 @@ def load(bot, discord):
 
         ctx.send(files=[("achievement.png", image)])
 
-    @bot.command(description="Wysyła tekst w emotkach garfield", usage="garfield (tekst)", category="Fun", _default=True)
+    @bot.command(description="Wysyła tekst w emotkach garfield", usage="garfield (tekst)", category="Fun", default=True)
     def garfield(ctx):
         if not functions.has_permission(ctx):
             return handler.error_handler(ctx, "nopermission", ctx.command)
@@ -317,7 +316,7 @@ def load(bot, discord):
                 }
             })
 
-    @bot.command(description="Kalkulator", usage="calc", category="Fun", _default=True)
+    @bot.command(description="Kalkulator", usage="calc", category="Fun", default=True)
     def calc(ctx):
         if not functions.has_permission(ctx):
             return handler.error_handler(ctx, "nopermission", ctx.command)
@@ -487,7 +486,7 @@ def load(bot, discord):
         msg = msg.json()
         interactions.append(("calc", ctx.data["author"]["id"], ctx.data["channel_id"], msg["id"]))
 
-    @bot.command(description="Ukrywa tekst w tekście", usage="encode (tekst wyświetlany) | (tekst ukryty)", category="Fun", _default=True)
+    @bot.command(description="Ukrywa tekst w tekście", usage="encode (tekst wyświetlany) | (tekst ukryty)", category="Fun", default=True)
     def encode(ctx):
         if not functions.has_permission(ctx):
             return handler.error_handler(ctx, "nopermission", ctx.command)
@@ -522,7 +521,7 @@ def load(bot, discord):
 
         ctx.send("`" + text + "`")
 
-    @bot.command(description="Pokazuje ukryty tekst", usage="decode (tekst)", category="Fun", _default=True)
+    @bot.command(description="Pokazuje ukryty tekst", usage="decode (tekst)", category="Fun", default=True)
     def decode(ctx):
         if not functions.has_permission(ctx):
             return handler.error_handler(ctx, "nopermission", ctx.command)
@@ -548,7 +547,7 @@ def load(bot, discord):
 
         ctx.send("`" + text + "`")
 
-    @bot.command(description="\"nie widać mnie\" mem z poligonu", usage="cantseeme [tekst/osoba/obrazek/url z obrazkiem]", category="Fun", _default=True)
+    @bot.command(description="\"nie widać mnie\" mem z poligonu", usage="cantseeme [tekst/osoba/obrazek/url z obrazkiem]", category="Fun", default=True)
     def cantseeme(ctx):
         if not functions.has_permission(ctx):
             return handler.error_handler(ctx, "nopermission", ctx.command)
@@ -624,7 +623,7 @@ def load(bot, discord):
         
         ctx.send(files=[("cantseeme.png", open("images/cantseeme.png", "rb"))])
 
-    @bot.command(description="Wysyła zatęczowany avatar", usage="gay [osoba]", category="Fun", _default=True)
+    @bot.command(description="Wysyła zatęczowany avatar", usage="gay [osoba]", category="Fun", default=True)
     def gay(ctx):
         if not functions.has_permission(ctx):
             return handler.error_handler(ctx, "nopermission", ctx.command)
@@ -650,7 +649,7 @@ def load(bot, discord):
 
         ctx.send(files=[("gay.png", open("images/gay.png", "rb"))])
 
-    @bot.command(description="Wysyła losowego mema z jbzd", usage="meme", category="Fun", _default=True)
+    @bot.command(description="Wysyła losowego mema z jbzd", usage="meme", category="Fun", default=True)
     def meme(ctx):
         if not functions.has_permission(ctx):
             return handler.error_handler(ctx, "nopermission", ctx.command)

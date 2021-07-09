@@ -4,6 +4,7 @@ import config
 import threading
 import time
 import json
+from .embed import Embed
 
 session = requests.Session()
 
@@ -45,7 +46,7 @@ def get_messages(channel, limit=100):
 def get_message(channel, message):
     return request("GET", "/channels/" + channel + "/messages/" + message).json()
 
-def send(channel, content = None, *, embed: dict = None, other_data: dict = None, files: list = None, reply = True, mentions: list = []):
+def send(channel, content = None, *, embed: Embed = None, other_data: dict = None, files: list = None, reply = True, mentions: list = []):
     data = {}
 
     if reply and not files:
@@ -65,14 +66,14 @@ def send(channel, content = None, *, embed: dict = None, other_data: dict = None
         data["content"] = content
 
     if embed:
-        data["embed"] = embed
+        data["embed"] = embed.__dict__
     
     if other_data:
         data.update(other_data)
 
     return request("POST", "/channels/" + channel + "/messages", data, files)
 
-def edit_message(channel, message, content = None, *, embed: dict = None, other_data: dict = None):
+def edit_message(channel, message, content = None, *, embed: Embed = None, other_data: dict = None):
     data = {}
 
     data["allowed_mentions"] = {
@@ -85,7 +86,7 @@ def edit_message(channel, message, content = None, *, embed: dict = None, other_
         data["content"] = content
 
     if embed:
-        data["embed"] = embed
+        data["embed"] = embed.__dict__
     
     if other_data:
         data.update(other_data)

@@ -2,20 +2,18 @@ from lib import permissions
 import handler
 import json
 import functions
+from lib.embed import Embed
 
 def load(bot, discord):
-    @bot.command(description="Zarządzanie permisjami", usage="pm", category="Zarządzanie permisjami", _default=False)
+    @bot.command(description="Zarządzanie permisjami", usage="pm", category="Zarządzanie permisjami")
     def pm(ctx):
         permission = "ADMINISTRATOR"
         if not (permissions.has_permission(ctx, ctx.data["author"]["id"], permission) or (ctx.data["author"]["id"] == ctx.guilds[ctx.data["guild_id"]]["owner_id"])):
             return handler.error_handler(ctx, "nopermission", permission)
 
         if not (ctx.args and ctx.data["mention_roles"]):
-            return ctx.send(embed = {
-                "title": "Komendy pm:",
-                "description": "> `pm add (rola) (komenda)`, `pm remove (rola) (komenda)`, `pm delete (rola)`",
-                "color": 0xe74c3c
-            })
+            embed = Embed(title="Komendy pm:", description="> `pm add (rola) (komenda)`, `pm remove (rola) (komenda)`, `pm delete (rola)`", color=0xe74c3c)
+            return ctx.send(embed=embed)
 
         blacklist = ["help", "botstats", "profile", "todo", "eval", "reload"]
 
@@ -53,10 +51,7 @@ def load(bot, discord):
             ctx.send("Usunięto role")
 
         else:
-            return ctx.send(embed = {
-                "title": "Komendy pm:",
-                "description": "> `pm add (rola) (komenda)`, `pm remove (rola) (komenda)`, `pm delete (rola)`",
-                "color": 0xe74c3c
-            })
+            embed = Embed(title="Komendy pm:", description="> `pm add (rola) (komenda)`, `pm remove (rola) (komenda)`, `pm delete (rola)`", color=0xe74c3c)
+            return ctx.send(embed=embed)
 
         functions.write_json("guilds", guilds)

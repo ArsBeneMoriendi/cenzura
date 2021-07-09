@@ -61,7 +61,7 @@ class Bot:
             kwargs["function"] = func
             ctx.commands[func.__name__] = kwargs
 
-            if kwargs["_default"]:
+            if "default" in kwargs and kwargs["default"]:
                 ctx.default.append(func.__name__)
 
         return _command

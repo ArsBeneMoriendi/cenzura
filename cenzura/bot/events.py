@@ -98,7 +98,7 @@ def load(bot, discord):
                     break
 
         elif guild in guilds and not "invites" in guilds[guild]:
-            for url in url_blacklist:
+            for url in ["discord.gg/", "discord.com/invite/", "discordapp.com/invite/"]:
                 if url.upper() in ctx.data["content"].upper():
                     status = discord.delete_message(ctx.data["channel_id"], ctx.data["id"])
 

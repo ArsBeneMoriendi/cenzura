@@ -3,10 +3,11 @@ import handler
 import functions
 import lib.permissions as permissions
 import lib.flags as flags
+from lib.embed import Embed
 from datetime import datetime
 
 def load(bot, discord):
-    @bot.command(description="Wywala osobe z serwera", usage="kick (osoba) [powód]", category="Admin", _default=False)
+    @bot.command(description="Wywala osobe z serwera", usage="kick (osoba) [powód]", category="Admin")
     def kick(ctx):
         if not functions.has_permission(ctx):
             return handler.error_handler(ctx, "nopermission", ctx.command)
@@ -27,7 +28,7 @@ def load(bot, discord):
 
         ctx.send(f"Wyrzucono użytkownika `{ctx.data['mentions'][0]['username']}` z powodu `{reason}`")
 
-    @bot.command(description="Banuje osobe na serwerze", usage="ban (osoba) [powód]", category="Admin", _default=False)
+    @bot.command(description="Banuje osobe na serwerze", usage="ban (osoba) [powód]", category="Admin")
     def ban(ctx):
         if not functions.has_permission(ctx):
             return handler.error_handler(ctx, "nopermission", ctx.command)
@@ -48,7 +49,7 @@ def load(bot, discord):
 
         ctx.send(f"Zbanowano użytkownika `{ctx.data['mentions'][0]['username']}` z powodu `{reason}`")
 
-    @bot.command(description="Usuwa wiadomości na kanale", usage="clear (ilość wiadomości 1-99) [osoba]", category="Admin", _default=False)
+    @bot.command(description="Usuwa wiadomości na kanale", usage="clear (ilość wiadomości 1-99) [osoba]", category="Admin")
     def clear(ctx):
         if not functions.has_permission(ctx):
             return handler.error_handler(ctx, "nopermission", ctx.command)
@@ -85,7 +86,7 @@ def load(bot, discord):
 
         ctx.send(message)
 
-    @bot.command(description="Pokazuje informacje o użytkowniku", usage="userinfo [osoba]", category="Admin", _default=True)
+    @bot.command(description="Pokazuje informacje o użytkowniku", usage="userinfo [osoba]", category="Admin", default=True)
     def userinfo(ctx):
         if not functions.has_permission(ctx):
             return handler.error_handler(ctx, "nopermission", ctx.command)
@@ -101,131 +102,58 @@ def load(bot, discord):
         if not user or "code" in user:
             user = discord.get_guild_member(ctx.data["guild_id"], ctx.data["author"]["id"])
             
-        user["joined_at"] = user["joined_at"].split("T")
+        user["joined_at"] = datetime.timestamp(datetime.strptime(user["joined_at"].split(".")[0], "%Y-%m-%dT%H:%M:%S"))
 
         roles = discord.get_guild(ctx.data["guild_id"])["roles"]
         roles = [role["name"] for role in roles if role["id"] in user["roles"]]
         
         user_flags = flags.user_flags(user["user"]["public_flags"])
 
-        fields = [
-            {
-                "name": "ID:",
-                "value": user["user"]["id"],
-                "inline": False
-            },
-            {
-                "name": "Nick z tagiem:",
-                "value": user["user"]["username"] + "#" + user["user"]["discriminator"],
-                "inline": False
-            },
-            {
-                "name": "Role:",
-                "value": ", ".join(roles),
-                "inline": False
-            },
-            {
-                "name": "Dołączył na serwer:",
-                "value": user["joined_at"][0] + " " + user["joined_at"][1].split(".")[0],
-                "inline": False
-            },
-            {
-                "name": "Utworzył konto:",
-                "value": str(datetime.fromtimestamp(((int(user["user"]["id"]) >> 22) + 1420070400000) / 1000)).split(".")[0],
-                "inline": False
-            }
-        ]
+        embed = Embed(title=f"Informacje o {user['user']['username']}{' (bot)' if 'bot' in user['user'] else ''}:", color=0xe74c3c)
+        embed.set_thumbnail(url=f"http://cdn.discordapp.com/avatars/{user['user']['id']}/{user['user']['avatar']}.png?size=2048")
 
-        if "bot" in user["user"]:
-            fields[-1]["name"] = "Stworzony dnia:"
+        embed.add_field(name="ID:", value=user["user"]["id"])
+        embed.add_field(name="Nick z tagiem:", value=user["user"]["username"] + "#" + user["user"]["discriminator"])
+        embed.add_field(name="Role:", value=", ".join(roles))
+        embed.add_field(name="Dołączył na serwer:", value="<t:" + str(user["joined_at"]).split(".")[0] + ":F>")
+        embed.add_field(name="Utworzył konto:" if not "bot" in user["user"] else "Stworzony dnia:", value="<t:" + str(((int(user["user"]["id"]) >> 22) + 1420070400000) / 1000).split(".")[0] + ":F>")
 
         if user_flags:
-            fields.append({
-                "name": "Odznaki:",
-                "value": ", ".join(user_flags),
-                "inline": False
-            })
+            embed.add_field(name="Odznaki:", value=", ".join(user_flags))
 
-        ctx.send(embed = {
-            "title": f"Informacje o {user['user']['username']}{' (bot)' if 'bot' in user['user'] else ''}:",
-            "color": 0xe74c3c,
-            "fields": fields,
-            "thumbnail": {
-                "url": f"http://cdn.discordapp.com/avatars/{user['user']['id']}/{user['user']['avatar']}.png?size=2048"
-            }
-        })
+        ctx.send(embed=embed)
 
-    @bot.command(description="Pokazuje informacje o serwerze", usage="serverinfo", category="Admin", _default=True)
+    @bot.command(description="Pokazuje informacje o serwerze", usage="serverinfo", category="Admin", default=True)
     def serverinfo(ctx):
         if not functions.has_permission(ctx):
             return handler.error_handler(ctx, "nopermission", ctx.command)
 
         guild = ctx.guilds[ctx.data["guild_id"]]
 
-        ctx.send(embed = {
-            "title": f"Informacje o {guild['name']}:",
-            "color": 0xe74c3c,
-            "fields": [
-                {
-                    "name": "Właściciel:",
-                    "value": f"<@{guild['owner_id']}> ({guild['owner_id']})",
-                    "inline": False
-                },
-                {
-                    "name": "ID:",
-                    "value": ctx.data["guild_id"],
-                    "inline": False
-                },
-                {
-                    "name": "Ilość osób:",
-                    "value": guild["member_count"],
-                    "inline": False
-                },
-                {
-                    "name": "Ilość kanałów:",
-                    "value": len(guild["channels"]),
-                    "inline": False
-                },
-                {
-                    "name": "Ilość ról:",
-                    "value": len(guild["roles"]),
-                    "inline": False
-                },
-                {
-                    "name": "Ilość emotek:",
-                    "value": len(guild["emojis"]),
-                    "inline": False
-                },
-                {
-                    "name": "Został stworzony:",
-                    "value": str(datetime.fromtimestamp(((int(ctx.data["guild_id"]) >> 22) + 1420070400000) / 1000)).split(".")[0],
-                    "inline": False
-                },
-                {
-                    "name": "Boosty:",
-                    "value": f"{guild['premium_subscription_count']} boosty / {guild['premium_tier']} poziom",
-                    "inline": False
-                }
-            ],
-            "thumbnail": {
-                "url": f"https://cdn.discordapp.com/icons/{ctx.data['guild_id']}/{guild['icon']}.png?size=2048"
-            }
-        })
+        embed = Embed(title=f"Informacje o {guild['name']}:", color=0xe74c3c)
+        embed.set_thumbnail(url=f"https://cdn.discordapp.com/icons/{ctx.data['guild_id']}/{guild['icon']}.png?size=2048")
 
-    @bot.command(description="Pokazuje pomoc komendy set", usage="set", category="Admin", _default=False)
+        embed.add_field(name="Właściciel:", value=f"<@{guild['owner_id']}> ({guild['owner_id']})")
+        embed.add_field(name="ID:", value=ctx.data["guild_id"])
+        embed.add_field(name="Ilość osób:", value=guild["member_count"])
+        embed.add_field(name="Ilość kanałów:", value=len(guild["channels"]))
+        embed.add_field(name="Ilość ról:", value=len(guild["roles"]))
+        embed.add_field(name="Ilość emotek:", value=len(guild["emojis"]))
+        embed.add_field(name="Został stworzony:", value="<t:" + str(((int(guild["id"]) >> 22) + 1420070400000) / 1000).split(".")[0] + ":F>")
+        embed.add_field(name="Boosty:", value=f"{guild['premium_subscription_count']} boosty / {guild['premium_tier']} poziom")    
+
+        ctx.send(embed=embed)
+
+    @bot.command(description="Pokazuje pomoc komendy set", usage="set", category="Admin")
     def _set(ctx):
         if not functions.has_permission(ctx):
             return handler.error_handler(ctx, "nopermission", ctx.command)
 
         if not ctx.args:
-            return ctx.send(embed = {
-                "title": "Komendy set:",
-                "description": "> `set prefix (prefix)`, `set welcomemsg (kanał) (tekst)`, `set offwelcomemsg`, `set leavemsg (kanał) (tekst)`, `set offleavemsg`, `set autorole (rola)`, `set offautorole`, `set onbadwords`, `set offbadwords`, `set oninvites`, `set offinvites`",
-                "color": 0xe74c3c,
-                "footer": {
-                    "text": "<> = nick osoby, [] = wzmianka, {} = licznik osób"
-                }
-            })
+            embed = Embed(title="Komendy set:", description="> `set prefix (prefix)`, `set welcomemsg (kanał) (tekst)`, `set offwelcomemsg`, `set leavemsg (kanał) (tekst)`, `set offleavemsg`, `set autorole (rola)`, `set offautorole`, `set onbadwords`, `set offbadwords`, `set oninvites`, `set offinvites`", color=0xe74c3c)
+            embed.set_footer(text="<> = nick osoby, [] = wzmianka, {} = licznik osób")
+
+            return ctx.send(embed=embed)
 
         guild = ctx.data["guild_id"]
         guilds = functions.read_json("guilds")
@@ -294,7 +222,7 @@ def load(bot, discord):
 
         functions.write_json("guilds", guilds)
 
-    @bot.command(description="Mutuje użytkownika", usage="mute (osoba)", category="Admin", _default=False)
+    @bot.command(description="Mutuje użytkownika", usage="mute (osoba)", category="Admin")
     def mute(ctx):
         if not functions.has_permission(ctx):
             return handler.error_handler(ctx, "nopermission", ctx.command)
@@ -335,7 +263,7 @@ def load(bot, discord):
 
         ctx.send("Zmutowano użytkownika")
 
-    @bot.command(description="Odmutuje użytkownika", usage="unmute (osoba)", category="Admin", _default=False)
+    @bot.command(description="Odmutuje użytkownika", usage="unmute (osoba)", category="Admin")
     def unmute(ctx):
         if not functions.has_permission(ctx):
             return handler.error_handler(ctx, "nopermission", ctx.command)
@@ -356,7 +284,7 @@ def load(bot, discord):
 
         ctx.send("Odmutowano użytkownika")
 
-    @bot.command(description="Daje ostrzeżenie", usage="warn (osoba) [powód]", category="Admin", _default=False)
+    @bot.command(description="Daje ostrzeżenie", usage="warn (osoba) [powód]", category="Admin")
     def warn(ctx):
         if not functions.has_permission(ctx):
             return handler.error_handler(ctx, "nopermission", ctx.command)
@@ -428,7 +356,7 @@ def load(bot, discord):
 
         functions.write_json("guilds", guilds)
 
-    @bot.command(description="Pokazuje ostrzeżena", usage="warns (osoba)", category="Admin", _default=False)
+    @bot.command(description="Pokazuje ostrzeżena", usage="warns (osoba)", category="Admin")
     def warns(ctx):
         if not functions.has_permission(ctx):
             return handler.error_handler(ctx, "nopermission", ctx.command)
@@ -442,13 +370,10 @@ def load(bot, discord):
         if not "warns" in guilds[guild] or not ctx.data["mentions"][0]["id"] in guilds[guild]["warns"]:
             return handler.error_handler(ctx, "notfound")
 
-        ctx.send(embed = {
-            "title": f"Warny użytkownika {ctx.data['mentions'][0]['username']}:",
-            "description": "\n".join([f"{guilds[guild]['warns'][ctx.data['mentions'][0]['id']].index(i)}. {i}" for i in guilds[guild]["warns"][ctx.data["mentions"][0]["id"]]]),
-            "color": 0xe74c3c
-        })
+        embed = Embed(title=f"Warny użytkownika {ctx.data['mentions'][0]['username']}:", description="\n".join([f"{guilds[guild]['warns'][ctx.data['mentions'][0]['id']].index(i)}. {i}" for i in guilds[guild]["warns"][ctx.data["mentions"][0]["id"]]]), color=0xe74c3c)
+        ctx.send(embed=embed)
 
-    @bot.command(description="Usuwa ostrzeżenie", usage="removewarn (osoba) (id)", category="Admin", _default=False)
+    @bot.command(description="Usuwa ostrzeżenie", usage="removewarn (osoba) (id)", category="Admin")
     def removewarn(ctx):
         if not functions.has_permission(ctx):
             return handler.error_handler(ctx, "nopermission", ctx.command)
@@ -468,7 +393,7 @@ def load(bot, discord):
 
         functions.write_json("guilds", guilds)
 
-    @bot.command(description="Usuwa ostrzeżenie", usage="clearwarns (osoba)", category="Admin", _default=False)
+    @bot.command(description="Usuwa ostrzeżenie", usage="clearwarns (osoba)", category="Admin")
     def clearwarns(ctx):
         if not functions.has_permission(ctx):
             return handler.error_handler(ctx, "nopermission", ctx.command)
@@ -488,7 +413,7 @@ def load(bot, discord):
 
         functions.write_json("guilds", guilds)
 
-    @bot.command(description="Dodaje event na X warnów", usage="warnsevent (kick/ban/mute) (ilość warnów)", category="Admin", _default=False)
+    @bot.command(description="Dodaje event na X warnów", usage="warnsevent (kick/ban/mute) (ilość warnów)", category="Admin")
     def warnsevent(ctx):
         if not functions.has_permission(ctx):
             return handler.error_handler(ctx, "nopermission", ctx.command)
@@ -508,7 +433,7 @@ def load(bot, discord):
 
         functions.write_json("guilds", guilds)
 
-    @bot.command(description="Usuwa event na X warnów", usage="removewarnsevent (kick/ban/mute)", category="Admin", _default=False)
+    @bot.command(description="Usuwa event na X warnów", usage="removewarnsevent (kick/ban/mute)", category="Admin")
     def removewarnsevent(ctx):
         if not functions.has_permission(ctx):
             return handler.error_handler(ctx, "nopermission", ctx.command)

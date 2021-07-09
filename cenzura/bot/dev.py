@@ -3,19 +3,19 @@ import config
 import ast
 import traceback
 
-def insert_returns(body):
-    if isinstance(body[-1], ast.Expr):
-        body[-1] = ast.Return(body[-1].value)
-        ast.fix_missing_locations(body[-1])
-
-    if isinstance(body[-1], ast.If):
-        insert_returns(body[-1].body)
-        insert_returns(body[-1].orelse)
-
-    if isinstance(body[-1], ast.With):
-        insert_returns(body[-1].body)
-
 def load(bot, discord):
+    def insert_returns(body):
+        if isinstance(body[-1], ast.Expr):
+            body[-1] = ast.Return(body[-1].value)
+            ast.fix_missing_locations(body[-1])
+
+        if isinstance(body[-1], ast.If):
+            insert_returns(body[-1].body)
+            insert_returns(body[-1].orelse)
+
+        if isinstance(body[-1], ast.With):
+            insert_returns(body[-1].body)
+
     def _env(option, key, value=None):
         if option in ("ADD", "REPLACE"):
             env[key] = value
@@ -28,7 +28,7 @@ def load(bot, discord):
         "env": _env
     }
 
-    @bot.command(description="Wywołuje skrypt", usage="eval (kod)", category="dev", _default=False)
+    @bot.command(description="Wywołuje skrypt", usage="eval (kod)", category="dev")
     def _eval(ctx):
         if not ctx.data["author"]["id"] in config.owners:
             return handler.error_handler(ctx, "nopermission", ctx.command)
@@ -63,7 +63,7 @@ def load(bot, discord):
         if not response.status_code == 200:
             ctx.send(f"```{response.json()}```")
 
-    @bot.command(description="Przeładowuje moduł", usage="reload (moduł)", category="dev", _default=False)
+    @bot.command(description="Przeładowuje moduł", usage="reload (moduł)", category="dev")
     def reload(ctx):
         if not ctx.data["author"]["id"] in config.owners:
             return handler.error_handler(ctx, "nopermission", ctx.command)
@@ -76,7 +76,7 @@ def load(bot, discord):
 
         ctx.send(result)
 
-    @bot.command(description="Aktualizuje statystyki", usage="updatestats", category="dev", _default=False)
+    @bot.command(description="Aktualizuje statystyki", usage="updatestats", category="dev")
     def updatestats(ctx):
         if not ctx.data["author"]["id"] in config.owners:
             return handler.error_handler(ctx, "nopermission", ctx.command)

@@ -1,12 +1,10 @@
 from lib import discord
+from lib.embed import Embed
 
 def error_handler(ctx, error, data=None):
     if error == "error":
-        return ctx.send(embed = {
-            "title": "Wystąpił nieoczekiwany błąd...",
-            "description": "Wejdź na [serwer support](https://discord.gg/kJuGceekR5) i zgłoś go.\n```" + data + "```",
-            "color": 0xe74c3c
-        })
+        embed = Embed(title="Wystąpił nieoczekiwany błąd...", description="Wejdź na [serwer support](https://discord.gg/tDQURnVtGC) i zgłoś go.\n```" + data + "```", color=0xe74c3c)
+        return ctx.send(embed=embed)
 
     elif error == "arguments":
         return ctx.send(f"Poprawne użycie komendy to `{data}`")

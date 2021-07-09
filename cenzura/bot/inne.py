@@ -2,9 +2,10 @@ import functions
 import handler
 from PIL import Image, ImageDraw, ImageFont
 import re
+from lib.embed import Embed
 
 def load(bot, discord):
-    @bot.command(description="Pokazuje liste ostatnich usuniętych wiadomości", usage="snipe", category="Inne", _default=True)
+    @bot.command(description="Pokazuje liste ostatnich usuniętych wiadomości", usage="snipe", category="Inne", default=True)
     def snipe(ctx):
         if not functions.has_permission(ctx):
             return handler.error_handler(ctx, "nopermission", ctx.command)
@@ -14,20 +15,14 @@ def load(bot, discord):
 
         snipe = ctx.snipe[ctx.data["guild_id"]] if len(ctx.snipe[ctx.data["guild_id"]]) < 10 else [ctx.snipe[ctx.data["guild_id"]][::-1][_] for _ in range(10)][::-1]
 
-        ctx.send(embed = {
-            "title": "Lista ostatnich usuniętych wiadomości:",
-            "description": "\n".join([f"<#{message['channel_id']}> <@{message['author']['id']}>: {message['content']}" for message in snipe]),
-            "color": 0xe74c3c
-        })
+        embed = Embed(title="Lista ostatnich usuniętych wiadomości:", description="\n".join([f"<#{message['channel_id']}> <@{message['author']['id']}>: {message['content']}" for message in snipe]), color=0xe74c3c)
+        ctx.send(embed=embed)
 
-    @bot.command(description="Lista komend todo", usage="todo", category="Inne", _default=True)
+    @bot.command(description="Lista komend todo", usage="todo", category="Inne", default=True)
     def todo(ctx):
         if not ctx.args:
-            return ctx.send(embed = {
-                "title": "Komendy todo:",
-                "description": "> `todo add (tekst)`, `todo view [osoba]`, `todo remove (id)`, `todo clear`",
-                "color": 0xe74c3c
-            })
+            embed = Embed(title="Komendy todo:", description="> `todo add (tekst)`, `todo view [osoba]`, `todo remove (id)`, `todo clear`", color=0xe74c3c)
+            return ctx.send(embed=embed)
 
         user = ctx.data["author"]["id"]
         users = functions.read_json("users")
@@ -53,11 +48,8 @@ def load(bot, discord):
             
             user = discord.get_user(user)
 
-            ctx.send(embed = {
-                "title": f"Todo użytkownika {user['username']}:",
-                "description": "\n".join([f"{users[user['id']]['todo'].index(i)}. {i}" for i in users[user["id"]]["todo"]]),
-                "color": 0xe74c3c
-            })
+            embed = Embed(title=f"Todo użytkownika {user['username']}:", description="\n".join([f"{users[user['id']]['todo'].index(i)}. {i}" for i in users[user["id"]]["todo"]]), color=0xe74c3c)
+            ctx.send(embed=embed)
 
         elif ctx.args[0] == "remove":
             if not len(ctx.args) == 2:
@@ -72,7 +64,7 @@ def load(bot, discord):
 
         functions.write_json("users", users)
 
-    @bot.command(description="Własne komendy", usage="cmd", category="Inne", _default=False)
+    @bot.command(description="Własne komendy", usage="cmd", category="Inne")
     def cmd(ctx):
         if not functions.has_permission(ctx):
             return handler.error_handler(ctx, "nopermission", ctx.command)\
@@ -84,14 +76,10 @@ def load(bot, discord):
             guilds[guild]["cmd"] = {}
 
         if not ctx.args:
-            return ctx.send(embed = {
-                "title": "Komendy cmd:",
-                "description": "> `cmd add (komenda) (tekst)`, `cmd remove (komenda)`, `cmd info (komenda)`, `cmd list`",
-                "color": 0xe74c3c,
-                "footer": {
-                    "text": "<> = nazwa użytkownika, [] = wzmianka"
-                }
-            })
+            embed = Embed(title="Komendy cmd:", description="> `cmd add (komenda) (tekst)`, `cmd remove (komenda)`, `cmd info (komenda)`, `cmd list`", color=0xe74c3c)
+            embed.set_footer(text="<> = nazwa użytkownika, [] = wzmianka")
+
+            return ctx.send(embed=embed)
 
         if ctx.args[0] == "add":
             if not len(ctx.args) >= 3:
@@ -114,50 +102,29 @@ def load(bot, discord):
             if not len(ctx.args) == 2:
                 return handler.error_handler(ctx, "arguments", "cmd info (nazwa komendy)")
 
-            ctx.send(embed = {
-                "title": f"Informacje o {ctx.args[1]}:",
-                "color": 0xe74c3c,
-                "fields": [
-                    {
-                        "name": "Autor:",
-                        "value": f"{guilds[guild]['cmd'][ctx.args[1]]['author']['username']}#{guilds[guild]['cmd'][ctx.args[1]]['author']['discriminator']} ({guilds[guild]['cmd'][ctx.args[1]]['author']['id']})",
-                        "inline": False
-                    },
-                    {
-                        "name": "Tekst w komendzie:",
-                        "value": guilds[guild]["cmd"][ctx.args[1]]["text"],
-                        "inline": False
-                    }
-                ]
-            })
+            embed = Embed(title=f"Informacje o {ctx.args[1]}:", color=0xe74c3c)
+            embed.add_field(name="Autor:", value=f"{guilds[guild]['cmd'][ctx.args[1]]['author']['username']}#{guilds[guild]['cmd'][ctx.args[1]]['author']['discriminator']} ({guilds[guild]['cmd'][ctx.args[1]]['author']['id']})")
+            embed.add_field(name="Tekst w komendzie:", value=guilds[guild]["cmd"][ctx.args[1]]["text"])
+
+            ctx.send(embed=embed)
 
         elif ctx.args[0] == "list":
-            ctx.send(embed = {
-                "title": f"Lista komend ({len(guilds[guild]['cmd'])}):",
-                "description": "\n".join([x for x in guilds[guild]["cmd"]]),
-                "color": 0xe74c3c
-            })
+            embed = Embed(title=f"Lista komend ({len(guilds[guild]['cmd'])}):", description="\n".join([x for x in guilds[guild]["cmd"]]), color=0xe74c3c)
+            ctx.send(embed=embed)
 
         else:
-            return ctx.send(embed = {
-                "title": "Komendy cmd:",
-                "description": "> `cmd add (komenda) (tekst)`, `cmd remove (komenda)`, `cmd info (komenda)`, `cmd list`",
-                "color": 0xe74c3c,
-                "footer": {
-                    "text": "<> = nazwa użytkownika, [] = wzmianka"
-                }
-            })
+            embed = Embed(title="Komendy cmd:", description="> `cmd add (komenda) (tekst)`, `cmd remove (komenda)`, `cmd info (komenda)`, `cmd list`", color=0xe74c3c)
+            embed.set_footer(text="<> = nazwa użytkownika, [] = wzmianka")
+
+            return ctx.send(embed=embed)
 
         functions.write_json("guilds", guilds)
 
-    @bot.command(description="Profile", usage="profile", category="Inne", _default=True)
+    @bot.command(description="Profile", usage="profile", category="Inne", default=True)
     def profile(ctx):
         if not ctx.args:
-            return ctx.send(embed = {
-                "title": "Komendy profile:",
-                "description": "> `profile view [osoba]`, `profile set`, `profile remove`",
-                "color": 0xe74c3c
-            })
+            embed = Embed(title="Komendy profile:", description="> `profile view [osoba]`, `profile set`, `profile remove`", color=0xe74c3c)
+            return ctx.send(embed=embed)
 
         user = ctx.data["author"]["id"]
         users = functions.read_json("users")
@@ -260,11 +227,8 @@ def load(bot, discord):
         
         elif ctx.args[0] == "set":
             if not ctx.args[1:]:
-                return ctx.send(embed = {
-                    "title": "Komendy profile set:",
-                    "description": "> `profile set name (imie)`, `profile set gender (m/k)`, `profile set age (wiek)`, `profile set description (opis)`, `profile set color (#hex/rgb)`",
-                    "color": 0xe74c3c
-                })
+                embed = Embed(title="Komendy profile set:", description="> `profile set name (imie)`, `profile set gender (m/k)`, `profile set age (wiek)`, `profile set description (opis)`, `profile set color (#hex/rgb)`", color=0xe74c3c)
+                return ctx.send(embed=embed)
 
             if ctx.args[1] == "name":
                 if not len(ctx.args) == 3:
@@ -332,19 +296,13 @@ def load(bot, discord):
                 ctx.send("Ustawiono kolor")
 
             else:
-                return ctx.send(embed = {
-                    "title": "Komendy profile set:",
-                    "description": "> `profile set name (imie)`, `profile set gender (m/k)`, `profile set age (wiek)`, `profile set description (opis)`, `profile set color (#hex/rgb)`",
-                    "color": 0xe74c3c
-                })
+                embed = Embed(title="Komendy profile set:", description="> `profile set name (imie)`, `profile set gender (m/k)`, `profile set age (wiek)`, `profile set description (opis)`, `profile set color (#hex/rgb)`", color=0xe74c3c)
+                return ctx.send(embed=embed)
 
         elif ctx.args[0] == "remove":
             if not ctx.args[1:]:
-                return ctx.send(embed = {
-                    "title": "Komendy profile remove:",
-                    "description": "> `profile remove name`, `profile remove gender`, `profile remove age`, `profile remove description`, `profile remove color`",
-                    "color": 0xe74c3c
-                })
+                embed = Embed(title="Komendy profile remove:", description="> `profile remove name`, `profile remove gender`, `profile remove age`, `profile remove description`, `profile remove color`", color=0xe74c3c)
+                return ctx.send(embed=embed)
 
             if ctx.args[1] == "name":
                 del users[user]["profile"]["name"]
@@ -367,17 +325,11 @@ def load(bot, discord):
                 ctx.send("Usunięto kolor z twojego profilu")
 
             else:
-                return ctx.send(embed = {
-                    "title": "Komendy profile remove:",
-                    "description": "> `profile remove name`, `profile remove gender`, `profile remove age`, `profile remove description`, `profile remove color`",
-                    "color": 0xe74c3c
-                })
+                embed = Embed(title="Komendy profile remove:", description="> `profile remove name`, `profile remove gender`, `profile remove age`, `profile remove description`, `profile remove color`", color=0xe74c3c)
+                return ctx.send(embed=embed)
 
         else:
-            return ctx.send(embed = {
-                "title": "Komendy profile:",
-                "description": "> `profile view [osoba]`, `profile set`, `profile remove`",
-                "color": 0xe74c3c
-            })
+            embed = Embed(title="Komendy profile:", description="> `profile view [osoba]`, `profile set`, `profile remove`", color=0xe74c3c)
+            return ctx.send(embed=embed)
 
         functions.write_json("users", users)
