@@ -67,7 +67,7 @@ def load(bot, discord):
     @bot.command(description="Własne komendy", usage="cmd", category="Inne")
     def cmd(ctx):
         if not functions.has_permission(ctx):
-            return handler.error_handler(ctx, "nopermission", ctx.command)\
+            return handler.error_handler(ctx, "nopermission", ctx.command)
 
         guild = ctx.data["guild_id"]
         guilds = functions.read_json("guilds")
