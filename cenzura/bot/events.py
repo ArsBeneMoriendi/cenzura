@@ -5,9 +5,6 @@ import arrays
 import threading
 import time
 
-webhook = "https://canary.discord.com/api/webhooks/847949156244783175/wp-oSshDa4YfRIMRcU6Ub-xq7BJmryJqJ1rt_BUo5huN8rQ-Sx260Xymc0juUqpABzkL"
-guilds = 0
-
 def load(bot, discord):
     @bot.event
     def GUILD_MEMBER_ADD(ctx):
