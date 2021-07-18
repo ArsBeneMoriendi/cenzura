@@ -18,8 +18,8 @@ def load(bot, discord):
         if ctx.author <= member:
             return ctx.send("Nie możesz wyrzucić osoby równej lub wyższej od ciebie")
 
-        member.kick(reason)
-        ctx.send(f"Wyrzucono użytkownika `{member.username}` z powodu `{reason}`")
+        member.kick(ctx.args[1:])
+        ctx.send(f"Wyrzucono użytkownika `{member.username}` z powodu `{ctx.args[1:]}`")
 
     @bot.command(description="Banuje osobe na serwerze", usage="ban (osoba) [powód]", category="Admin")
     def ban(ctx, member: Member, reason = "nie podano"):
@@ -32,8 +32,8 @@ def load(bot, discord):
         if ctx.author <= member:
             return ctx.send("Nie możesz zbanować osoby równej lub wyższej od ciebie")
 
-        member.ban(reason)
-        ctx.send(f"Zbanowano użytkownika `{member.username}` z powodu `{reason}`")
+        member.ban(ctx.args[1:])
+        ctx.send(f"Zbanowano użytkownika `{member.username}` z powodu `{ctx.args[1:]}`")
 
     @bot.command(description="Usuwa wiadomości na kanale", usage="clear (2-100)", category="Admin")
     def clear(ctx, amount: between(2, 100)):
@@ -156,7 +156,7 @@ def load(bot, discord):
             write_json("guilds", guilds)
 
         member.add_role(guilds[ctx.guild.id]["mute_role"])
-        ctx.send(f"Zmutowano użytkownika `{member.username}` z powodu `{reason}`")
+        ctx.send(f"Zmutowano użytkownika `{member.username}` z powodu `{ctx.args[1:]}`")
 
     @bot.command(description="Odmutuje użytkownika", usage="unmute (osoba)", category="Admin")
     def unmute(ctx, member: Member):
@@ -196,11 +196,11 @@ def load(bot, discord):
         guilds[ctx.guild.id]["warns"][member.id].append(reason)
 
         if "warnsevent" in guilds[ctx.guild.id] and "kick" in guilds[ctx.guild.id]["warnsevent"] and guilds[ctx.guild.id]["warnsevent"]["kick"] == str(len(guilds[ctx.guild.id]["warns"][member.id])): 
-            member.kick(reason)
+            member.kick(ctx.args[1:])
             ctx.send(f"Wyrzucono użytkownika `{member.username}` z powodu `{reason}`")
 
         elif "warnsevent" in guilds[ctx.guild.id] and "ban" in guilds[ctx.guild.id]["warnsevent"] and guilds[ctx.guild.id]["warnsevent"]["ban"] == str(len(guilds[ctx.guild.id]["warns"][member.id])): 
-            member.ban(reason)
+            member.ban(ctx.args[1:])
             ctx.send(f"Zbanowano użytkownika `{ctx.data['mentions'][0]['username']}`")
 
         elif "warnsevent" in guilds[ctx.guild.id] and "mute" in guilds[ctx.guild.id]["warnsevent"] and guilds[ctx.guild.id]["warnsevent"]["mute"] == str(len(guilds[ctx.guild.id]["warns"][member.id])): 
@@ -227,7 +227,7 @@ def load(bot, discord):
                 member.add_role(guilds[ctx.guild.id]["mute_role"])
                 ctx.send("Zmutowano użytkownika")
 
-        ctx.send(f"Użytkownik `{member.username}` dostał ostrzeżenie z powodu `{reason}`")
+        ctx.send(f"Użytkownik `{member.username}` dostał ostrzeżenie z powodu `{ctx.args[1:]}`")
 
         write_json("guilds", guilds)
 
