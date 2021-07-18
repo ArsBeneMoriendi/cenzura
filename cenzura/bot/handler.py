@@ -1,31 +1,43 @@
-from lib import discord
 from lib.embed import Embed
+from lib.errors import *
+import traceback
 
-def error_handler(ctx, error, data=None):
-    if error == "error":
-        embed = Embed(title="Wystąpił nieoczekiwany błąd...", description="Wejdź na [serwer support](https://discord.gg/tDQURnVtGC) i zgłoś go.\n```" + data + "```", color=0xe74c3c)
-        return ctx.send(embed=embed)
+def load(bot, discord):
+    @bot.event
+    def on_error(ctx, error):
+        if hasattr(ctx, "debug") and ctx.debug == True:
+            result = traceback.format_exc()
+            return ctx.send(f"```{result}```")
 
-    elif error == "arguments":
-        return ctx.send(f"Poprawne użycie komendy to `{data}`")
+        if isinstance(error, NoArgument):
+            usage = error.command["usage"]
+            needed_arg = usage.split()[1:][error.needed_args.index(error.needed_arg)]
 
-    elif error == "toolongtext":
-        return ctx.send(f"Wiadomość przekroczyła limit znaków (`limit to {data}`)")
+            result = f"```{usage}\n{' ' * usage.index(needed_arg)}{'^' * (len(needed_arg))}\n\nNie podałeś tego argumentu```"
+            return ctx.send(result)
 
-    elif error == "nopermission":
-        return ctx.send(f"Nie masz uprawnień (`{data}`)")
+        elif isinstance(error, InvalidArgumentType):
+            usage = error.command["usage"]
+            needed_arg = usage.split()[1:][error.needed_args.index(error.needed_arg)]
 
-    elif error == "notfound":
-        return ctx.send("Nie znaleziono")
+            result = f"```{usage}\n{' ' * usage.index(needed_arg)}{'^' * (len(needed_arg))}\n\nTu podałeś zły argument```"
+            return ctx.send(result)
 
-    elif error == "commandnotfound":
-        return ctx.send("Nie znaleziono takiej komendy")
+        elif isinstance(error, CommandNotFound):
+            return ctx.send("Nie znaleziono takiej komendy")
 
-    elif error == 6:
-        return ctx.send("Bot nie ma uprawnień")
+        elif isinstance(error, NoPermission):
+            return ctx.send(f"Nie masz uprawnień (`{error.permission}`)")
 
-    elif error == "nsfw":
-        return ctx.send("Kanał musi być nsfw")
-        
-    elif error == 8:
-        return ctx.send("Wystąpił nieoczekiwany błąd")
+        elif isinstance(error, Forbidden):
+            return ctx.send("Bot nie ma uprawnień")
+
+        elif isinstance(error, NotFound) or isinstance(error, KeyError):
+            return ctx.send("Nie znaleziono")
+            
+        elif isinstance(error, UnexpectedError):
+            return ctx.send("Wystąpił nieoczekiwany błąd")
+
+        else:
+            embed = Embed(title="Wystąpił nieoczekiwany błąd...", description=f"Wejdź na [serwer support](https://discord.gg/tDQURnVtGC) i zgłoś go.\n```{traceback.format_exc().splitlines()[-1]}```", color=0xe74c3c)
+            return ctx.send(embed=embed)

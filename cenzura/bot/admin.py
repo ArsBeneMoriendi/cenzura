@@ -1,451 +1,367 @@
 import functions
 import handler
-import functions
-import lib.permissions as permissions
-import lib.flags as flags
+from functions import *
+from lib.permissions import PERMISSIONS
 from lib.embed import Embed
-from datetime import datetime
+from lib.errors import NoPermission
+from lib.types import Member, Channel, Role
 
 def load(bot, discord):
     @bot.command(description="Wywala osobe z serwera", usage="kick (osoba) [powód]", category="Admin")
-    def kick(ctx):
-        if not functions.has_permission(ctx):
-            return handler.error_handler(ctx, "nopermission", ctx.command)
+    def kick(ctx, member: Member, reason = "nie podano"):
+        if not has_permission(ctx):
+            raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
 
-        if not len(ctx.data["mentions"]) == 1:
-            return handler.error_handler(ctx, "arguments", "kick (osoba) [powód]")
+        if ctx.author == member:
+            return ctx.send("Nie możesz wyrzucić samego siebie")
 
-        if len(ctx.args) >= 2:
-            ctx.args = " ".join(ctx.args[1:])
-            reason = ctx.args
-        else:
-            reason = "nie podano powodu"
+        if ctx.author <= member:
+            return ctx.send("Nie możesz wyrzucić osoby równej lub wyższej od ciebie")
 
-        status = discord.remove_guild_member(ctx.data["guild_id"], ctx.data["mentions"][0]["id"])
-        
-        if not status.status_code == 204:
-            return handler.error_handler(ctx, 6)
-
-        ctx.send(f"Wyrzucono użytkownika `{ctx.data['mentions'][0]['username']}` z powodu `{reason}`")
+        member.kick(reason)
+        ctx.send(f"Wyrzucono użytkownika `{member.username}` z powodu `{reason}`")
 
     @bot.command(description="Banuje osobe na serwerze", usage="ban (osoba) [powód]", category="Admin")
-    def ban(ctx):
-        if not functions.has_permission(ctx):
-            return handler.error_handler(ctx, "nopermission", ctx.command)
+    def ban(ctx, member: Member, reason = "nie podano"):
+        if not has_permission(ctx):
+            raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
 
-        if not len(ctx.data["mentions"]) == 1:
-            return handler.error_handler(ctx, "arguments", "ban (osoba) [powód]")
+        if ctx.author == member:
+            return ctx.send("Nie możesz zbanować samego siebie")
 
-        if len(ctx.args) >= 2:
-            ctx.args = " ".join(ctx.args[1:])
-            reason = ctx.args
-        else:
-            reason = "nie podano powodu"
+        if ctx.author <= member:
+            return ctx.send("Nie możesz zbanować osoby równej lub wyższej od ciebie")
 
-        status = discord.create_guild_ban(ctx.data["guild_id"], ctx.data["mentions"][0]["id"], reason)
-        
-        if not status.status_code == 204:
-            return handler.error_handler(ctx, 6)
+        member.ban(reason)
+        ctx.send(f"Zbanowano użytkownika `{member.username}` z powodu `{reason}`")
 
-        ctx.send(f"Zbanowano użytkownika `{ctx.data['mentions'][0]['username']}` z powodu `{reason}`")
+    @bot.command(description="Usuwa wiadomości na kanale", usage="clear (2-100)", category="Admin")
+    def clear(ctx, amount: between(2, 100)):
+        if not has_permission(ctx):
+            raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
 
-    @bot.command(description="Usuwa wiadomości na kanale", usage="clear (ilość wiadomości 1-99) [osoba]", category="Admin")
-    def clear(ctx):
-        if not functions.has_permission(ctx):
-            return handler.error_handler(ctx, "nopermission", ctx.command)
-
-        try:
-            ctx.args[0] = int(ctx.args[0]) + 1
-        except:
-            return handler.error_handler(ctx, "arguments", "clear (ilość wiadomości 1-99) [osoba]")
-
-        if not len(ctx.args) <= 1 and int(ctx.args[0]) > 100:
-            return handler.error_handler(ctx, "arguments", "clear (ilość wiadomości 1-99) [osoba]")
-
-        messages = list(map(lambda x: x["id"], discord.get_messages(ctx.data["channel_id"], ctx.args[0])))
-
-        if len(ctx.data["mentions"]) == 1:
-            x = []
-            ctx.args[0] = int(ctx.args[0]) - 1
-            for message in messages:
-                message = discord.get_message(ctx.data["channel_id"], message)
-                if "author" in message and message["author"]["id"] == ctx.data["mentions"][0]["id"]:
-                    x.append(message["id"])
-
-            messages = x
-            message = f"Usunięto `{ctx.args[0]}` wiadomości użytkownika `{ctx.data['mentions'][0]['username']}`"
-        else:
-            message = f"Usunięto `{ctx.args[0]}` wiadomości"
-
-        bulk_delete = discord.bulk_delete_messages(ctx.data["channel_id"], {
-            "messages": messages
-        })
-
-        if not bulk_delete.status_code == 204:
-            return handler.error_handler(ctx, 8)
-
-        ctx.send(message)
-
-    @bot.command(description="Pokazuje informacje o użytkowniku", usage="userinfo [osoba]", category="Admin", default=True)
-    def userinfo(ctx):
-        if not functions.has_permission(ctx):
-            return handler.error_handler(ctx, "nopermission", ctx.command)
-
-        user = None
-        member = True
-
-        if len(ctx.data["mentions"]) == 1:
-            user = discord.get_guild_member(ctx.data["guild_id"], ctx.data["mentions"][0]["id"])
-        elif len(ctx.args) == 1:
-            user = discord.get_guild_member(ctx.data["guild_id"], ctx.args[0])
-        
-        if not user or "code" in user:
-            user = discord.get_guild_member(ctx.data["guild_id"], ctx.data["author"]["id"])
-            
-        user["joined_at"] = datetime.timestamp(datetime.strptime(user["joined_at"].split(".")[0], "%Y-%m-%dT%H:%M:%S"))
-
-        roles = discord.get_guild(ctx.data["guild_id"])["roles"]
-        roles = [role["name"] for role in roles if role["id"] in user["roles"]]
-        
-        user_flags = flags.user_flags(user["user"]["public_flags"])
-
-        embed = Embed(title=f"Informacje o {user['user']['username']}{' (bot)' if 'bot' in user['user'] else ''}:", color=0xe74c3c)
-        embed.set_thumbnail(url=f"http://cdn.discordapp.com/avatars/{user['user']['id']}/{user['user']['avatar']}.png?size=2048")
-
-        embed.add_field(name="ID:", value=user["user"]["id"])
-        embed.add_field(name="Nick z tagiem:", value=user["user"]["username"] + "#" + user["user"]["discriminator"])
-        embed.add_field(name="Role:", value=", ".join(roles))
-        embed.add_field(name="Dołączył na serwer:", value="<t:" + str(user["joined_at"]).split(".")[0] + ":F>")
-        embed.add_field(name="Utworzył konto:" if not "bot" in user["user"] else "Stworzony dnia:", value="<t:" + str(((int(user["user"]["id"]) >> 22) + 1420070400000) / 1000).split(".")[0] + ":F>")
-
-        if user_flags:
-            embed.add_field(name="Odznaki:", value=", ".join(user_flags))
-
-        ctx.send(embed=embed)
-
-    @bot.command(description="Pokazuje informacje o serwerze", usage="serverinfo", category="Admin", default=True)
-    def serverinfo(ctx):
-        if not functions.has_permission(ctx):
-            return handler.error_handler(ctx, "nopermission", ctx.command)
-
-        guild = ctx.guilds[ctx.data["guild_id"]]
-
-        embed = Embed(title=f"Informacje o {guild['name']}:", color=0xe74c3c)
-        embed.set_thumbnail(url=f"https://cdn.discordapp.com/icons/{ctx.data['guild_id']}/{guild['icon']}.png?size=2048")
-
-        embed.add_field(name="Właściciel:", value=f"<@{guild['owner_id']}> ({guild['owner_id']})")
-        embed.add_field(name="ID:", value=ctx.data["guild_id"])
-        embed.add_field(name="Ilość osób:", value=guild["member_count"])
-        embed.add_field(name="Ilość kanałów:", value=len(guild["channels"]))
-        embed.add_field(name="Ilość ról:", value=len(guild["roles"]))
-        embed.add_field(name="Ilość emotek:", value=len(guild["emojis"]))
-        embed.add_field(name="Został stworzony:", value="<t:" + str(((int(guild["id"]) >> 22) + 1420070400000) / 1000).split(".")[0] + ":F>")
-        embed.add_field(name="Boosty:", value=f"{guild['premium_subscription_count']} boosty / {guild['premium_tier']} poziom")    
-
-        ctx.send(embed=embed)
+        messages = [x["id"] for x in discord.get_messages(ctx.channel.id, amount)]
+        ctx.channel.clear(messages)
 
     @bot.command(description="Pokazuje pomoc komendy set", usage="set", category="Admin")
-    def _set(ctx):
-        if not functions.has_permission(ctx):
-            return handler.error_handler(ctx, "nopermission", ctx.command)
+    def _set(ctx, subcommand = None, arg: find_working(Channel, Role, str) = None, arg2 = None):
+        if not has_permission(ctx):
+            raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
 
-        if not ctx.args:
-            embed = Embed(title="Komendy set:", description="> `set prefix (prefix)`, `set welcomemsg (kanał) (tekst)`, `set offwelcomemsg`, `set leavemsg (kanał) (tekst)`, `set offleavemsg`, `set autorole (rola)`, `set offautorole`, `set onbadwords`, `set offbadwords`, `set oninvites`, `set offinvites`", color=0xe74c3c)
-            embed.set_footer(text="<> = nick osoby, [] = wzmianka, {} = licznik osób")
+        help_embed = Embed(title="Komendy set:", description="> `set prefix (prefix)`, `set welcomemsg (kanał) (tekst)`, `set removewelcomemsg`, `set leavemsg (kanał) (tekst)`, `set removeleavemsg`, `set autorole (rola)`, `set removeautorole`, `set onbadwords`, `set offbadwords`, `set oninvites`, `set offinvites`", color=0xe74c3c)
+        help_embed.set_footer(text="<> = nick osoby, [] = wzmianka, {} = licznik osób")
 
-            return ctx.send(embed=embed)
+        if not subcommand:
+            return ctx.send(embed=help_embed)
 
-        guild = ctx.data["guild_id"]
-        guilds = functions.read_json("guilds")
+        guilds = read_json("guilds")
 
-        if ctx.args[0] == "prefix":
-            if not len(ctx.args) == 2:
-                return handler.error_handler(ctx, "arguments", "set prefix (prefix)")
+        if subcommand == "prefix":
+            guilds[ctx.guild.id]["prefix"] = arg
+            ctx.send(f"Ustawiono prefix na `{arg}`")
 
-            guilds[guild]["prefix"] = ctx.args[1]
-            ctx.send(f"Ustawiono prefix na `{ctx.args[1]}`")
+        elif subcommand == "welcomemsg":
+            if not isinstance(arg, Channel) or not arg2:
+                return ctx.send(embed=help_embed)
 
-        elif ctx.args[0] == "welcomemsg":
-            if not len(ctx.args) >= 2:
-                return handler.error_handler(ctx, "arguments", "set welcomemsg (kanał) (tekst)")
-
-            guilds[guild]["welcomemsg"] = {}
-            guilds[guild]["welcomemsg"]["channel_id"] = ctx.args[1].replace("<", "").replace("#", "").replace(">", "")
-            guilds[guild]["welcomemsg"]["text"] = " ".join(ctx.args[2:])
+            guilds[ctx.guild.id]["welcomemsg"] = {}
+            guilds[ctx.guild.id]["welcomemsg"]["channel_id"] = arg.id
+            guilds[ctx.guild.id]["welcomemsg"]["text"] = " ".join(ctx.args[2:])
 
             ctx.send("Ustawiono wiadomość powitalną")
 
-        elif ctx.args[0] == "offwelcomemsg":
-            del guilds[guild]["welcomemsg"]
+        elif subcommand == "removewelcomemsg":
+            del guilds[ctx.guild.id]["welcomemsg"]
             ctx.send("Usunięto wiadomość powitalną")
 
-        elif ctx.args[0] == "leavemsg":
-            if not len(ctx.args) >= 2:
-                return handler.error_handler(ctx, "arguments", "set leavemsg (kanał) (tekst)")
+        elif subcommand == "leavemsg":
+            if not isinstance(arg, Channel) or not arg2:
+                return ctx.send(embed=help_embed)
 
-            guilds[guild]["leavemsg"] = {}
-            guilds[guild]["leavemsg"]["channel_id"] = ctx.args[1].replace("<", "").replace("#", "").replace(">", "")
-            guilds[guild]["leavemsg"]["text"] = " ".join(ctx.args[2:])
+            guilds[ctx.guild.id]["leavemsg"] = {}
+            guilds[ctx.guild.id]["leavemsg"]["channel_id"] = arg.id
+            guilds[ctx.guild.id]["leavemsg"]["text"] = " ".join(ctx.args[2:])
 
             ctx.send("Ustawiono wiadomość pożegnalną")
 
-        elif ctx.args[0] == "offleavemsg":
-            del guilds[guild]["leavemsg"]
+        elif subcommand == "removeleavemsg":
+            del guilds[ctx.guild.id]["leavemsg"]
             ctx.send("Usunięto wiadomość pożegnalną")
 
-        elif ctx.args[0] == "autorole":
-            if not len(ctx.data["mention_roles"]) == 1:
-                return handler.error_handler(ctx, "arguments", "set autorole (rola)")
+        elif subcommand == "autorole":
+            if not isinstance(arg, Role):
+                return ctx.send(embed=help_embed)
 
-            guilds[guild]["autorole"] = ctx.data["mention_roles"][0]
+            guilds[ctx.guild.id]["autorole"] = arg.id
             ctx.send("Ustawiono autorole")
 
-        elif ctx.args[0] == "offautorole":
-            del guilds[guild]["autorole"]
+        elif subcommand == "removeautorole":
+            del guilds[ctx.guild.id]["autorole"]
             ctx.send("Usunięto autorole")
 
-        elif ctx.args[0] == "onbadwords":
-            guilds[guild]["badwords"] = True
+        elif subcommand == "onbadwords":
+            guilds[ctx.guild.id]["badwords"] = True
             ctx.send("Włączono brzydkie słowa na tym serwerze")
 
-        elif ctx.args[0] == "offbadwords":
-            del guilds[guild]["badwords"]
+        elif subcommand == "offbadwords":
+            del guilds[ctx.guild.id]["badwords"]
             ctx.send("Wyłączono brzydkie słowa na tym serwerze")
 
-        elif ctx.args[0] == "oninvites":
-            guilds[guild]["invites"] = True
+        elif subcommand == "oninvites":
+            guilds[ctx.guild.id]["invites"] = True
             ctx.send("Włączono wysyłanie zaproszeń na tym serwerze")
 
-        elif ctx.args[0] == "offinvites":
-            del guilds[guild]["invites"]
+        elif subcommand == "offinvites":
+            del guilds[ctx.guild.id]["invites"]
             ctx.send("Wyłączono wysyłanie zaproszeń na tym serwerze")
 
-        functions.write_json("guilds", guilds)
+        else:
+            ctx.send(embed=help_embed)
 
-    @bot.command(description="Mutuje użytkownika", usage="mute (osoba)", category="Admin")
-    def mute(ctx):
-        if not functions.has_permission(ctx):
-            return handler.error_handler(ctx, "nopermission", ctx.command)
-        
-        if not len(ctx.args) == 1:
-            return handler.error_handler(ctx, "arguments", "mute (osoba)")
+        write_json("guilds", guilds)
 
-        guild = ctx.data["guild_id"]
-        guilds = functions.read_json("guilds")
+    @bot.command(description="Mutuje użytkownika", usage="mute (osoba) [powód]", category="Admin")
+    def mute(ctx, member: Member, reason = "nie podano"):
+        if not has_permission(ctx):
+            raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
 
-        if not "mute_role" in guilds[guild]:
-            role = discord.create_guild_role(guild, {"name": "muted"}).json()
+        if ctx.author == member:
+            return ctx.send("Nie możesz zmutować samego siebie")
 
-            guilds[guild]["mute_role"] = role["id"]
-            channels = discord.get_guild_channels(guild)
+        if ctx.author <= member:
+            return ctx.send("Nie możesz zmutować osoby równej lub wyższej od ciebie")
 
-            for channel in channels:
-                if channel["type"] == 0:
-                    a = discord.edit_channel_permissions(channel["id"], role["id"], {
-                        "deny": permissions.permissions["SEND_MESSAGES"],
-                        "allow": permissions.permissions["ADD_REACTIONS"],
+        guilds = read_json("guilds")
+
+        if not "mute_role" in guilds[ctx.guild.id]:
+            role = ctx.guild.create_role("muted").json()
+
+            guilds[ctx.guild.id]["mute_role"] = role["id"]
+
+            for _, channel in ctx.guild.channels.items():
+                if channel.type == 0:
+                    channel.edit_permissions(role["id"], {
+                        "deny": PERMISSIONS["SEND_MESSAGES"],
+                        "allow": PERMISSIONS["ADD_REACTIONS"],
                         "type": 0
                     })
 
-                elif channel["type"] == 2:
-                    discord.edit_channel_permissions(channel["id"], role["id"], {
-                        "deny": permissions.permissions["SPEAK"],
-                        "allow": permissions.permissions["VIEW_CHANNEL"],
+                elif channel.type == 2:
+                    channel.edit_permissions(role["id"], {
+                        "deny": PERMISSIONS["SPEAK"],
+                        "allow": PERMISSIONS["VIEW_CHANNEL"],
                         "type": 0
                     })
 
-            functions.write_json("guilds", guilds)
+            write_json("guilds", guilds)
 
-        status = discord.add_guild_member_role(guild, ctx.data["mentions"][0]["id"], guilds[guild]["mute_role"])
-
-        if not status.status_code == 204:
-            return handler.error_handler(ctx, 6)
-
-        ctx.send("Zmutowano użytkownika")
+        member.add_role(guilds[ctx.guild.id]["mute_role"])
+        ctx.send(f"Zmutowano użytkownika `{member.username}` z powodu `{reason}`")
 
     @bot.command(description="Odmutuje użytkownika", usage="unmute (osoba)", category="Admin")
-    def unmute(ctx):
-        if not functions.has_permission(ctx):
-            return handler.error_handler(ctx, "nopermission", ctx.command)
-        
-        if not len(ctx.args) == 1:
-            return handler.error_handler(ctx, "arguments", "unmute (osoba)")
+    def unmute(ctx, member: Member):
+        if not has_permission(ctx):
+            raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
 
-        guild = ctx.data["guild_id"]
-        guilds = functions.read_json("guilds")
+        if ctx.author == member:
+            return ctx.send("serio to sprawdzałeś?")
 
-        if not "mute_role" in guilds[guild]:
-            return handler.error_handler(ctx, "notfound")
+        if ctx.author <= member:
+            return ctx.send("Nie możesz odmutować osoby równej lub wyższej od ciebie")
 
-        status = discord.remove_guild_member_role(guild, ctx.data["mentions"][0]["id"], guilds[guild]["mute_role"])
+        guilds = read_json("guilds")
 
-        if not status.status_code == 204:
-            return handler.error_handler(ctx, 6)
-
+        member.remove_role(guilds[ctx.guild.id]["mute_role"])
         ctx.send("Odmutowano użytkownika")
 
     @bot.command(description="Daje ostrzeżenie", usage="warn (osoba) [powód]", category="Admin")
-    def warn(ctx):
-        if not functions.has_permission(ctx):
-            return handler.error_handler(ctx, "nopermission", ctx.command)
+    def warn(ctx, member: Member, reason = "nie podano"):
+        if not has_permission(ctx):
+            raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
 
-        if not len(ctx.data["mentions"]) == 1:
-            return handler.error_handler(ctx, "arguments", "warn (osoba) [powód]")
+        if ctx.author == member:
+            return ctx.send("Nie możesz dać warna samemu sobie")
 
-        if len(ctx.args) >= 2:
-            ctx.args = " ".join(ctx.args[1:])
-            reason = ctx.args
-        else:
-            reason = "nie podano powodu"
+        if ctx.author <= member:
+            return ctx.send("Nie możesz dać warna osobie równej lub wyższej od ciebie")
 
-        guild = ctx.data["guild_id"]
-        guilds = functions.read_json("guilds")
+        guilds = read_json("guilds")
 
-        if not "warns" in guilds[guild]:
-            guilds[guild]["warns"] = {}
+        if not "warns" in guilds[ctx.guild.id]:
+            guilds[ctx.guild.id]["warns"] = {}
 
-        if not ctx.data["mentions"][0]["id"] in guilds[guild]["warns"]:
-            guilds[guild]["warns"][ctx.data["mentions"][0]["id"]] = []
+        if not member.id in guilds[ctx.guild.id]["warns"]:
+            guilds[ctx.guild.id]["warns"][member.id] = []
 
-        guilds[guild]["warns"][ctx.data["mentions"][0]["id"]].append(reason)
+        guilds[ctx.guild.id]["warns"][member.id].append(reason)
 
-        if "warnsevent" in guilds[guild] and "kick" in guilds[guild]["warnsevent"] and guilds[guild]["warnsevent"]["kick"] == str(len(guilds[guild]["warns"][ctx.data["mentions"][0]["id"]])): 
-            status = discord.remove_guild_member(ctx.data["guild_id"], ctx.data["mentions"][0]["id"])
-            if not status.status_code == 204:
-                return handler.error_handler(ctx, 6)
+        if "warnsevent" in guilds[ctx.guild.id] and "kick" in guilds[ctx.guild.id]["warnsevent"] and guilds[ctx.guild.id]["warnsevent"]["kick"] == str(len(guilds[ctx.guild.id]["warns"][member.id])): 
+            member.kick(reason)
+            ctx.send(f"Wyrzucono użytkownika `{member.username}` z powodu `{reason}`")
 
-            ctx.send(f"Wyrzucono użytkownika `{ctx.data['mentions'][0]['username']}`")
-
-        elif "warnsevent" in guilds[guild] and "ban" in guilds[guild]["warnsevent"] and guilds[guild]["warnsevent"]["ban"] == str(len(guilds[guild]["warns"][ctx.data["mentions"][0]["id"]])): 
-            status = discord.create_guild_ban(ctx.data["guild_id"], ctx.data["mentions"][0]["id"], reason)
-            if not status.status_code == 204:
-                return handler.error_handler(ctx, 6)
-
+        elif "warnsevent" in guilds[ctx.guild.id] and "ban" in guilds[ctx.guild.id]["warnsevent"] and guilds[ctx.guild.id]["warnsevent"]["ban"] == str(len(guilds[ctx.guild.id]["warns"][member.id])): 
+            member.ban(reason)
             ctx.send(f"Zbanowano użytkownika `{ctx.data['mentions'][0]['username']}`")
 
-        elif "warnsevent" in guilds[guild] and "mute" in guilds[guild]["warnsevent"] and guilds[guild]["warnsevent"]["mute"] == str(len(guilds[guild]["warns"][ctx.data["mentions"][0]["id"]])): 
-            if not "mute_role" in guilds[guild]:
-                role = discord.create_guild_role(guild, {"name": "muted"}).json()
+        elif "warnsevent" in guilds[ctx.guild.id] and "mute" in guilds[ctx.guild.id]["warnsevent"] and guilds[ctx.guild.id]["warnsevent"]["mute"] == str(len(guilds[ctx.guild.id]["warns"][member.id])): 
+            if not "mute_role" in guilds[ctx.guild.id]:
+                role = ctx.guild.create_role("muted").json()
 
-                guilds[guild]["mute_role"] = role["id"]
-                channels = discord.get_guild_channels(guild)
+                guilds[ctx.guild.id]["mute_role"] = role["id"]
 
-                for channel in channels:
-                    if channel["type"] == 0:
-                        a = discord.edit_channel_permissions(channel["id"], role["id"], {
-                            "deny": permissions.permissions["SEND_MESSAGES"],
-                            "allow": permissions.permissions["ADD_REACTIONS"],
+                for _, channel in ctx.guild.channels.items():
+                    if channel.type == 0:
+                        channel.edit_permissions(role["id"], {
+                            "deny": PERMISSIONS["SEND_MESSAGES"],
+                            "allow": PERMISSIONS["ADD_REACTIONS"],
                             "type": 0
                         })
 
-                    elif channel["type"] == 2:
-                        discord.edit_channel_permissions(channel["id"], role["id"], {
-                            "deny": permissions.permissions["SPEAK"],
-                            "allow": permissions.permissions["VIEW_CHANNEL"],
+                    elif channel.type == 2:
+                        channel.edit_permissions(role["id"], {
+                            "deny": PERMISSIONS["SPEAK"],
+                            "allow": PERMISSIONS["VIEW_CHANNEL"],
                             "type": 0
                         })
 
-                status = discord.add_guild_member_role(guild, ctx.data["mentions"][0]["id"], guilds[guild]["mute_role"])
-
-                if not status.status_code == 204:
-                    return handler.error_handler(ctx, 6)
-
+                member.add_role(guilds[ctx.guild.id]["mute_role"])
                 ctx.send("Zmutowano użytkownika")
 
-        ctx.send(f"Użytkownik `{ctx.data['mentions'][0]['username']}` dostał ostrzeżenie z powodu `{reason}`")
+        ctx.send(f"Użytkownik `{member.username}` dostał ostrzeżenie z powodu `{reason}`")
 
-        functions.write_json("guilds", guilds)
+        write_json("guilds", guilds)
 
     @bot.command(description="Pokazuje ostrzeżena", usage="warns (osoba)", category="Admin")
-    def warns(ctx):
-        if not functions.has_permission(ctx):
-            return handler.error_handler(ctx, "nopermission", ctx.command)
+    def warns(ctx, member: Member):
+        if not has_permission(ctx):
+            raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
 
-        if not len(ctx.data["mentions"]) == 1:
-            return handler.error_handler(ctx, "arguments", "warns (osoba)")
+        guilds = read_json("guilds")
 
-        guild = ctx.data["guild_id"]
-        guilds = functions.read_json("guilds")
-
-        if not "warns" in guilds[guild] or not ctx.data["mentions"][0]["id"] in guilds[guild]["warns"]:
-            return handler.error_handler(ctx, "notfound")
-
-        embed = Embed(title=f"Warny użytkownika {ctx.data['mentions'][0]['username']}:", description="\n".join([f"{guilds[guild]['warns'][ctx.data['mentions'][0]['id']].index(i)}. {i}" for i in guilds[guild]["warns"][ctx.data["mentions"][0]["id"]]]), color=0xe74c3c)
+        embed = Embed(title=f"Warny użytkownika {member.username}:", description="\n".join([f"{guilds[ctx.guild.id]['warns'][member.id].index(i)}. {i}" for i in guilds[ctx.guild.id]["warns"][member.id]]), color=0xe74c3c)
         ctx.send(embed=embed)
 
-    @bot.command(description="Usuwa ostrzeżenie", usage="removewarn (osoba) (id)", category="Admin")
-    def removewarn(ctx):
-        if not functions.has_permission(ctx):
-            return handler.error_handler(ctx, "nopermission", ctx.command)
+    @bot.command(description="Usuwa ostrzeżenie", usage="removewarn (osoba) (index)", category="Admin")
+    def removewarn(ctx, member: Member, index: int):
+        if not has_permission(ctx):
+            raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
 
-        if not len(ctx.args) == 2:
-            return handler.error_handler(ctx, "arguments", "removewarn (osoba) (id)")
+        if ctx.author == member:
+            return ctx.send("Nie możesz usunąć warna samemu siebie")
 
-        guild = ctx.data["guild_id"]
-        guilds = functions.read_json("guilds")
+        if ctx.author <= member:
+            return ctx.send("Nie możesz usunąć warna osobie równej lub wyższej od ciebie")
 
-        if not "warns" in guilds[guild] or not ctx.data["mentions"][0]["id"] in guilds[guild]["warns"]:
-            return handler.error_handler(ctx, "notfound")
+        guilds = read_json("guilds")
 
-        del guilds[guild]["warns"][ctx.data["mentions"][0]["id"]][int(ctx.args[1])]
+        del guilds[ctx.guild.id]["warns"][member.id][index]
 
         ctx.send("Usunięto ostrzeżenie")
 
-        functions.write_json("guilds", guilds)
+        write_json("guilds", guilds)
 
     @bot.command(description="Usuwa ostrzeżenie", usage="clearwarns (osoba)", category="Admin")
-    def clearwarns(ctx):
-        if not functions.has_permission(ctx):
-            return handler.error_handler(ctx, "nopermission", ctx.command)
+    def clearwarns(ctx, member: Member):
+        if not has_permission(ctx):
+            raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
 
-        if not len(ctx.args) == 1:
-            return handler.error_handler(ctx, "arguments", "clearwarns (osoba)")
+        if ctx.author == member:
+            return ctx.send("Nie możesz wyczyścic warnów samemu siebie")
 
-        guild = ctx.data["guild_id"]
-        guilds = functions.read_json("guilds")
+        if ctx.author <= member:
+            return ctx.send("Nie możesz wyczyscić warnów osobie równej lub wyższej od ciebie")
 
-        if not "warns" in guilds[guild] or not ctx.data["mentions"][0]["id"] in guilds[guild]["warns"]:
-            return handler.error_handler(ctx, "notfound")
+        guilds = read_json("guilds")
 
-        del guilds[guild]["warns"][ctx.data["mentions"][0]["id"]]
+        del guilds[ctx.guild.id]["warns"][member.id]
 
         ctx.send("Wyczyszczono ostrzeżenia")
 
-        functions.write_json("guilds", guilds)
+        write_json("guilds", guilds)
 
-    @bot.command(description="Dodaje event na X warnów", usage="warnsevent (kick/ban/mute) (ilość warnów)", category="Admin")
-    def warnsevent(ctx):
-        if not functions.has_permission(ctx):
-            return handler.error_handler(ctx, "nopermission", ctx.command)
+    @bot.command(description="Dodaje event na X warnów", usage="warnsevent (kick/ban/mute) (ilość)", category="Admin")
+    def warnsevent(ctx, event: is_in("kick", "ban", "mute"), amount):
+        if not has_permission(ctx):
+            raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
 
-        if not len(ctx.args) == 2 or ctx.args[0] not in ["kick", "ban", "mute"]:
-            return handler.error_handler(ctx, "arguments", "warnsevent (kick/ban/mute) (ilość warnów)")
+        guilds = read_json("guilds")
 
-        guild = ctx.data["guild_id"]
-        guilds = functions.read_json("guilds")
+        if not "warnsevent" in guilds[ctx.guild.id]:
+            guilds[ctx.guild.id]["warnsevent"] = {}
 
-        if not "warnsevent" in guilds[guild]:
-            guilds[guild]["warnsevent"] = {}
-
-        guilds[guild]["warnsevent"][ctx.args[0]] = str(ctx.args[1])
+        guilds[ctx.guild.id]["warnsevent"][event] = amount
 
         ctx.send("Dodano event")
 
-        functions.write_json("guilds", guilds)
+        write_json("guilds", guilds)
 
     @bot.command(description="Usuwa event na X warnów", usage="removewarnsevent (kick/ban/mute)", category="Admin")
-    def removewarnsevent(ctx):
-        if not functions.has_permission(ctx):
-            return handler.error_handler(ctx, "nopermission", ctx.command)
+    def removewarnsevent(ctx, event: is_in("kick", "ban", "mute")):
+        if not has_permission(ctx):
+            raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
 
-        if not len(ctx.args) == 1 or ctx.args[0] not in ["kick", "ban", "mute"]:
-            return handler.error_handler(ctx, "arguments", "warnsevent (kick/ban/mute)")
+        guilds = read_json("guilds")
 
-        guild = ctx.data["guild_id"]
-        guilds = functions.read_json("guilds")
-
-        del guilds[guild]["warnsevent"][ctx.args[0]]
+        del guilds[ctx.guild.id]["warnsevent"][event]
 
         ctx.send("Usunięto event")
 
-        functions.write_json("guilds", guilds)
+        write_json("guilds", guilds)
+
+    @bot.command(description="Dodaje kanał na którym będzie można przeklinać", usage="badwordsaddchannel (kanał)", category="Admin")
+    def badwordsaddchannel(ctx, channel: Channel):
+        if not has_permission(ctx):
+            raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
+
+        guilds = read_json("guilds")
+
+        if not "badword_channels" in guilds[ctx.guild.id]:
+            guilds[ctx.guild.id]["badword_channels"] = []
+
+        guilds[ctx.guild.id]["badword_channels"].append(channel.id)
+
+        ctx.send("Dodano kanał")
+
+        write_json("guilds", guilds)
+
+    @bot.command(description="Usuwa kanał na którym można przeklinać", usage="badwordsremovechannel (kanał)", category="Admin")
+    def badwordsremovechannel(ctx, channel: Channel):
+        if not has_permission(ctx):
+            raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
+
+        guilds = read_json("guilds")
+
+        guilds[ctx.guild.id]["badword_channels"].remove(channel.id)
+
+        ctx.send("Usunięto kanał")
+
+        write_json("guilds", guilds)
+
+    @bot.command(description="Dodaje kanał na którym będzie można wysyłać zaproszenia", usage="invitesaddchannel (kanał)", category="Admin")
+    def invitesaddchannel(ctx, channel: Channel):
+        if not has_permission(ctx):
+            raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
+
+        guilds = read_json("guilds")
+
+        if not "invites_channels" in guilds[ctx.guild.id]:
+            guilds[ctx.guild.id]["invites_channels"] = []
+
+        guilds[ctx.guild.id]["invites_channels"].append(channel.id)
+
+        ctx.send("Dodano kanał")
+
+        write_json("guilds", guilds)
+
+    @bot.command(description="Usuwa kanał na którym można wysyłać zaproszenia", usage="invitesremovechannel (kanał)", category="Admin")
+    def invitesremovechannel(ctx, channel: Channel):
+        if not has_permission(ctx):
+            raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
+
+        guilds = read_json("guilds")
+
+        guilds[ctx.guild.id]["invites_channels"].remove(channel.id)
+
+        ctx.send("Usunięto kanał")
+
+        write_json("guilds", guilds)

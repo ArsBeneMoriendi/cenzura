@@ -1,14 +1,7 @@
 import flask
 import os
-from bs4 import BeautifulSoup
-import random
-import requests
-import lxml
-import cchardet
 
-url = "https://discord.com/api/v8"
 app = flask.Flask(__name__)
-session = requests.Session()
 
 @app.route("/", methods=["GET"])
 def main():
@@ -25,32 +18,6 @@ def invite():
 @app.route("/sourcecode", methods=["GET"])
 def sourcecode():
     return flask.redirect("https://github.com/CZUBIX/cenzura")
-
-@app.route("/api/memes/jbzd", methods=["GET"])
-def jzbdmemes():
-    memes = []
-
-    while not memes:
-        memes_page = session.get(f"https://jbzd.com.pl/str/{random.randint(1, 235)}").content
-        memes_soup = BeautifulSoup(memes_page, "lxml")
-
-        memes = memes_soup.find_all("img", {"class":"article-image"})
-        memes = [meme["src"] for meme in memes]
-
-    return flask.jsonify(meme=random.choice(memes))
-
-@app.route("/api/memes/kwejk", methods=["GET"])
-def kwejkmemes():
-    memes = []
-
-    while not memes:
-        memes_page = session.get(f"https://kwejk.pl/strona/{random.randint(4, 4000)}").content
-        memes_soup = BeautifulSoup(memes_page, "lxml")
-
-        memes = memes_soup.find_all("img", {"class":"full-image"})
-        memes = [meme["src"] for meme in memes]
-
-    return flask.jsonify(meme=random.choice(memes))
 
 @app.route("/sitemap.xml")
 def sitemap():

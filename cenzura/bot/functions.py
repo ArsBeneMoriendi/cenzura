@@ -1,5 +1,5 @@
 import json
-from lib import permissions
+from lib.ctx import ctx
 
 def read_json(file):
     with open("json/" + file + ".json", "r") as f:
@@ -10,23 +10,60 @@ def write_json(file, data):
         json.dump(data, f, indent=4)
 
 def has_permission(ctx):
-    guild = ctx.data["guild_id"]
     guilds = read_json("guilds")
     
-    if not "permissions" in guilds[guild]:
-        guilds[guild]["permissions"] = {}
+    if not "permissions" in guilds[ctx.guild.id]:
+        guilds[ctx.guild.id]["permissions"] = {}
         write_json("guilds", guilds)
 
-    if permissions.has_permission(ctx, ctx.data["author"]["id"], "ADMINISTRATOR") or ctx.data["author"]["id"] == ctx.guilds[guild]["owner_id"]:
+    if ctx.author.has_permission("ADMINISTRATOR"):
         return True
 
-    ctx.data["member"]["roles"].append(ctx.data["guild_id"])
-
-    for role in ctx.data["member"]["roles"]:
-        if role in guilds[guild]["permissions"] and ctx.command in guilds[guild]["permissions"][role]:
-            return guilds[guild]["permissions"][role][ctx.command]
+    for role in ctx.author.roles:
+        if role.id in guilds[ctx.guild.id]["permissions"] and ctx.command in guilds[ctx.guild.id]["permissions"][role.id]:
+            return guilds[ctx.guild.id]["permissions"][role.id][ctx.command]
         else:
-            if ctx.command in ctx.default:
+            if "default" in ctx.commands[ctx.command] and ctx.commands[ctx.command]["default"] == True:
                 return True
 
     return False
+
+def find_working(*types):
+    def func(arg):
+        no_one = False
+        for _type in types:
+            try:
+                arg = _type(arg)
+                no_one = False
+                break
+            except:
+                no_one = True
+                continue
+
+        if no_one:
+            raise Exception()
+
+        return arg
+
+    return func
+
+def between(_from, to):
+    def func(arg: int):
+        if int(arg) < _from or int(arg) > to:
+            raise Exception()
+
+        return int(arg)
+
+    return func
+
+def is_in(*args):
+    def func(arg):
+        if not arg.upper() in [x.upper() for x in args]:
+            raise Exception()
+
+        return arg
+
+    return func
+
+def get_int(user, user2):
+    return round((int(user.id) / int(user2.created_at.timestamp())) + (int(user2.id) / int(user.created_at.timestamp())))

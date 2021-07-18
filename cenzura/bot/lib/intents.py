@@ -1,4 +1,4 @@
-intents_list = {
+INTENTS_LIST = {
     "GUILDS": 1 << 0,
     "GUILD_MEMBERS": 1 << 1,
     "GUILD_BANS": 1 << 2,
@@ -22,17 +22,17 @@ def default():
 def get(*args):
     intents = 0
 
-    for intent in intents_list:
+    for intent in INTENTS_LIST:
         if intent in args:
-            intents |= intents_list[intent]
+            intents |= INTENTS_LIST[intent]
 
     return intents
 
 def all_intents(*args):
     intents = 0
 
-    for intent in intents_list:
+    for intent in INTENTS_LIST:
         if not intent in args:
-            intents |= intents_list[intent]
+            intents |= INTENTS_LIST[intent]
 
     return intents

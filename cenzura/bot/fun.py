@@ -1,89 +1,67 @@
-import urllib.parse
 import random
-import json
-import handler
 from PIL import Image, ImageDraw, ImageFont, ImageOps
 import os
 import pyfiglet
-import functions
+from functions import *
 import config
 import time
 import arrays
+from bs4 import BeautifulSoup
+import lxml
+import cchardet
+from lib.errors import NoPermission, InvalidArgumentType
+from lib.types import User, Member
+from lib.embed import Embed
+from lib.components import Components, Row, Button, Styles
 
 interactions = []
 results = {}
 
 def load(bot, discord):
-    @bot.command(description="Wysyła link google", usage="google (zapytanie)", category="Fun", default=True)
-    def google(ctx):
-        if not functions.has_permission(ctx):
-            return handler.error_handler(ctx, "nopermission", ctx.command)
-
-        ctx.args = " ".join(ctx.args)
-        if not ctx.args:
-            return handler.error_handler(ctx, "arguments", "google (zapytanie)")
-
-        ctx.send(f"https://google.com/search?q={urllib.parse.quote_plus(ctx.args)}")
-
     @bot.command(description="Losuje liczbe", usage="rnumber (od) (do)", category="Fun", default=True)
-    def rnumber(ctx):
-        if not functions.has_permission(ctx):
-            return handler.error_handler(ctx, "nopermission", ctx.command)
+    def rnumber(ctx, _from: int, to: int):
+        if not has_permission(ctx):
+            raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
 
-        if not len(ctx.args) == 2:
-            return handler.error_handler(ctx, "arguments", "rnumber (od) (do)")
-
-        ctx.args = list(map(lambda x: int(x), ctx.args))
-
-        ctx.send(random.randint(ctx.args[0], ctx.args[1]))
+        ctx.send(random.randint(_from, to))
 
     @bot.command(description="Losuje tekst z podanych", usage="rchoice (a) | (b) | [c] itd.", category="Fun", default=True)
-    def rchoice(ctx):
-        if not functions.has_permission(ctx):
-            return handler.error_handler(ctx, "nopermission", ctx.command)
+    def rchoice(ctx, args):
+        if not has_permission(ctx):
+            raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
 
         ctx.args = " ".join(ctx.args)
         ctx.args = ctx.args.split(" | ")
 
         if not len(ctx.args) >= 2:
-            return handler.error_handler(ctx, "arguments", "rchoice (a) | (b) | [c] itd.")
+            return ctx.send("Podaj chociaż więcej niż 2 argumenty")
 
         ctx.send(random.choice(ctx.args))
 
     @bot.command(description="Pokazuje avatar", usage="avatar [osoba]", category="Fun", default=True)
-    def avatar(ctx):
-        if not functions.has_permission(ctx):
-            return handler.error_handler(ctx, "nopermission", ctx.command)
+    def avatar(ctx, user: User = None):
+        if not has_permission(ctx):
+            raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
 
-        if not ctx.data["mentions"]:
-            user = ctx.data["author"]["id"], ctx.data["author"]["avatar"]
-        else:
-            user = ctx.data["mentions"][0]["id"], ctx.data["mentions"][0]["avatar"]
-
-        image = ctx.requests.get(f"https://cdn.discordapp.com/avatars/{user[0]}/{user[1]}.png?size=2048").content
+        user = user or ctx.author
+        image = ctx.requests.get(user.avatar_url).content
 
         ctx.send(files=[("avatar.png", image)])
 
     @bot.command(description="Pokazuje w ilu procentach osoby sie kochają", usage="ship (osoba) [osoba]", category="Fun", default=True)
-    def ship(ctx):
-        if not functions.has_permission(ctx):
-            return handler.error_handler(ctx, "nopermission", ctx.command)
+    def ship(ctx, user: User, user2: User = None):
+        if not has_permission(ctx):
+            raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
 
-        if len(ctx.data["mentions"]) == 1:
-            me = ctx.data["author"]["id"], ctx.data["author"]["avatar"], ctx.data["author"]["username"]
-            me_avatar = f"https://cdn.discordapp.com/avatars/{me[0]}/{me[1]}.png?size=2048"
-            m = ctx.data["mentions"][0]["id"], ctx.data["mentions"][0]["avatar"], ctx.data["mentions"][0]["username"]
-            m_avatar = f"https://cdn.discordapp.com/avatars/{m[0]}/{m[1]}.png?size=2048"
-        elif len(ctx.data["mentions"]) == 2:
-            me = ctx.data["mentions"][1]["id"], ctx.data["mentions"][1]["avatar"], ctx.data["mentions"][1]["username"]
-            me_avatar = f"https://cdn.discordapp.com/avatars/{me[0]}/{me[1]}.png?size=2048"
-            m = ctx.data["mentions"][0]["id"], ctx.data["mentions"][0]["avatar"], ctx.data["mentions"][0]["username"]
-            m_avatar = f"https://cdn.discordapp.com/avatars/{m[0]}/{m[1]}.png?size=2048"
-        else:
-            return handler.error_handler(ctx, "arguments", "ship (osoba) [osoba]")
+        if not user2:
+            user2 = user
+            user = ctx.author
 
-        open("images/member1.png", "wb").write(ctx.requests.get(m_avatar).content)
-        open("images/member2.png", "wb").write(ctx.requests.get(me_avatar).content)
+        if user == user2:
+            raise InvalidArgumentType("user is the same as user2", ctx.commands[ctx.command], ["user", "user2"], "user2")
+
+        open("images/member1.png", "wb").write(ctx.requests.get(user.avatar_url).content)
+        open("images/member2.png", "wb").write(ctx.requests.get(user2.avatar_url).content)
         
         para = Image.open("images/para.png").convert("RGBA")
         member1 = Image.open("images/member1.png").convert("RGBA")
@@ -97,61 +75,52 @@ def load(bot, discord):
         
         para.save("images/ship.png")
 
-        ctx.send(f"**{m[2]}** + **{me[2]}** = **{m[2][:round(len(m[2]) / 2)].lower()}{me[2][round(len(me[2]) / 2):].lower()}**\nIch miłość jest równa **{random.randint(0, 100)}%**!", files=[("ship.png", open("images/ship.png", "rb"))])
-
-    @bot.command(description="Pokazuje ikone serwera", usage="servericon", category="Fun", default=True)
-    def servericon(ctx):
-        if not functions.has_permission(ctx):
-            return handler.error_handler(ctx, "nopermission", ctx.command)
-
-        guild = discord.get_guild(ctx.data["guild_id"])
-        image = ctx.requests.get(f"https://cdn.discordapp.com/icons/{ctx.data['guild_id']}/{guild['icon']}.png?size=2048").content
-
-        ctx.send(files=[("servericon.png", image)])
+        random.seed(get_int(user, user2))
+        ctx.send(f"**{user.username}** + **{user2.username}** = **{user.username[:round(len(user.username) / 2)].lower()}{user2.username[round(len(user2.username) / 2):].lower()}**\nIch miłość jest równa **{random.randint(0, 100)}%**!", files=[("ship.png", open("images/ship.png", "rb"))])
 
     @bot.command(description="Uderza osobe", usage="slap (osoba)", category="Fun", default=True)
-    def slap(ctx):
-        if not functions.has_permission(ctx):
-            return handler.error_handler(ctx, "nopermission", ctx.command)
+    def slap(ctx, user: User):
+        if not has_permission(ctx):
+            raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
 
-        if not len(ctx.data["mentions"]) == 1:
-            return handler.error_handler(ctx, "arguments", "slap (osoba)")
+        if user == ctx.author:
+            raise InvalidArgumentType("user is the same as author", ctx.commands[ctx.command], ["user"], "user")
 
         image_url = ctx.requests.get("https://nekos.life/api/v2/img/slap").json()["url"]
         image = ctx.requests.get(image_url).content
 
-        ctx.send(f"**{ctx.data['author']['username']}** uderzył **{ctx.data['mentions'][0]['username']}**!", files=[("slap.gif", image)])
+        ctx.send(f"**{ctx.author.username}** uderzył **{user.username}**!", files=[("slap.gif", image)])
 
     @bot.command(description="Całuje osobe", usage="kiss (osoba)", category="Fun", default=True)
-    def kiss(ctx):
-        if not functions.has_permission(ctx):
-            return handler.error_handler(ctx, "nopermission", ctx.command)
+    def kiss(ctx, user: User):
+        if not has_permission(ctx):
+            raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
 
-        if not len(ctx.data["mentions"]) == 1:
-            return handler.error_handler(ctx, "arguments", "kiss (osoba)")
+        if user == ctx.author:
+            raise InvalidArgumentType("user is the same as author", ctx.commands[ctx.command], ["user"], "user")
 
         image_url = ctx.requests.get("https://nekos.life/api/kiss").json()["url"]
         image = ctx.requests.get(image_url).content
 
-        ctx.send(f"**{ctx.data['author']['username']}** pocałował **{ctx.data['mentions'][0]['username']}**!", files=[("kiss.gif", image)])
+        ctx.send(f"**{ctx.author.username}** pocałował **{user.username}**!", files=[("kiss.gif", image)])
 
     @bot.command(description="Przytula osobe", usage="hug (osoba)", category="Fun", default=True)
-    def hug(ctx):
-        if not functions.has_permission(ctx):
-            return handler.error_handler(ctx, "nopermission", ctx.command)
+    def hug(ctx, user: User):
+        if not has_permission(ctx):
+            raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
 
-        if not len(ctx.data["mentions"]) == 1:
-            return handler.error_handler(ctx, "arguments", "hug (osoba)")
+        if user == ctx.author:
+            raise InvalidArgumentType("user is the same as author", ctx.commands[ctx.command], ["user"], "user")
 
         image_url = ctx.requests.get("https://nekos.life/api/hug").json()["url"]
         image = ctx.requests.get(image_url).content
 
-        ctx.send(f"**{ctx.data['author']['username']}** przytulił **{ctx.data['mentions'][0]['username']}**!", files=[("hug.gif", image)])
+        ctx.send(f"**{ctx.author.username}** przytulił **{user.username}**!", files=[("hug.gif", image)])
 
     @bot.command(description="Pokazuje losowe zdjęcie kota", usage="cat", category="Fun", default=True)
     def cat(ctx):
-        if not functions.has_permission(ctx):
-            return handler.error_handler(ctx, "nopermission", ctx.command)
+        if not has_permission(ctx):
+            raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
 
         image_url = ctx.requests.get("https://some-random-api.ml/img/cat").json()["link"]
         image = ctx.requests.get(image_url).content
@@ -160,8 +129,8 @@ def load(bot, discord):
 
     @bot.command(description="Pokazuje losowe zdjęcie psa", usage="dog", category="Fun", default=True)
     def dog(ctx):
-        if not functions.has_permission(ctx):
-            return handler.error_handler(ctx, "nopermission", ctx.command)
+        if not has_permission(ctx):
+            raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
 
         image_url = ctx.requests.get("https://some-random-api.ml/img/dog").json()["link"]
         image = ctx.requests.get(image_url).content
@@ -170,8 +139,8 @@ def load(bot, discord):
 
     @bot.command(description="Pokazuje losowe zdjęcie pandy", usage="panda", category="Fun", default=True)
     def panda(ctx):
-        if not functions.has_permission(ctx):
-            return handler.error_handler(ctx, "nopermission", ctx.command)
+        if not has_permission(ctx):
+            raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
 
         image_url = ctx.requests.get("https://some-random-api.ml/img/panda").json()["link"]
         image = ctx.requests.get(image_url).content
@@ -179,54 +148,65 @@ def load(bot, discord):
         ctx.send(files=[("panda.png", image)])
 
     @bot.command(description="Generuje tekst w ascii", usage="ascii (tekst)", category="Fun", default=True)
-    def _ascii(ctx):
-        if not functions.has_permission(ctx):
-            return handler.error_handler(ctx, "nopermission", ctx.command)
-
-        if not ctx.args:
-            return handler.error_handler(ctx, "arguments", "ascii (tekst)")
+    def _ascii(ctx, text):
+        if not has_permission(ctx):
+            raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
 
         ctx.send("```" + pyfiglet.Figlet().renderText(" ".join(ctx.args)) + "```")
 
     @bot.command(description="Pokazuje w ilu procentach jest sie gejem", usage="howgay [osoba]", category="Fun", default=True)
-    def howgay(ctx):
-        if not functions.has_permission(ctx):
-            return handler.error_handler(ctx, "nopermission", ctx.command)
+    def howgay(ctx, user: User = None):
+        if not has_permission(ctx):
+            raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
 
-        if not ctx.data["mentions"]:
-            user = ctx.data["author"]["username"]
-        else:
-            user = ctx.data["mentions"][0]["username"]
+        user = user or ctx.author
 
-        ctx.send(f"{user} jest gejem w {random.randint(0, 100)}%!")
+        random.seed(get_int(ctx.bot, user))
+        ctx.send(f"{user.username} jest gejem w {random.randint(0, 100)}%!")
 
     @bot.command(description="Wysyła obrazek \"Achievement Get!\"", usage="achievement (tekst)", category="Fun", default=True)
-    def achievement(ctx):
-        if not functions.has_permission(ctx):
-            return handler.error_handler(ctx, "nopermission", ctx.command)
+    def achievement(ctx, text):
+        if not has_permission(ctx):
+            raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
 
         ctx.args = " ".join(ctx.args)
-        if not ctx.args:
-            return handler.error_handler(ctx, "arguments", "achievement (tekst)")
-        elif len(ctx.args) > 23:
-            return handler.error_handler(ctx, "toolongtext", 23)
 
-        ctx.args = ctx.args.replace(" ", "+").replace("ś", "s").replace("ę", "e").replace("ż", "z").replace("ź", "z").replace("ł", "l").replace("ó", "o").replace("ą", "a").replace("ć", "c").replace("Ś", "S").replace("Ę", "E").replace("Ż", "Z").replace("Ź", "Z").replace("Ł", "L").replace("Ó", "O").replace("Ą", "A").replace("Ć", "C")
+        if len(ctx.args) > 23:
+            return ctx.send("Tekst jest za długi (maksymalna długość to 23)")
 
-        image = ctx.requests.get(f"https://minecraftskinstealer.com/achievement/{random.randint(1, 40)}/Achievement+Get%21/{ctx.args}").content
+        polish_chars = {
+            "ą": "a",
+            "ś": "s",
+            "ó": "o",
+            "ł": "l",
+            "ę": "e",
+            "ń": "n",
+            "ź": "z",
+            "ż": "z",
+            "ć": "c"
+        }
+
+        text = ""
+
+        for char in ctx.args:
+            if char in polish_chars:
+                text += polish_chars[char]
+            else:
+                text += char
+
+        image = ctx.requests.get(f"https://minecraftskinstealer.com/achievement/{random.randint(1, 40)}/Achievement+Get%21/{text}").content
 
         ctx.send(files=[("achievement.png", image)])
 
     @bot.command(description="Wysyła tekst w emotkach garfield", usage="garfield (tekst)", category="Fun", default=True)
-    def garfield(ctx):
-        if not functions.has_permission(ctx):
-            return handler.error_handler(ctx, "nopermission", ctx.command)
+    def garfield(ctx, text):
+        if not has_permission(ctx):
+            raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
 
         ctx.args = (" ".join(ctx.args)).lower()
-        if not ctx.args:
-            return handler.error_handler(ctx, "arguments", "garfield (tekst)")
-        elif len(ctx.args) > 100:
-            return handler.error_handler(ctx, "toolongtext", 100)
+
+        if len(ctx.args) > 100:
+            return ctx.send("Tekst jest za długi (maksymalna długość to 100)")
 
         other = {
             "ą": "a",
@@ -259,7 +239,7 @@ def load(bot, discord):
 
     @bot.event
     def INTERACTION_CREATE(ctx):
-        if ("calc", ctx.data["member"]["user"]["id"], ctx.data["channel_id"], ctx.data["message"]["id"]) in interactions:
+        if ("calc", ctx.member.id, ctx.channel.id, ctx.data["message"]["id"]) in interactions:
             if not ctx.data["message"]["id"] in results:
                 results[ctx.data["message"]["id"]] = ""
 
@@ -318,182 +298,55 @@ def load(bot, discord):
 
     @bot.command(description="Kalkulator", usage="calc", category="Fun", default=True)
     def calc(ctx):
-        if not functions.has_permission(ctx):
-            return handler.error_handler(ctx, "nopermission", ctx.command)
+        if not has_permission(ctx):
+            raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
 
-        msg = ctx.send("```0```", other_data = {
-            "components": [
-                {
-                    "type": 1,
-                    "components": [
-                        {
-                            "type": 2,
-                            "label": "x\u02b8",
-                            "style": 2,
-                            "custom_id": "power"
-                        },
-                        {
-                            "type": 2,
-                            "label": "%",
-                            "style": 2,
-                            "custom_id": "percent"
-                        },
-                        {
-                            "type": 2,
-                            "label": "<-",
-                            "style": 2,
-                            "custom_id": "backspace"
-                        },
-                        {
-                            "type": 2,
-                            "label": "C",
-                            "style": 4,
-                            "custom_id": "clear"
-                        }
-                    ]
-                },
-                {
-                    "type": 1,
-                    "components": [
-                        {
-                            "type": 2,
-                            "label": "7",
-                            "style": 2,
-                            "custom_id": "7"
-                        },
-                        {
-                            "type": 2,
-                            "label": "8",
-                            "style": 2,
-                            "custom_id": "8"
-                        },
-                        {
-                            "type": 2,
-                            "label": "9",
-                            "style": 2,
-                            "custom_id": "9"
-                        },
-                        {
-                            "type": 2,
-                            "label": "/",
-                            "style": 2,
-                            "custom_id": "divide"
-                        },
-                        {
-                            "type": 2,
-                            "label": "(",
-                            "style": 2,
-                            "custom_id": "leftbracket"
-                        }
-                    ]
-                },
-                {
-                    "type": 1,
-                    "components": [
-                        {
-                            "type": 2,
-                            "label": "4",
-                            "style": 2,
-                            "custom_id": "4"
-                        },
-                        {
-                            "type": 2,
-                            "label": "5",
-                            "style": 2,
-                            "custom_id": "5"
-                        },
-                        {
-                            "type": 2,
-                            "label": "6",
-                            "style": 2,
-                            "custom_id": "6"
-                        },
-                        {
-                            "type": 2,
-                            "label": "*",
-                            "style": 2,
-                            "custom_id": "multiply"
-                        },
-                        {
-                            "type": 2,
-                            "label": ")",
-                            "style": 2,
-                            "custom_id": "rightbracket"
-                        }
-                    ]
-                },
-                {
-                    "type": 1,
-                    "components": [
-                        {
-                            "type": 2,
-                            "label": "1",
-                            "style": 2,
-                            "custom_id": "1"
-                        },
-                        {
-                            "type": 2,
-                            "label": "2",
-                            "style": 2,
-                            "custom_id": "2"
-                        },
-                        {
-                            "type": 2,
-                            "label": "3",
-                            "style": 2,
-                            "custom_id": "3"
-                        },
-                        {
-                            "type": 2,
-                            "label": "-",
-                            "style": 2,
-                            "custom_id": "minus"
-                        }
-                    ]
-                },
-                {
-                    "type": 1,
-                    "components": [
-                        {
-                            "type": 2,
-                            "label": "0",
-                            "style": 2,
-                            "custom_id": "0"
-                        },
-                        {
-                            "type": 2,
-                            "label": ".",
-                            "style": 2,
-                            "custom_id": "dot"
-                        },
-                        {
-                            "type": 2,
-                            "label": "=",
-                            "style": 1,
-                            "custom_id": "equal"
-                        },
-                        {
-                            "type": 2,
-                            "label": "+",
-                            "style": 2,
-                            "custom_id": "add"
-                        }
-                    ]
-                }
-            ]
-        })
+        components = Components(
+            Row(
+                Button("x\u02b8", style=Styles.Gray, custom_id="power"),
+                Button("%", style=Styles.Gray, custom_id="percent"),
+                Button("<-", style=Styles.Gray, custom_id="backspace"),
+                Button("C", style=Styles.Red, custom_id="clear")
+            ),
+            Row(
+                Button("7", style=Styles.Gray, custom_id="7"),
+                Button("8", style=Styles.Gray, custom_id="8"),
+                Button("9", style=Styles.Gray, custom_id="9"),
+                Button("/", style=Styles.Gray, custom_id="divide"),
+                Button("(", style=Styles.Gray, custom_id="leftbracket")
+            ),
+            Row(
+                Button("4", style=Styles.Gray, custom_id="4"),
+                Button("5", style=Styles.Gray, custom_id="5"),
+                Button("6", style=Styles.Gray, custom_id="6"),
+                Button("*", style=Styles.Gray, custom_id="multiply"),
+                Button(")", style=Styles.Gray, custom_id="rightbracket")
+            ),
+            Row(
+                Button("1", style=Styles.Gray, custom_id="1"),
+                Button("2", style=Styles.Gray, custom_id="2"),
+                Button("3", style=Styles.Gray, custom_id="3"),
+                Button("-", style=Styles.Gray, custom_id="minus")
+            ),
+            Row(
+                Button("0", style=Styles.Gray, custom_id="0"),
+                Button(".", style=Styles.Gray, custom_id="dot"),
+                Button("=", style=Styles.Blue, custom_id="equal"),
+                Button("+", style=Styles.Gray, custom_id="add")
+            )
+        )
+
+        msg = ctx.send("```0```", components=components)
 
         msg = msg.json()
-        interactions.append(("calc", ctx.data["author"]["id"], ctx.data["channel_id"], msg["id"]))
+        interactions.append(("calc", ctx.author.id, ctx.channel.id, msg["id"]))
 
     @bot.command(description="Ukrywa tekst w tekście", usage="encode (tekst wyświetlany) | (tekst ukryty)", category="Fun", default=True)
-    def encode(ctx):
-        if not functions.has_permission(ctx):
-            return handler.error_handler(ctx, "nopermission", ctx.command)
+    def encode(ctx, text):
+        if not has_permission(ctx):
+            raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
 
         ctx.args = " ".join(ctx.args).lower().split(" | ")
-        if not len(ctx.args) == 2:
-            return handler.error_handler(ctx, "arguments", "encode (tekst wyświetlany) | (tekst ukryty)")
 
         text = ctx.args[0][0]
 
@@ -522,13 +375,11 @@ def load(bot, discord):
         ctx.send("`" + text + "`")
 
     @bot.command(description="Pokazuje ukryty tekst", usage="decode (tekst)", category="Fun", default=True)
-    def decode(ctx):
-        if not functions.has_permission(ctx):
-            return handler.error_handler(ctx, "nopermission", ctx.command)
+    def decode(ctx, text):
+        if not has_permission(ctx):
+            raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
 
         ctx.args = " ".join(ctx.args)
-        if not ctx.args:
-            return handler.error_handler(ctx, "arguments", "encode (tekst wyświetlany) | (tekst ukryty)")
 
         text = ""
         letter = ""
@@ -547,27 +398,30 @@ def load(bot, discord):
 
         ctx.send("`" + text + "`")
 
-    @bot.command(description="\"nie widać mnie\" mem z poligonu", usage="cantseeme [tekst/osoba/obrazek/url z obrazkiem]", category="Fun", default=True)
-    def cantseeme(ctx):
-        if not functions.has_permission(ctx):
-            return handler.error_handler(ctx, "nopermission", ctx.command)
+    @bot.command(description="\"nie widać mnie\" mem z poligonu", usage="cantseeme [tekst/osoba/obrazek/url]", category="Fun", default=True)
+    def cantseeme(ctx, text = None):
+        if not has_permission(ctx):
+            raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
 
         formats = ("image/png", "image/jpeg", "image/gif", "image/webp")
 
-        if (len(ctx.data["mentions"]) and len(ctx.args)) == 1:
+        if not text and not ctx.data["attachments"]:
+            ctx.mentions.append(ctx.author)
+
+        if ctx.mentions:
             message_type = "image"
-            content = ctx.requests.get(f"https://cdn.discordapp.com/avatars/{ctx.data['mentions'][0]['id']}/{ctx.data['mentions'][0]['avatar']}.png?size=2048").content
+            content = ctx.requests.get(ctx.mentions[0].avatar_url).content
             open("images/image.png", "wb").write(content)
 
-        elif len(ctx.data["attachments"]) == 1:
+        elif ctx.data["attachments"]:
             req = ctx.requests.get(ctx.data["attachments"][0]["url"])
             message_type = "text"
             if req.headers["content-type"] in formats:
                 message_type = "image"
                 open("images/image.png", "wb").write(req.content)
 
-        elif len(ctx.args) == 1 and ctx.args[0].startswith(("https://", "http://")):
-            req = ctx.requests.get(ctx.args[0])
+        elif text and text.startswith(("https://", "http://")):
+            req = ctx.requests.get(text)
             message_type = "text"
             if req.headers["content-type"] in formats:
                 message_type = "image"
@@ -578,7 +432,7 @@ def load(bot, discord):
 
         elif not ctx.args:
             message_type = "image"
-            content = ctx.requests.get(f"https://cdn.discordapp.com/avatars/{ctx.data['author']['id']}/{ctx.data['author']['avatar']}.png?size=2048").content
+            content = ctx.requests.get(ctx.author.avatar_url).content
             open("images/image.png", "wb").write(content)
 
         krzak = Image.open("images/krzak.png")
@@ -624,16 +478,13 @@ def load(bot, discord):
         ctx.send(files=[("cantseeme.png", open("images/cantseeme.png", "rb"))])
 
     @bot.command(description="Wysyła zatęczowany avatar", usage="gay [osoba]", category="Fun", default=True)
-    def gay(ctx):
-        if not functions.has_permission(ctx):
-            return handler.error_handler(ctx, "nopermission", ctx.command)
+    def gay(ctx, user: User = None):
+        if not has_permission(ctx):
+            raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
 
-        if not ctx.data["mentions"]:
-            user = ctx.data["author"]["id"], ctx.data["author"]["avatar"]
-        else:
-            user = ctx.data["mentions"][0]["id"], ctx.data["mentions"][0]["avatar"]
+        user = user or ctx.author
 
-        content = ctx.requests.get(f"https://cdn.discordapp.com/avatars/{user[0]}/{user[1]}.png?size=2048").content
+        content = ctx.requests.get(user.avatar_url).content
         open("images/image.png", "wb").write(content)
 
         image = Image.open("images/image.png").convert("RGBA")
@@ -651,12 +502,78 @@ def load(bot, discord):
 
     @bot.command(description="Wysyła losowego mema z jbzd", usage="meme", category="Fun", default=True)
     def meme(ctx):
-        if not functions.has_permission(ctx):
-            return handler.error_handler(ctx, "nopermission", ctx.command)
+        if not has_permission(ctx):
+            raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
 
-        channel = discord.get_channel(ctx.data["channel_id"])
-        if not channel["nsfw"]:
-            return handler.error_handler(ctx, "nsfw")
+        if not ctx.channel.nsfw:
+            return ctx.send("Kanał nie jest nsfw")
 
-        url = ctx.requests.get("https://cenzurabot.pl/api/memes/jbzd").json()
-        ctx.send(url["meme"])
+        memes = []
+
+        while not memes:
+            memes_page = ctx.requests.get(f"https://jbzd.com.pl/str/{random.randint(1, 235)}").content
+            memes_soup = BeautifulSoup(memes_page, "lxml")
+
+            memes = memes_soup.find_all("img", {"class": "article-image"})
+            memes = [meme["src"] for meme in memes]
+
+        ctx.send(random.choice(memes))
+
+    @bot.command(description="Pokazuje informacje o użytkowniku", usage="userinfo [osoba]", category="Fun", default=True)
+    def userinfo(ctx, user: find_working(Member, User) = None):
+        if not has_permission(ctx):
+            raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
+
+        user = user or ctx.author
+
+        embed = Embed(title=f"Informacje o {user.username}{' (bot)' if user.bot else ''}:", color=0xe74c3c)
+        embed.set_thumbnail(url=user.avatar_url)
+
+        embed.add_field(name="ID:", value=user.id)
+        embed.add_field(name="Nick z tagiem:", value=user.user)
+        if isinstance(user, Member):
+            embed.add_field(name="Role:", value=", ".join([role.name for role in user.roles][:-1]))
+            embed.add_field(name="Dołączył na serwer:", value=f"<t:{int(user.joined_at.timestamp())}:F>")
+        embed.add_field(name="Utworzył konto:" if not user.bot else "Stworzony dnia:", value=f"<t:{int(user.created_at.timestamp())}:F>")
+        if user.public_flags:
+            embed.add_field(name="Odznaki:", value=", ".join([f"<:{flag}:{arrays.flags[flag]}>" for flag in user.public_flags]))
+        embed.add_field(name="Avatar:", value=f"[link]({user.avatar_url})")
+        if user.bot:
+            embed.add_field(name="Zaproszenie:", value=f"[link](https://discord.com/oauth2/authorize?client_id={user.id}&scope=bot)")
+
+        ctx.send(embed=embed)
+
+    @bot.command(description="Pokazuje informacje o serwerze", usage="serverinfo", category="Fun", default=True)
+    def serverinfo(ctx):
+        if not has_permission(ctx):
+            raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
+
+        embed = Embed(title=f"Informacje o {ctx.guild.name}:", color=0xe74c3c)
+        embed.set_thumbnail(url=ctx.guild.icon_url)
+
+        embed.add_field(name="Właściciel:", value=f"{ctx.guild.owner.mention} ({ctx.guild.owner_id})")
+        embed.add_field(name="ID:", value=ctx.guild.id)
+        embed.add_field(name="Ilość osób:", value=ctx.guild.member_count)
+        embed.add_field(name="Ilość kanałów:", value=len(ctx.guild.channels))
+        embed.add_field(name="Ilość ról:", value=len(ctx.guild.roles))
+        embed.add_field(name="Ilość emotek:", value=len(ctx.guild.emojis))
+        embed.add_field(name="Został stworzony:", value=f"<t:{int(ctx.guild.created_at.timestamp())}:F>")
+        embed.add_field(name="Boosty:", value=f"{ctx.guild.boosts} boosty / {ctx.guild.level} poziom")
+        if ctx.guild.vanity_url:
+            embed.add_field(name="Własny link:", value=f"discord.gg/{ctx.guild.vanity_url}")
+        embed.add_field(name="Ikona:", value=f"[link]({ctx.guild.icon_url})")
+        if ctx.guild.banner:
+            embed.add_field(name="Banner:", value=f"[link]({ctx.guild.banner_url})")
+            embed.set_image(url=ctx.guild.banner_url)
+
+        ctx.send(embed=embed)
+
+    @bot.command(description="\U0001F633", usage="dick [osoba]", category="Fun", default=True)
+    def dick(ctx, user: User = None):
+        if not has_permission(ctx):
+            raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
+
+        user = user or ctx.author
+
+        random.seed(get_int(ctx.bot, user))
+        ctx.send(f"Kuktas {user.username}\n8{'=' * random.randint(1, 20)}D")

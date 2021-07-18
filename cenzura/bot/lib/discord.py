@@ -1,10 +1,11 @@
-from . import gateway
+from .ctx import ctx
 import requests
 import config
 import threading
 import time
 import json
 from .embed import Embed
+from .components import Components
 
 session = requests.Session()
 
@@ -40,13 +41,13 @@ def get_channel(channel):
 def modify_channel(channel, data):
     return request("PATCH", "/channels/" + channel, data)
 
-def get_messages(channel, limit=100):
+def get_messages(channel, limit = 100):
     return request("GET", "/channels/" + channel + f"/messages?limit={limit}").json()
 
 def get_message(channel, message):
     return request("GET", "/channels/" + channel + "/messages/" + message).json()
 
-def send(channel, content = None, *, embed: Embed = None, other_data: dict = None, files: list = None, reply = True, mentions: list = []):
+def send(channel, content = None, *, embed: Embed = None, components: Components = None, other_data: dict = None, files: list = None, reply = True, mentions: list = []):
     data = {}
 
     if reply and not files:
@@ -57,9 +58,9 @@ def send(channel, content = None, *, embed: Embed = None, other_data: dict = Non
         }
 
         data["message_reference"] = {
-            "guild_id": gateway.ctx.data["guild_id"],
-            "channel_id": gateway.ctx.data["channel_id"],
-            "message_id": gateway.ctx.data["id"]
+            "guild_id": ctx.data["guild_id"],
+            "channel_id": ctx.data["channel_id"],
+            "message_id": ctx.data["id"]
         }
 
     if content:
@@ -67,6 +68,9 @@ def send(channel, content = None, *, embed: Embed = None, other_data: dict = Non
 
     if embed:
         data["embed"] = embed.__dict__
+
+    if components:
+        data.update(components.__dict__)
     
     if other_data:
         data.update(other_data)
@@ -141,7 +145,7 @@ def modify_guild_channel_positions(guild, data):
 def get_guild_member(guild, user):
     return request("GET", "/guilds/" + guild + "/members/" + user).json()
 
-def list_guild_members(guild, limit=1000, after=0):
+def list_guild_members(guild, limit = 1000, after = 0):
     return request("GET", "/guilds/" + guild + f"/members?limit={limit}&after={after}").json()
 
 def modify_guild_member(guild, user, data):
@@ -153,11 +157,11 @@ def add_guild_member_role(guild, user, role):
 def remove_guild_member_role(guild, user, role):
     return request("DELETE", "/guilds/" + guild + "/members/" + user + "/roles/" + role)
 
-def remove_guild_member(guild, user):
-    return request("DELETE", "/guilds/" + guild + "/members/" + user)
+def remove_guild_member(guild, user, reason = None):
+    return request("DELETE", "/guilds/" + guild + "/members/" + user + (("?reason=" + reason) if reason else ""))
 
 def create_guild_ban(guild, user, reason=None, delete_message_days=0):
-    return request("PUT", "/guilds/" + guild + "/bans/" + user + f"?delete_message_days={delete_message_days}&reason={reason}")
+    return request("PUT", "/guilds/" + guild + "/bans/" + user + f"?delete_message_days={delete_message_days}{'&reason=' + reason if reason else ''}")
 
 def get_guild_roles(guild):
     return request("GET", "/guilds/" + guild + "/roles").json()

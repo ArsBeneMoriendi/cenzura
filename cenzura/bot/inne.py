@@ -1,152 +1,154 @@
-import functions
-import handler
+from functions import *
 from PIL import Image, ImageDraw, ImageFont
 import re
 from lib.embed import Embed
+from lib.errors import NoPermission, Forbidden
+from lib.types import User, Member
 
 def load(bot, discord):
     @bot.command(description="Pokazuje liste ostatnich usuniętych wiadomości", usage="snipe", category="Inne", default=True)
     def snipe(ctx):
-        if not functions.has_permission(ctx):
-            return handler.error_handler(ctx, "nopermission", ctx.command)
+        if not has_permission(ctx):
+            raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
 
         if not hasattr(ctx, "snipe"):
             return ctx.send("Nie udało sie złapać żadnej usuniętej wiadomości")
 
-        snipe = ctx.snipe[ctx.data["guild_id"]] if len(ctx.snipe[ctx.data["guild_id"]]) < 10 else [ctx.snipe[ctx.data["guild_id"]][::-1][_] for _ in range(10)][::-1]
+        snipe = ctx.snipe[ctx.guild.id] if len(ctx.snipe[ctx.guild.id]) < 10 else [ctx.snipe[ctx.guild.id][::-1][_] for _ in range(10)][::-1]
 
-        embed = Embed(title="Lista ostatnich usuniętych wiadomości:", description="\n".join([f"<#{message['channel_id']}> <@{message['author']['id']}>: {message['content']}" for message in snipe]), color=0xe74c3c)
+        embed = Embed(title="Lista ostatnich usuniętych wiadomości:", description="\n".join([f"{message['channel'].mention} {message['author'].mention}: {message['content']}" for message in snipe]), color=0xe74c3c)
         ctx.send(embed=embed)
 
     @bot.command(description="Lista komend todo", usage="todo", category="Inne", default=True)
-    def todo(ctx):
-        if not ctx.args:
-            embed = Embed(title="Komendy todo:", description="> `todo add (tekst)`, `todo view [osoba]`, `todo remove (id)`, `todo clear`", color=0xe74c3c)
-            return ctx.send(embed=embed)
+    def todo(ctx, subcommand = None, arg: find_working(User, int, str) = None):
+        help_embed = Embed(title="Komendy todo:", description="> `todo add (tekst)`, `todo view [osoba]`, `todo remove (id)`, `todo clear`", color=0xe74c3c)
+        
+        if not subcommand:
+            return ctx.send(embed=help_embed)
 
-        user = ctx.data["author"]["id"]
-        users = functions.read_json("users")
+        users = read_json("users")
 
-        if not user in users:
-            users[user] = {}
+        if not ctx.author.id in users:
+            users[ctx.author.id] = {}
 
-        if not "todo" in users[user]:
-            users[user]["todo"] = []
+        if not "todo" in users[ctx.author.id]:
+            users[ctx.author.id]["todo"] = []
 
-        if ctx.args[0] == "add":
+        if subcommand == "add":
+            if not arg:
+                return ctx.send(embed=help_embed)
+
             ctx.args = " ".join(ctx.args[1:])
             if len(ctx.args) > 100:
-                return handler.error_handler(ctx, "toolongtext", 100)
+                return ctx.send("Tekst jest za długi (maksymalna długość to 100)")
 
-            users[user]["todo"].append(ctx.args)
+            users[ctx.author.id]["todo"].append(ctx.args)
             
             ctx.send("Dodano do todo")
 
-        elif ctx.args[0] == "view":
-            if len(ctx.data["mentions"]) == 1:
-                user = ctx.data["mentions"][0]["id"]
-            
-            user = discord.get_user(user)
+        elif subcommand == "view":
+            arg = arg or ctx.author
+            if not isinstance(arg, (Member, User)):
+                embed = Embed(title="Komendy todo:", description="> `todo add (tekst)`, `todo view [osoba]`, `todo remove (id)`, `todo clear`", color=0xe74c3c)
+                return ctx.send(embed=embed)
 
-            embed = Embed(title=f"Todo użytkownika {user['username']}:", description="\n".join([f"{users[user['id']]['todo'].index(i)}. {i}" for i in users[user["id"]]["todo"]]), color=0xe74c3c)
+            embed = Embed(title=f"Todo użytkownika {arg.username}:", description="\n".join([f"{users[arg.id]['todo'].index(i)}. {i}" for i in users[arg.id]["todo"]]), color=0xe74c3c)
             ctx.send(embed=embed)
 
-        elif ctx.args[0] == "remove":
-            if not len(ctx.args) == 2:
-                return handler.error_handler(ctx, "arguments", "todo remove (id)")
+        elif subcommand == "remove":
+            if arg == None:
+                return ctx.send(embed=help_embed)
 
-            del users[user]["todo"][int(ctx.args[1])]
+            del users[ctx.author.id]["todo"][arg]
             ctx.send("Usunięto z todo")
 
-        elif ctx.args[0] == "clear":
-            del users[user]["todo"]
+        elif subcommand == "clear":
+            del users[ctx.author.id]["todo"]
             ctx.send("Wyczyszczono todo")
 
-        functions.write_json("users", users)
+        write_json("users", users)
 
     @bot.command(description="Własne komendy", usage="cmd", category="Inne")
-    def cmd(ctx):
-        if not functions.has_permission(ctx):
-            return handler.error_handler(ctx, "nopermission", ctx.command)
+    def cmd(ctx, subcommand = None, arg = None, arg2 = None):
+        if not has_permission(ctx):
+            raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
 
-        guild = ctx.data["guild_id"]
-        guilds = functions.read_json("guilds")
+        help_embed = Embed(title="Komendy cmd:", description="> `cmd add (komenda) (tekst)`, `cmd remove (komenda)`, `cmd info (komenda)`, `cmd list`", color=0xe74c3c)
+        help_embed.set_footer(text="<> = nazwa użytkownika, [] = wzmianka")
 
-        if not "cmd" in guilds[guild]:
-            guilds[guild]["cmd"] = {}
+        if not subcommand:
+            return ctx.send(embed=help_embed)
 
-        if not ctx.args:
-            embed = Embed(title="Komendy cmd:", description="> `cmd add (komenda) (tekst)`, `cmd remove (komenda)`, `cmd info (komenda)`, `cmd list`", color=0xe74c3c)
-            embed.set_footer(text="<> = nazwa użytkownika, [] = wzmianka")
+        guilds = read_json("guilds")
 
-            return ctx.send(embed=embed)
+        if not "cmd" in guilds[ctx.guild.id]:
+            guilds[ctx.guild.id]["cmd"] = {}
 
-        if ctx.args[0] == "add":
-            if not len(ctx.args) >= 3:
-                return handler.error_handler(ctx, "arguments", "cmd add (nazwa komendy) (tekst)")
+        if subcommand == "add":
+            if not arg2:
+                return ctx.send(embed=help_embed)
 
-            guilds[guild]["cmd"][ctx.args[1]] = {}
-            guilds[guild]["cmd"][ctx.args[1]]["author"] = ctx.data["author"]
-            guilds[guild]["cmd"][ctx.args[1]]["text"] = ctx.args[2]
+            guilds[ctx.guild.id]["cmd"][arg] = {}
+            guilds[ctx.guild.id]["cmd"][arg]["author_id"] = ctx.author.id
+            guilds[ctx.guild.id]["cmd"][arg]["text"] = arg2
 
             ctx.send("Dodano komende")
 
-        elif ctx.args[0] == "remove":
-            if not len(ctx.args) == 2:
-                return handler.error_handler(ctx, "arguments", "cmd remove (nazwa komendy)")
+        elif subcommand == "remove":
+            if not arg:
+                return ctx.send(embed=help_embed)
 
-            del guilds[guild]["cmd"][ctx.args[1]]
+            del guilds[ctx.guild.id]["cmd"][arg]
             ctx.send("Usunięto komende")
 
-        elif ctx.args[0] == "info":
-            if not len(ctx.args) == 2:
-                return handler.error_handler(ctx, "arguments", "cmd info (nazwa komendy)")
+        elif subcommand == "info":
+            if not arg:
+                return ctx.send(embed=help_embed)
 
-            embed = Embed(title=f"Informacje o {ctx.args[1]}:", color=0xe74c3c)
-            embed.add_field(name="Autor:", value=f"{guilds[guild]['cmd'][ctx.args[1]]['author']['username']}#{guilds[guild]['cmd'][ctx.args[1]]['author']['discriminator']} ({guilds[guild]['cmd'][ctx.args[1]]['author']['id']})")
-            embed.add_field(name="Tekst w komendzie:", value=guilds[guild]["cmd"][ctx.args[1]]["text"])
+            user = User(guilds[ctx.guild.id]["cmd"][arg]["author_id"])
+
+            embed = Embed(title=f"Informacje o {arg}:", color=0xe74c3c)
+            embed.add_field(name="Autor:", value=f"{user.user} ({user.id})")
+            embed.add_field(name="Tekst w komendzie:", value=guilds[ctx.guild.id]["cmd"][arg]["text"])
 
             ctx.send(embed=embed)
 
-        elif ctx.args[0] == "list":
-            embed = Embed(title=f"Lista komend ({len(guilds[guild]['cmd'])}):", description="\n".join([x for x in guilds[guild]["cmd"]]), color=0xe74c3c)
+        elif subcommand == "list":
+            embed = Embed(title=f"Lista komend ({len(guilds[ctx.guild.id]['cmd'])}):", description="\n".join([x for x in guilds[ctx.guild.id]["cmd"]]), color=0xe74c3c)
             ctx.send(embed=embed)
 
         else:
-            embed = Embed(title="Komendy cmd:", description="> `cmd add (komenda) (tekst)`, `cmd remove (komenda)`, `cmd info (komenda)`, `cmd list`", color=0xe74c3c)
-            embed.set_footer(text="<> = nazwa użytkownika, [] = wzmianka")
+            return ctx.send(embed=help_embed)
 
-            return ctx.send(embed=embed)
-
-        functions.write_json("guilds", guilds)
+        write_json("guilds", guilds)
 
     @bot.command(description="Profile", usage="profile", category="Inne", default=True)
-    def profile(ctx):
-        if not ctx.args:
+    def profile(ctx, subcommand = None, arg: find_working(User, str) = None, arg2: find_working(between(13, 100), str) = None):
+        if not subcommand:
             embed = Embed(title="Komendy profile:", description="> `profile view [osoba]`, `profile set`, `profile remove`", color=0xe74c3c)
             return ctx.send(embed=embed)
 
-        user = ctx.data["author"]["id"]
-        users = functions.read_json("users")
+        users = read_json("users")
 
-        if not "profile" in users[user]:
-            users[user]["profile"] = {}
-            functions.write_json("users", users)
+        if not "profile" in users[ctx.author.id]:
+            users[ctx.author.id]["profile"] = {}
+            write_json("users", users)
 
-        if ctx.args[0] == "view":
-            if not ctx.data["mentions"]:
-                user = ctx.data["author"]
-            else:
-                user = ctx.data["mentions"][0]
-                if not "profile" in users[user["id"]]:
-                    users[user["id"]]["profile"] = {}
-                    functions.write_json("users", users)
+        if subcommand == "view":
+            arg = arg or ctx.author
+            if not isinstance(arg, (Member, User)):
+                embed = Embed(title="Komendy profile:", description="> `profile view [osoba]`, `profile set`, `profile remove`", color=0xe74c3c)
+                return ctx.send(embed=embed)
 
-            name = "nie podano" if not "name" in users[user["id"]]["profile"] else users[user["id"]]["profile"]["name"]
-            gender = "" if not "gender" in users[user["id"]]["profile"] else users[user["id"]]["profile"]["gender"]
-            age = "nie podano" if not "age" in users[user["id"]]["profile"] else users[user["id"]]["profile"]["age"]
-            description = "nie podano" if not "description" in users[user["id"]]["profile"] else users[user["id"]]["profile"]["description"]
-            color = "0;0;0" if not "color" in users[user["id"]]["profile"] else users[user["id"]]["profile"]["color"]
+            if not "profile" in users[arg.id]:
+                users[arg.id]["profile"] = {}
+                write_json("users", users)
+
+            name = "nie podano" if not "name" in users[arg.id]["profile"] else users[arg.id]["profile"]["name"]
+            gender = "" if not "gender" in users[arg.id]["profile"] else users[arg.id]["profile"]["gender"]
+            age = "nie podano" if not "age" in users[arg.id]["profile"] else users[arg.id]["profile"]["age"]
+            description = "nie podano" if not "description" in users[arg.id]["profile"] else users[arg.id]["profile"]["description"]
+            color = "0;0;0" if not "color" in users[arg.id]["profile"] else users[arg.id]["profile"]["color"]
 
             polish_chars = {
                 "ą": "a",
@@ -180,7 +182,7 @@ def load(bot, discord):
 
                 description = new_description
 
-            avatar = ctx.requests.get(f"https://cdn.discordapp.com/avatars/{user['id']}/{user['avatar']}.png?size=512").content
+            avatar = ctx.requests.get(arg.avatar_url).content
             open("images/image.png", "wb").write(avatar)
                     
             image = Image.new("RGBA", (512, 512), (0, 0, 0))
@@ -191,13 +193,12 @@ def load(bot, discord):
             avatar.thumbnail((125, 125))
             prostokaty.thumbnail((512, 512))
 
-            username = user["username"] + "#" + user["discriminator"]
             image.paste(color, (0, 0), color)
             image.paste(prostokaty, (0, 0), prostokaty)
             image.paste(avatar, (10, 10), avatar)
 
             size = 50
-            for char in username:
+            for char in arg.user:
                 size -= 1
 
             draw = ImageDraw.Draw(image)
@@ -210,8 +211,8 @@ def load(bot, discord):
             draw.text((150, 40), gender, font=gender_font, fill="black")
             draw.text((149, 41), gender, font=gender_font)
 
-            draw.text((150, 54), username, font=username_font, fill="black")
-            draw.text((149, 55), username, font=username_font)
+            draw.text((150, 54), arg.user, font=username_font, fill="black")
+            draw.text((149, 55), arg.user, font=username_font)
 
             draw.text((40, 190), "Imie:", font=text1_font)
             draw.text((275, 190), "Wiek:", font=text1_font)
@@ -225,73 +226,62 @@ def load(bot, discord):
 
             ctx.send(files=[("profile.png", open("images/profile.png", "rb"))])
         
-        elif ctx.args[0] == "set":
-            if not ctx.args[1:]:
+        elif subcommand == "set":
+            if not arg2:
                 embed = Embed(title="Komendy profile set:", description="> `profile set name (imie)`, `profile set gender (m/k)`, `profile set age (wiek)`, `profile set description (opis)`, `profile set color (#hex/rgb)`", color=0xe74c3c)
                 return ctx.send(embed=embed)
 
-            if ctx.args[1] == "name":
-                if not len(ctx.args) == 3:
-                    return handler.error_handler(ctx, "arguments", "profile set name (imie)")
+            if arg == "name":
+                if len(arg2) > 10:
+                    return ctx.send("Tekst jest za długi (maksymalna długość to 10)")
 
-                if not len(ctx.args[2]) < 10:
-                    return handler.error_handler(ctx, "toolongtext", 10)
-
-                users[user]["profile"]["name"] = ctx.args[2]
+                users[ctx.author.id]["profile"]["name"] = arg2
 
                 ctx.send("Ustawiono imie")
 
-            elif ctx.args[1] == "gender":
-                if not len(ctx.args) == 3:
-                    return handler.error_handler(ctx, "arguments", "profile set gender (m/k)")
-
+            elif arg == "gender":
                 male = ["M", "MEZCZYZNA"]
                 female = ["K", "KOBIETA"]
                 available = male + female
 
-                if ctx.args[2].upper() in available:
-                    if ctx.args[2].upper() in male:
-                        users[user]["profile"]["gender"] = "mężczyzna"
-                    elif ctx.args[2].upper() in female:
-                        users[user]["profile"]["gender"] = "kobieta"
-                else:
-                    return handler.error_handler(ctx, "arguments", "profile set gender (m/k)")
+                if not arg2.upper() in available:
+                    embed = Embed(title="Komendy profile set:", description="> `profile set name (imie)`, `profile set gender (m/k)`, `profile set age (wiek)`, `profile set description (opis)`, `profile set color (#hex/rgb)`", color=0xe74c3c)
+                    return ctx.send(embed=embed)
+
+                if arg2.upper() in male:
+                    users[ctx.author.id]["profile"]["gender"] = "mężczyzna"
+                elif arg2.upper() in female:
+                    users[ctx.author.id]["profile"]["gender"] = "kobieta"
 
                 ctx.send("Ustawiono płeć")
 
-            elif ctx.args[1] == "age":
-                if not len(ctx.args) == 3:
-                    return handler.error_handler(ctx, "arguments", "profile set age (wiek)")
+            elif arg == "age":
+                if not isinstance(arg2, int):
+                    embed = Embed(title="Komendy profile set:", description="> `profile set name (imie)`, `profile set gender (m/k)`, `profile set age (wiek)`, `profile set description (opis)`, `profile set color (#hex/rgb)`", color=0xe74c3c)
+                    return ctx.send(embed=embed)
 
-                try:
-                    if int(ctx.args[2]) > 100:
-                        return ctx.send("Za dużo")
-                    elif int(ctx.args[2]) < 13:
-                        return ctx.send("Za mało")
-                except:
-                    return handler.error_handler(ctx, "arguments", "profile set age (wiek)")
-
-                users[user]["profile"]["age"] = ctx.args[2]
+                users[ctx.author.id]["profile"]["age"] = str(arg2)
 
                 ctx.send("Ustawiono wiek")
 
-            elif ctx.args[1] == "description":
+            elif arg == "description":
                 if len(" ".join(ctx.args[2:])) > 150:
-                    return handler.error_handler(ctx, "toolongtext", 150)
+                    return ctx.send("Tekst jest za długi (maksymalna długość to 150)")
 
-                users[user]["profile"]["description"] = " ".join(ctx.args[2:])
+                users[ctx.author.id]["profile"]["description"] = " ".join(ctx.args[2:])
 
                 ctx.send("Ustawiono opis")
 
-            elif ctx.args[1] == "color":
-                if re.search(r"^#(?:[0-9a-fA-F]{3}){1,2}$", ctx.args[2]):
+            elif arg == "color":
+                if re.search(r"^#(?:[0-9a-fA-F]{3}){1,2}$", arg2):
                     color = ";".join(tuple(str(int(ctx.args[2][1:][i:i+2], 16)) for i in (0, 2, 4)))
                 elif len(ctx.args[2:]) == 3 and (not False in ((x.isdigit() and int(x) <= 255) for x in ctx.args[2:])):
                     color = ";".join(ctx.args[2:])
                 else:
-                    return handler.error_handler(ctx, "arguments", "profile set color (hex/rgb)")
+                    embed = Embed(title="Komendy profile set:", description="> `profile set name (imie)`, `profile set gender (m/k)`, `profile set age (wiek)`, `profile set description (opis)`, `profile set color (#hex/rgb)`", color=0xe74c3c)
+                    return ctx.send(embed=embed)
 
-                users[user]["profile"]["color"] = color
+                users[ctx.author.id]["profile"]["color"] = color
 
                 ctx.send("Ustawiono kolor")
 
@@ -299,29 +289,29 @@ def load(bot, discord):
                 embed = Embed(title="Komendy profile set:", description="> `profile set name (imie)`, `profile set gender (m/k)`, `profile set age (wiek)`, `profile set description (opis)`, `profile set color (#hex/rgb)`", color=0xe74c3c)
                 return ctx.send(embed=embed)
 
-        elif ctx.args[0] == "remove":
-            if not ctx.args[1:]:
+        elif subcommand == "remove":
+            if not arg:
                 embed = Embed(title="Komendy profile remove:", description="> `profile remove name`, `profile remove gender`, `profile remove age`, `profile remove description`, `profile remove color`", color=0xe74c3c)
                 return ctx.send(embed=embed)
 
-            if ctx.args[1] == "name":
-                del users[user]["profile"]["name"]
+            if arg == "name":
+                del users[ctx.author.id]["profile"]["name"]
                 ctx.send("Usunięto imie z twojego profilu")
 
-            elif ctx.args[1] == "gender":
-                del users[user]["profile"]["gender"]
+            elif arg == "gender":
+                del users[ctx.author.id]["profile"]["gender"]
                 ctx.send("Usunięto płeć z twojego profilu")
 
-            elif ctx.args[1] == "age":
-                del users[user]["profile"]["age"]
+            elif arg == "age":
+                del users[ctx.author.id]["profile"]["age"]
                 ctx.send("Usunięto wiek z twojego profilu")
 
-            elif ctx.args[1] == "description":
-                del users[user]["profile"]["description"]
+            elif arg == "description":
+                del users[ctx.author.id]["profile"]["description"]
                 ctx.send("Usunięto opis z twojego profilu")
 
-            elif ctx.args[1] == "color":
-                del users[user]["profile"]["color"]
+            elif arg == "color":
+                del users[ctx.author.id]["profile"]["color"]
                 ctx.send("Usunięto kolor z twojego profilu")
 
             else:
@@ -332,4 +322,4 @@ def load(bot, discord):
             embed = Embed(title="Komendy profile:", description="> `profile view [osoba]`, `profile set`, `profile remove`", color=0xe74c3c)
             return ctx.send(embed=embed)
 
-        functions.write_json("users", users)
+        write_json("users", users)

@@ -1,26 +1,25 @@
 import functions
 import config
-import handler
 from lib.embed import Embed
+from lib.errors import CommandNotFound
 
 def load(bot, discord):
-    @bot.command(description="Pokazuje pomoc", usage="help", category="help", default=True)
-    def _help(ctx):
-        if len(ctx.args) == 1:
-            if not ctx.args[0] in ctx.commands:
-                return handler.error_handler(ctx, "commandnotfound")
+    @bot.command(description="Pokazuje pomoc", usage="help [komenda]", category="help", default=True)
+    def _help(ctx, command = None):
+        if command:
+            if not command in ctx.commands:
+                raise CommandNotFound(f"{command} was not found")
 
-            embed = Embed(title="POMOC:", description=f"Opis: `{ctx.commands[ctx.args[0]]['description']}`\nUżycie: `{ctx.commands[ctx.args[0]]['usage']}`", color=0xe74c3c)
-            embed.set_thumbnail(url=f"http://cdn.discordapp.com/avatars/{ctx.bot['id']}/{ctx.bot['avatar']}.png?size=2048")
+            embed = Embed(title="POMOC:", description=f"Opis: `{ctx.commands[command]['description']}`\nUżycie: `{ctx.commands[command]['usage']}`", color=0xe74c3c)
+            embed.set_thumbnail(url=ctx.bot.avatar_url)
             embed.set_footer(text="() - obowiązkowe, [] - opcjonalne")
                 
             return ctx.send(embed=embed)
 
-        guild = ctx.data["guild_id"]
         guilds = functions.read_json("guilds")
 
-        if guild in guilds and "prefix" in guilds[guild]:
-            prefix = guilds[guild]["prefix"]
+        if ctx.guild.id in guilds and "prefix" in guilds[ctx.guild.id]:
+            prefix = guilds[ctx.guild.id]["prefix"]
         else:
             prefix = config.prefix
         
@@ -40,5 +39,5 @@ def load(bot, discord):
             if not category in blacklist:
                 embed.add_field(name=category + ":", value="> " + ", ".join(categories[category]))
 
-        embed.add_field(name="\u200b", value=f"\[ [Dodaj bota](https://discord.com/api/oauth2/authorize?client_id={ctx.bot['id']}&permissions=268561494&scope=bot) \] \[ [Support](https://discord.gg/tDQURnVtGC) \] \[ [Kod bota](https://github.com/CZUBIX/cenzura) \] \[ [Strona](https://cenzurabot.com) \]")
+        embed.add_field(name="\u200b", value=f"\[ [Dodaj bota](https://discord.com/oauth2/authorize?client_id={ctx.bot.id}&permissions=268561494&scope=bot) \] \[ [Support](https://discord.gg/tDQURnVtGC) \] \[ [Kod bota](https://github.com/CZUBIX/cenzura) \] \[ [Strona](https://cenzurabot.com) \]")
         ctx.send(embed=embed)
