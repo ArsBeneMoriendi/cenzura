@@ -1,5 +1,5 @@
-prefix = ";"
-token = "NzA1NTUyOTUyNjAwOTUyOTYw.XqtXZA.pr-CN1dUse2aK7tEs3Iyo-KI5mw"
-topgg = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjcwNTU1Mjk1MjYwMDk1Mjk2MCIsImJvdCI6dHJ1ZSwiaWF0IjoxNTg5ODMzMzA3fQ.jkq-Ik_XFCPIKtSGGFaRxqzwOL3ROtQiQG3g58z4ico"
-dlist = "ulUIyU2rzKo3i98S"
-owners = ["636096693712060416", "264905890824585216"]
+prefix = ""
+token = ""
+topgg = ""
+dlist = ""
+owners = []
