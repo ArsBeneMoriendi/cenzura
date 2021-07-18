@@ -32,7 +32,7 @@ def load(bot, discord):
         if ctx.author <= member:
             return ctx.send("Nie możesz zbanować osoby równej lub wyższej od ciebie")
 
-        member.ban(ctx.args[1:])
+        member.ban(' '.join(ctx.args[1:]))
         ctx.send(f"Zbanowano użytkownika `{member.username}` z powodu `{' '.join(ctx.args[1:])}`")
 
     @bot.command(description="Usuwa wiadomości na kanale", usage="clear (2-100)", category="Admin")
