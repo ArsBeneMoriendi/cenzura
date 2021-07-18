@@ -32,7 +32,7 @@ def load(bot, discord):
         elif isinstance(error, Forbidden):
             return ctx.send("Bot nie ma uprawnień")
 
-        elif isinstance(error, NotFound) or isinstance(error, KeyError):
+        elif isinstance(error, (NotFound, KeyError, IndexError)):
             return ctx.send("Nie znaleziono")
             
         elif isinstance(error, UnexpectedError):

@@ -1,11 +1,12 @@
 from .ctx import ctx
 import requests
-import config
 import threading
 import time
 import json
 from .embed import Embed
 from .components import Components
+import config
+from datetime import datetime
 
 session = requests.Session()
 
@@ -13,13 +14,23 @@ url = "https://discord.com/api/v9"
 headers = {"authorization": f"Bot {config.token}"}
 
 ratelimit = []
+queue = []
 
-def dupa(resp, endpoint):
+def remove_ratelimit(resp, endpoint):
     time.sleep(resp["retry_after"])
     ratelimit.remove(endpoint)
 
+    for req in queue:
+        if req[2] == endpoint:
+            try:
+                queue.remove(req)
+                request(req)
+            except:
+                continue
+
 def request(method, endpoint, data=None, files=None):
-    if (url + endpoint) in ratelimit: return
+    if (url + endpoint) in ratelimit:
+        return queue.append((method, endpoint, data, files))
 
     try:
         if files:
@@ -29,7 +40,8 @@ def request(method, endpoint, data=None, files=None):
 
         if resp.status_code == 429:
             ratelimit.append(endpoint)
-            threading.Thread(target=dupa, args=(resp.json(), endpoint)).start()
+            queue.append((datetime.now().timestamp(), method, endpoint, data, files))
+            threading.Thread(target=remove_ratelimit, args=(resp.json(), endpoint)).start()
         
         return resp
     except:

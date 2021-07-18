@@ -365,3 +365,61 @@ def load(bot, discord):
         ctx.send("Usunięto kanał")
 
         write_json("guilds", guilds)
+
+    @bot.command(description="Dodaje kanał na którym będzie można przeklinać", usage="badwordsaddrole (rola)", category="Admin")
+    def badwordsaddrole(ctx, role: Role):
+        if not has_permission(ctx):
+            raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
+
+        guilds = read_json("guilds")
+
+        if not "badword_roles" in guilds[ctx.guild.id]:
+            guilds[ctx.guild.id]["badword_roles"] = []
+
+        guilds[ctx.guild.id]["badword_roles"].append(role.id)
+
+        ctx.send("Dodano role")
+
+        write_json("guilds", guilds)
+
+    @bot.command(description="Usuwa role która może przeklinać", usage="badwordsremoverole (rola)", category="Admin")
+    def badwordsremoverole(ctx, role: Role):
+        if not has_permission(ctx):
+            raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
+
+        guilds = read_json("guilds")
+
+        guilds[ctx.guild.id]["badword_roles"].remove(role.id)
+
+        ctx.send("Usunięto role")
+
+        write_json("guilds", guilds)
+
+    @bot.command(description="Dodaje role która będzie mogła wysyłać zaproszenia", usage="invitesaddrole (rola)", category="Admin")
+    def invitesaddrole(ctx, role: Role):
+        if not has_permission(ctx):
+            raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
+
+        guilds = read_json("guilds")
+
+        if not "invites_roles" in guilds[ctx.guild.id]:
+            guilds[ctx.guild.id]["invites_roles"] = []
+
+        guilds[ctx.guild.id]["invites_roles"].append(role.id)
+
+        ctx.send("Dodano role")
+
+        write_json("guilds", guilds)
+
+    @bot.command(description="Usuwa role która może wysyłać zaproszenia", usage="invitesremoverole (rola)", category="Admin")
+    def invitesremoverole(ctx, role: Role):
+        if not has_permission(ctx):
+            raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
+
+        guilds = read_json("guilds")
+
+        guilds[ctx.guild.id]["invites_roles"].remove(role.id)
+
+        ctx.send("Usunięto role")
+
+        write_json("guilds", guilds)

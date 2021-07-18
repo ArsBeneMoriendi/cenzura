@@ -109,6 +109,12 @@ class Channel(ctx):
     def __str__(self) -> str:
         return f"<{self.__class__.__name__} {' '.join(['{}={!r}'.format(k, v) for k,v in self._channel.items()])}>"
 
+    def __eq__(self, channel) -> bool:
+        return self.id == channel.id
+
+    def __ne__(self, channel) -> bool:
+        return self.id != channel.id
+
     @property
     def type(self) -> int:
         return self._channel["type"]
@@ -178,10 +184,10 @@ class Role(ctx):
         return f"<{self.__class__.__name__} {' '.join(['{}={!r}'.format(k, v) for k,v in self._role.items()])}>"
 
     def __eq__(self, role) -> bool:
-        return self.position == role.position
+        return self.id == role.id
 
     def __ne__(self, role) -> bool:
-        return self.position != role.position
+        return self.id != role.id
 
     def __gt__(self, role) -> bool:
         return self.position > role.position
@@ -270,7 +276,7 @@ class User(ctx):
         return self.id == user.id
 
     def __ne__(self, user) -> bool:
-        return self.id == user.id
+        return self.id != user.id
 
     @property
     def username(self) -> str:

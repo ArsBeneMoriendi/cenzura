@@ -80,10 +80,17 @@ def load(bot, discord):
                 if badword in ctx.data["content"].upper():
                     if not ctx.channel.nsfw:
                         if not ("badword_channels" in guilds[ctx.guild.id] and ctx.channel.id in guilds[ctx.guild.id]["badword_channels"]):
-                            status = discord.delete_message(ctx.channel.id, ctx.data["id"])
+                            remove = True
+                            if "badword_roles" in guilds[ctx.guild.id]:
+                                for role in ctx.author.roles:
+                                    if role.id in guilds[ctx.guild.id]["badword_roles"]:
+                                        remove = False
 
-                            if status.status_code == 204:
-                                ctx.send("Na tym serwerze przeklinanie jest wyłączone", reply=False)
+                            if remove:
+                                status = discord.delete_message(ctx.channel.id, ctx.data["id"])
+
+                                if status.status_code == 204:
+                                    ctx.send("Na tym serwerze przeklinanie jest wyłączone", reply=False)
 
                     break
 
@@ -91,10 +98,17 @@ def load(bot, discord):
             for url in ["discord.gg/", "discord.com/invite/", "discordapp.com/invite/"]:
                 if url.upper() in ctx.data["content"].upper():
                     if not ("invites_channels" in guilds[ctx.guild.id] and ctx.channel.id in guilds[ctx.guild.id]["invites_channels"]):
-                        status = discord.delete_message(ctx.channel.id, ctx.data["id"])
+                        remove = True
+                        if "invites_roles" in guilds[ctx.guild.id]:
+                            for role in ctx.author.roles:
+                                if role.id in guilds[ctx.guild.id]["invites_roles"]:
+                                    remove = False
 
-                        if status.status_code == 204:
-                            ctx.send("Na tym serwerze wysyłanie zaproszeń jest wyłączone", reply=False)
+                        if remove:
+                            status = discord.delete_message(ctx.channel.id, ctx.data["id"])
+
+                            if status.status_code == 204:
+                                ctx.send("Na tym serwerze wysyłanie zaproszeń jest wyłączone", reply=False)
 
                     break
 
