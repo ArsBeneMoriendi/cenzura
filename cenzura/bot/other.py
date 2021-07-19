@@ -228,7 +228,7 @@ def load(bot, discord):
         
         elif subcommand == "set":
             if not arg2:
-                embed = Embed(title="Komendy profile set:", description="> `profile set name (imie)`, `profile set gender (m/k)`, `profile set age (wiek)`, `profile set description (opis)`, `profile set color (#hex/rgb)`", color=0xe74c3c)
+                embed = Embed(title="Komendy profile set:", description="> `profile set name (imie)`, `profile set gender (m/k)`, `profile set age (13-100)`, `profile set description (opis)`, `profile set color (#hex/rgb)`", color=0xe74c3c)
                 return ctx.send(embed=embed)
 
             if arg == "name":
@@ -245,7 +245,7 @@ def load(bot, discord):
                 available = male + female
 
                 if not arg2.upper() in available:
-                    embed = Embed(title="Komendy profile set:", description="> `profile set name (imie)`, `profile set gender (m/k)`, `profile set age (wiek)`, `profile set description (opis)`, `profile set color (#hex/rgb)`", color=0xe74c3c)
+                    embed = Embed(title="Komendy profile set:", description="> `profile set name (imie)`, `profile set gender (m/k)`, `profile set age (13-100)`, `profile set description (opis)`, `profile set color (#hex/rgb)`", color=0xe74c3c)
                     return ctx.send(embed=embed)
 
                 if arg2.upper() in male:
@@ -257,7 +257,7 @@ def load(bot, discord):
 
             elif arg == "age":
                 if not isinstance(arg2, int):
-                    embed = Embed(title="Komendy profile set:", description="> `profile set name (imie)`, `profile set gender (m/k)`, `profile set age (wiek)`, `profile set description (opis)`, `profile set color (#hex/rgb)`", color=0xe74c3c)
+                    embed = Embed(title="Komendy profile set:", description="> `profile set name (imie)`, `profile set gender (m/k)`, `profile set age (13-100)`, `profile set description (opis)`, `profile set color (#hex/rgb)`", color=0xe74c3c)
                     return ctx.send(embed=embed)
 
                 users[ctx.author.id]["profile"]["age"] = str(arg2)
@@ -278,7 +278,7 @@ def load(bot, discord):
                 elif len(ctx.args[2:]) == 3 and (not False in ((x.isdigit() and int(x) <= 255) for x in ctx.args[2:])):
                     color = ";".join(ctx.args[2:])
                 else:
-                    embed = Embed(title="Komendy profile set:", description="> `profile set name (imie)`, `profile set gender (m/k)`, `profile set age (wiek)`, `profile set description (opis)`, `profile set color (#hex/rgb)`", color=0xe74c3c)
+                    embed = Embed(title="Komendy profile set:", description="> `profile set name (imie)`, `profile set gender (m/k)`, `profile set age (13-100)`, `profile set description (opis)`, `profile set color (#hex/rgb)`", color=0xe74c3c)
                     return ctx.send(embed=embed)
 
                 users[ctx.author.id]["profile"]["color"] = color
@@ -286,7 +286,7 @@ def load(bot, discord):
                 ctx.send("Ustawiono kolor")
 
             else:
-                embed = Embed(title="Komendy profile set:", description="> `profile set name (imie)`, `profile set gender (m/k)`, `profile set age (wiek)`, `profile set description (opis)`, `profile set color (#hex/rgb)`", color=0xe74c3c)
+                embed = Embed(title="Komendy profile set:", description="> `profile set name (imie)`, `profile set gender (m/k)`, `profile set age (13-100)`, `profile set description (opis)`, `profile set color (#hex/rgb)`", color=0xe74c3c)
                 return ctx.send(embed=embed)
 
         elif subcommand == "remove":
