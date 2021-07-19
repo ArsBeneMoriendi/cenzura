@@ -189,6 +189,12 @@ def load(bot, discord):
             color = Image.new("RGBA", (512, 160), tuple(map(lambda x: int(x), color.split(";"))))
             avatar = Image.open("images/image.png").convert("RGBA")
             prostokaty = Image.open("images/prostokaty.png").convert("RGBA")
+            size = (avatar.size[0] * 3, avatar.size[1] * 3)
+            mask = Image.new("L", size, 0)
+            draw = ImageDraw.Draw(mask)
+            draw.ellipse((0, 0) + size, fill=255)
+            mask = mask.resize(avatar.size, Image.ANTIALIAS)
+            avatar.putalpha(mask)
 
             avatar.thumbnail((125, 125))
             prostokaty.thumbnail((512, 512))
