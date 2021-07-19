@@ -300,6 +300,9 @@ class User(ctx):
 
     @property
     def avatar_url(self) -> str:
+        if not self.avatar:
+            return "https://discord.com/assets/6f26ddd1bf59740c536d2274bb834a05.png"
+
         return f"https://cdn.discordapp.com/avatars/{self.id}/{self.avatar}.png?size=2048"
 
     @property
@@ -405,6 +408,9 @@ class Member(ctx):
 
     @property
     def avatar_url(self) -> str:
+        if not self.avatar:
+            return "https://discord.com/assets/6f26ddd1bf59740c536d2274bb834a05.png"
+            
         return f"https://cdn.discordapp.com/avatars/{self.id}/{self.avatar}.png?size=2048"
 
     @property
