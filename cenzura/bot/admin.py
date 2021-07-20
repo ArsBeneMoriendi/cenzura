@@ -205,15 +205,15 @@ def load(bot, discord):
         if not member.id in guilds[ctx.guild.id]["warns"]:
             guilds[ctx.guild.id]["warns"][member.id] = []
 
-        guilds[ctx.guild.id]["warns"][member.id].append(reason)
+        guilds[ctx.guild.id]["warns"][member.id].append(' '.join(ctx.args[1:]))
 
         if "warnsevent" in guilds[ctx.guild.id] and "kick" in guilds[ctx.guild.id]["warnsevent"] and guilds[ctx.guild.id]["warnsevent"]["kick"] == str(len(guilds[ctx.guild.id]["warns"][member.id])): 
             member.kick(' '.join(ctx.args[1:]))
-            ctx.send(f"Wyrzucono użytkownika `{member.username}` z powodu `{reason}`")
+            ctx.send(f"Wyrzucono użytkownika `{member.username}` z powodu `{' '.join(ctx.args[1:])}`")
 
         elif "warnsevent" in guilds[ctx.guild.id] and "ban" in guilds[ctx.guild.id]["warnsevent"] and guilds[ctx.guild.id]["warnsevent"]["ban"] == str(len(guilds[ctx.guild.id]["warns"][member.id])): 
             member.ban(' '.join(ctx.args[1:]))
-            ctx.send(f"Zbanowano użytkownika `{ctx.data['mentions'][0]['username']}`")
+            ctx.send(f"Zbanowano użytkownika `{ctx.data['mentions'][0]['username']}` z powodu `{' '.join(ctx.args[1:])}`")
 
         elif "warnsevent" in guilds[ctx.guild.id] and "mute" in guilds[ctx.guild.id]["warnsevent"] and guilds[ctx.guild.id]["warnsevent"]["mute"] == str(len(guilds[ctx.guild.id]["warns"][member.id])): 
             if not "mute_role" in guilds[ctx.guild.id]:
