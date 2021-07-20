@@ -12,6 +12,9 @@ def load(bot, discord):
         if not has_permission(ctx):
             raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
 
+        if not reason:
+            ctx.args[1:] = reason.split(" ")
+
         if ctx.author == member:
             return ctx.send("Nie możesz wyrzucić samego siebie")
 
@@ -25,6 +28,9 @@ def load(bot, discord):
     def ban(ctx, member: Member, reason = "nie podano"):
         if not has_permission(ctx):
             raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
+
+        if not reason:
+            ctx.args[1:] = reason.split(" ")
 
         if ctx.author == member:
             return ctx.send("Nie możesz zbanować samego siebie")
@@ -125,6 +131,9 @@ def load(bot, discord):
         if not has_permission(ctx):
             raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
 
+        if not reason:
+            ctx.args[1:] = reason.split(" ")
+
         if ctx.author == member:
             return ctx.send("Nie możesz zmutować samego siebie")
 
@@ -178,6 +187,9 @@ def load(bot, discord):
     def warn(ctx, member: Member, reason = "nie podano"):
         if not has_permission(ctx):
             raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
+
+        if not reason:
+            ctx.args[1:] = reason.split(" ")
 
         if ctx.author == member:
             return ctx.send("Nie możesz dać warna samemu sobie")
