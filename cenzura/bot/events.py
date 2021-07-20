@@ -63,7 +63,7 @@ def load(bot, discord):
             guilds = functions.read_json("guilds")
 
             if ctx.guild.id in guilds and "prefix" in guilds[ctx.guild.id]:
-                prefix = guilds[guctx.guild.idild]["prefix"]
+                prefix = guilds[ctx.guild.id]["prefix"]
             else:
                 prefix = config.prefix
 
