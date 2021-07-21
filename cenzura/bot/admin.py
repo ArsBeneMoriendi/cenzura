@@ -12,7 +12,7 @@ def load(bot, discord):
         if not has_permission(ctx):
             raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
 
-        if not reason:
+        if reason == "nie podano":
             ctx.args[1:] = reason.split(" ")
 
         if ctx.author == member:
@@ -29,7 +29,7 @@ def load(bot, discord):
         if not has_permission(ctx):
             raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
 
-        if not reason:
+        if reason == "nie podano":
             ctx.args[1:] = reason.split(" ")
 
         if ctx.author == member:
@@ -131,7 +131,7 @@ def load(bot, discord):
         if not has_permission(ctx):
             raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
 
-        if not reason:
+        if reason == "nie podano"
             ctx.args[1:] = reason.split(" ")
 
         if ctx.author == member:
@@ -188,7 +188,7 @@ def load(bot, discord):
         if not has_permission(ctx):
             raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
 
-        if not reason:
+        if reason == "nie podano"
             ctx.args[1:] = reason.split(" ")
 
         if ctx.author == member:
