@@ -116,8 +116,22 @@ class Channel(ctx):
         return self.id != channel.id
 
     @property
-    def type(self) -> int:
-        return self._channel["type"]
+    def type(self) -> str:
+        types = {
+            0: "GUILD_TEXT",
+            1: "DM",
+            2: "GUILD_VOICE",
+            3: "GROUP_DM",
+            4: "GUILD_CATEGORY",
+            5: "GUILD_NEWS",
+            6: "GUILD_STORE",
+            10: "GUILD_NEWS_THREAD",
+            11: "GUILD_PUBLIC_THREAD",
+            12: "GUILD_PRIVATE_THREAD",
+            13: "GUILD_STAGE_VOICE"
+        }
+
+        return types[self._channel["type"]]
 
     @property
     def id(self) -> str:
@@ -410,7 +424,7 @@ class Member(ctx):
     def avatar_url(self) -> str:
         if not self.avatar:
             return "https://discord.com/assets/6f26ddd1bf59740c536d2274bb834a05.png"
-            
+
         return f"https://cdn.discordapp.com/avatars/{self.id}/{self.avatar}.png?size=2048"
 
     @property

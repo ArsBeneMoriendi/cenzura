@@ -28,12 +28,15 @@ def has_permission(ctx):
 
     return False
 
-def find_working(*types):
+def find_working(*types, **keys):
     def func(arg):
         no_one = False
         for _type in types:
             try:
                 arg = _type(arg)
+                if arg.__class__.__name__ in keys:
+                    if not keys[arg.__class__.__name__](arg):
+                        raise Exception()
                 no_one = False
                 break
             except:

@@ -5,6 +5,7 @@ class ctx:
     requests = requests.Session()
     data: dict = {}
     commands: dict = {}
+    modules: dict = {}
     events: dict = {}
     default: list = []
     guilds: dict = {}

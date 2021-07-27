@@ -19,6 +19,12 @@ class InvalidArgumentType(Command):
         self.needed_args = needed_args
         self.needed_arg = needed_arg
 
+class InvalidPseudoFunction(Exception):
+    pass
+
+class InvalidPseudoFunctionArgumentType(Exception):
+    pass
+
 class User(Exception):
     pass
 

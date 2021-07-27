@@ -6,7 +6,6 @@ import functions
 import json
 import copy
 from datetime import datetime
-import importlib
 from . import intents
 from .errors import *
 from .types import *
@@ -14,8 +13,8 @@ from inspect import signature, _empty
 from .ctx import ctx
 from .discord import get_current_user, send
 
-ctx.bot = User(get_current_user())
-ctx.send = lambda *args, **kwargs: send(ctx.data["channel_id"], *args, **kwargs)
+ctx.bot_user = User(get_current_user())
+ctx.send = lambda self, *args, **kwargs: send(ctx.data["channel_id"], *args, **kwargs)
 
 url = "wss://gateway.discord.gg/?v=9&encoding=json"
 
@@ -32,22 +31,11 @@ class Bot:
         ctx.ws = ws
         ctx.connection_start = datetime.now()
 
-    def register_modules(self, _discord, *modules):
-        for module in modules:
-            __import__(module).load(self, _discord)
+    def __repr__(self) -> str:
+        return "zajebisty bot!!1!"
 
-    def event(self, func):
-        ctx.events[func.__name__] = func
-        
-    def command(self, **kwargs):
-        def _command(func):
-            while func.__name__[0] == "_":
-                func.__name__ = func.__name__[1:]
-
-            kwargs["function"] = func
-            ctx.commands[func.__name__] = kwargs
-
-        return _command
+    def __str__(self) -> str:
+        return "zajebisty bot!!1!"
 
     def set_presence(self, name, *, status_type: int = 0, status: str = "online"):
         self.presence = {
@@ -156,9 +144,10 @@ class Bot:
             if "mentions" in ctx.data:
                 ctx.mentions = [Member(member) for member in ctx.data["mentions"]]
             try:
-                ctx.events[msg["t"]](ctx)
+                ctx.events[msg["t"]](ctx.modules["Events"])
             except:
-                pass
+                import traceback
+                traceback.print_exc()
 
         if msg["t"] in ("GUILD_CREATE", "GUILD_UPDATE"):
             channels = {}
@@ -247,12 +236,12 @@ class Bot:
                                 if arg.default == _empty:
                                     raise NoArgument(f"{needed_arg} was not specified", ctx.commands[command], list(needed_args), needed_arg)
                         
-                        func(ctx, *parsed_args)
+                        func(ctx.modules[func.__qualname__.split(".")[0]], *parsed_args)
                     else:
                         raise CommandNotFound(f"{command} was not found")
                 except Exception as error:
-                    if "on_error" in ctx.events:
-                        ctx.events["on_error"](ctx, error)
+                    if "Handler" in ctx.modules and "on_error" in ctx.events:
+                        ctx.events["on_error"](ctx.modules["Handler"], error)
             else:
                 ctx.args = msg["d"]["content"].split(" ")
 
