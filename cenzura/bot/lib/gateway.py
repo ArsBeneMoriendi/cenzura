@@ -178,6 +178,12 @@ class Bot:
         elif msg["t"] == "GUILD_EMOJIS_UPDATE":
             ctx.guilds[msg["d"]["guild_id"]]._guild["emojis"] = msg["d"]["emojis"]
 
+        elif msg["t"] == "GUILD_MEMBER_ADD":
+            ctx.guilds[msg["d"]["guild_id"]]._guild["member_count"] += 1
+
+        elif msg["t"] == "GUILD_MEMBER_REMOVE":
+            ctx.guilds[msg["d"]["guild_id"]]._guild["member_count"] -= 1
+
         elif msg["t"] == "MESSAGE_CREATE":
             ctx.data = msg["d"]
 
