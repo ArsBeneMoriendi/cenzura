@@ -124,7 +124,7 @@ class Fun:
         ctx.send(f"**{ctx.author.username}** przytulił **{user.username}**!", files=[("hug.gif", image)])
 
     @modules.command(description="Pokazuje losowe zdjęcie kota", usage="cat", default=True)
-    def cat(self):
+    def cat(self, ctx):
         if not has_permission(ctx):
             raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
 
@@ -134,7 +134,7 @@ class Fun:
         ctx.send(files=[("cat.png", image)])
 
     @modules.command(description="Pokazuje losowe zdjęcie psa", usage="dog", default=True)
-    def dog(self):
+    def dog(self, ctx):
         if not has_permission(ctx):
             raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
 
@@ -144,7 +144,7 @@ class Fun:
         ctx.send(files=[("dog.png", image)])
 
     @modules.command(description="Pokazuje losowe zdjęcie pandy", usage="panda", default=True)
-    def panda(self):
+    def panda(self, ctx):
         if not has_permission(ctx):
             raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
 
@@ -244,7 +244,7 @@ class Fun:
         ctx.send(text)
 
     @modules.event
-    def INTERACTION_CREATE(self):
+    def INTERACTION_CREATE(self, ctx):
         if ("calc", ctx.member.id, ctx.channel.id, ctx.data["message"]["id"]) in interactions:
             if not ctx.data["message"]["id"] in results:
                 results[ctx.data["message"]["id"]] = ""
@@ -303,7 +303,7 @@ class Fun:
             })
 
     @modules.command(description="Kalkulator", usage="calc", default=True)
-    def calc(self):
+    def calc(self, ctx):
         if not has_permission(ctx):
             raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
 
@@ -507,7 +507,7 @@ class Fun:
         ctx.send(files=[("gay.png", open("images/gay.png", "rb"))])
 
     @modules.command(description="Wysyła losowego mema z jbzd", usage="meme", aliases=["mem"], default=True)
-    def meme(self):
+    def meme(self, ctx):
         if not has_permission(ctx):
             raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
 
@@ -551,7 +551,7 @@ class Fun:
         ctx.send(embed=embed)
 
     @modules.command(description="Pokazuje informacje o serwerze", usage="serverinfo", aliases=["si"], default=True)
-    def serverinfo(self):
+    def serverinfo(self, ctx):
         if not has_permission(ctx):
             raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
 
