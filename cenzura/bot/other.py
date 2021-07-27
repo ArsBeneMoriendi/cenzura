@@ -48,11 +48,11 @@ class Inne(ctx):
             if not arg:
                 return self.send(embed=help_embed)
 
-            self.args = " ".join(self.args[1:])
+            ctx.args = " ".join(self.args[1:])
             if len(self.args) > 100:
                 return self.send("Tekst jest za długi (maksymalna długość to 100)")
 
-            users[self.author.id]["todo"].append(self.args)
+            users[self.author.id]["todo"].append(ctx.args)
             
             self.send("Dodano do todo")
 

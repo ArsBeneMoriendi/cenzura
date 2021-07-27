@@ -37,13 +37,13 @@ class Fun(ctx):
         if not has_permission(self):
             raise NoPermission(f"{self.author.id} has no {self.command} permission", self.command)
 
-        self.args = " ".join(self.args)
-        self.args = self.args.split(" | ")
+        ctx.args = " ".join(self.args)
+        ctx.args = ctx.args.split(" | ")
 
-        if not len(self.args) >= 2:
+        if not len(self.ctx) >= 2:
             return self.send("Podaj chociaż więcej niż 2 argumenty")
 
-        self.send(random.choice(self.args))
+        self.send(random.choice(ctx.args))
 
     @modules.command(description="Pokazuje avatar", usage="avatar [osoba]", default=True)
     def avatar(self, user: User = None):
@@ -176,9 +176,9 @@ class Fun(ctx):
         if not has_permission(self):
             raise NoPermission(f"{self.author.id} has no {self.command} permission", self.command)
 
-        self.args = " ".join(self.args)
+        ctx.args = " ".join(self.args)
 
-        if len(self.args) > 23:
+        if len(ctx.args) > 23:
             return self.send("Tekst jest za długi (maksymalna długość to 23)")
 
         polish_chars = {
@@ -195,7 +195,7 @@ class Fun(ctx):
 
         text = ""
 
-        for char in self.args:
+        for char in ctx.args:
             if char in polish_chars:
                 text += polish_chars[char]
             else:
@@ -210,9 +210,9 @@ class Fun(ctx):
         if not has_permission(self):
             raise NoPermission(f"{self.author.id} has no {self.command} permission", self.command)
 
-        self.args = (" ".join(self.args)).lower()
+        ctx.args = (" ".join(self.args)).lower()
 
-        if len(self.args) > 100:
+        if len(ctx.args) > 100:
             return self.send("Tekst jest za długi (maksymalna długość to 100)")
 
         other = {
@@ -229,7 +229,7 @@ class Fun(ctx):
 
         text = ""
 
-        for letter in self.args:
+        for letter in ctx.args:
             if ("garfield_" + letter in arrays.emotes) or (letter in other):
                 if letter in other:
                     letter = other[letter]
@@ -353,9 +353,9 @@ class Fun(ctx):
         if not has_permission(self):
             raise NoPermission(f"{self.author.id} has no {self.command} permission", self.command)
 
-        self.args = " ".join(self.args).lower().split(" | ")
+        ctx.args = " ".join(self.args).lower().split(" | ")
 
-        text = self.args[0][0]
+        text = ctx.args[0][0]
 
         other = {
             "ą": "a",
@@ -369,15 +369,15 @@ class Fun(ctx):
             "ć": "c"
         }
 
-        for char in self.args[1]:
+        for char in ctx.args[1]:
             if char in other:
-                self.args[1] = self.args[1].replace(char, other[char])
+                ctx.args[1] = ctx.args[1].replace(char, other[char])
 
-        for char in self.args[1]:
+        for char in ctx.args[1]:
             if char in arrays._characters:
                 text += arrays._characters[char] + "\u200f"
 
-        text += self.args[0][1:]
+        text += ctx.args[0][1:]
 
         self.send("`" + text + "`")
 
@@ -386,13 +386,13 @@ class Fun(ctx):
         if not has_permission(self):
             raise NoPermission(f"{self.author.id} has no {self.command} permission", self.command)
 
-        self.args = " ".join(self.args)
+        ctx.args = " ".join(self.args)
 
         text = ""
         letter = ""
         chars = {value:key for key, value in arrays._characters.items()}
 
-        for char in self.args:
+        for char in ctx.args:
             if char in chars or char == "\u200f":
                 if char == "\u200f":
                     text += chars[letter]
@@ -446,12 +446,12 @@ class Fun(ctx):
         image = Image.open("images/image.png")
 
         if message_type == "text":
-            self.args = " ".join(self.args)
+            ctx.args = " ".join(self.args)
             center = [round(krzak.size[0] / 2) - 50, round(krzak.size[1] / 2) - 60]
             if len(self.args) > 15:
                 new_args = ""
                 x = 0
-                for char in self.args:
+                for char in ctx.args:
                     if x == 16:
                         new_args += "\n"
                         x = 0
@@ -459,14 +459,14 @@ class Fun(ctx):
                     new_args += char
                     x += 1
 
-                self.args = new_args
+                ctx.args = new_args
 
             draw = ImageDraw.Draw(krzak)
             font = ImageFont.truetype("fonts/arial.ttf", 30)
 
             center = (round(center[0]), round(center[1]))
 
-            draw.text(center, self.args, font=font)
+            draw.text(center, ctx.args, font=font)
 
         elif message_type == "image":
             width, height = image.size

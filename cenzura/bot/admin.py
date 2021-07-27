@@ -20,7 +20,7 @@ class Admin(ctx):
             raise NoPermission(f"{self.author.id} has no {self.command} permission", self.command)
 
         if reason == "nie podano":
-            self.args[1:] = reason.split(" ")
+            ctx.args[1:] = reason.split(" ")
 
         if self.author == member:
             return self.send("Nie możesz wyrzucić samego siebie")
@@ -28,8 +28,8 @@ class Admin(ctx):
         if self.author <= member:
             return self.send("Nie możesz wyrzucić osoby równej lub wyższej od ciebie")
 
-        member.kick(' '.join(self.args[1:]))
-        self.send(f"Wyrzucono użytkownika `{member.username}` z powodu `{' '.join(self.args[1:])}`")
+        member.kick(' '.join(ctx.args[1:]))
+        self.send(f"Wyrzucono użytkownika `{member.username}` z powodu `{' '.join(ctx.args[1:])}`")
 
     @modules.command(description="Banuje osobe na serwerze", usage="ban (osoba) [powód]")
     def ban(self, member: Member, reason = "nie podano"):
@@ -37,7 +37,7 @@ class Admin(ctx):
             raise NoPermission(f"{self.author.id} has no {self.command} permission", self.command)
 
         if reason == "nie podano":
-            self.args[1:] = reason.split(" ")
+            ctx.args[1:] = reason.split(" ")
 
         if self.author == member:
             return self.send("Nie możesz zbanować samego siebie")
@@ -45,8 +45,8 @@ class Admin(ctx):
         if self.author <= member:
             return self.send("Nie możesz zbanować osoby równej lub wyższej od ciebie")
 
-        member.ban(' '.join(self.args[1:]))
-        self.send(f"Zbanowano użytkownika `{member.username}` z powodu `{' '.join(self.args[1:])}`")
+        member.ban(' '.join(ctx.args[1:]))
+        self.send(f"Zbanowano użytkownika `{member.username}` z powodu `{' '.join(ctx.args[1:])}`")
 
     @modules.command(description="Usuwa wiadomości na kanale", usage="clear (2-99)")
     def clear(self, amount: between(2, 99)):
@@ -80,7 +80,7 @@ class Admin(ctx):
 
             guilds[self.guild.id]["welcomemsg"] = {}
             guilds[self.guild.id]["welcomemsg"]["channel_id"] = arg.id
-            guilds[self.guild.id]["welcomemsg"]["text"] = " ".join(self.args[2:])
+            guilds[self.guild.id]["welcomemsg"]["text"] = " ".join(ctx.args[2:])
 
             self.send("Ustawiono wiadomość powitalną")
 
@@ -94,7 +94,7 @@ class Admin(ctx):
 
             guilds[self.guild.id]["leavemsg"] = {}
             guilds[self.guild.id]["leavemsg"]["channel_id"] = arg.id
-            guilds[self.guild.id]["leavemsg"]["text"] = " ".join(self.args[2:])
+            guilds[self.guild.id]["leavemsg"]["text"] = " ".join(ctx.args[2:])
 
             self.send("Ustawiono wiadomość pożegnalną")
 
@@ -140,7 +140,7 @@ class Admin(ctx):
             raise NoPermission(f"{self.author.id} has no {self.command} permission", self.command)
 
         if reason == "nie podano":
-            self.args[1:] = reason.split(" ")
+            ctx.args[1:] = reason.split(" ")
 
         if self.author == member:
             return self.send("Nie możesz zmutować samego siebie")
@@ -173,7 +173,7 @@ class Admin(ctx):
             write_json("guilds", guilds)
 
         member.add_role(guilds[self.guild.id]["mute_role"])
-        self.send(f"Zmutowano użytkownika `{member.username}` z powodu `{' '.join(self.args[1:])}`")
+        self.send(f"Zmutowano użytkownika `{member.username}` z powodu `{' '.join(ctx.args[1:])}`")
 
     @modules.command(description="Odmutuje użytkownika", usage="unmute (osoba)")
     def unmute(self, member: Member):
@@ -197,7 +197,7 @@ class Admin(ctx):
             raise NoPermission(f"{self.author.id} has no {self.command} permission", self.command)
 
         if reason == "nie podano":
-            self.args[1:] = reason.split(" ")
+            ctx.args[1:] = reason.split(" ")
 
         if self.author == member:
             return self.send("Nie możesz dać warna samemu sobie")
@@ -213,15 +213,15 @@ class Admin(ctx):
         if not member.id in guilds[self.guild.id]["warns"]:
             guilds[self.guild.id]["warns"][member.id] = []
 
-        guilds[self.guild.id]["warns"][member.id].append(' '.join(self.args[1:]))
+        guilds[self.guild.id]["warns"][member.id].append(' '.join(ctx.args[1:]))
 
         if "warnsevent" in guilds[self.guild.id] and "kick" in guilds[self.guild.id]["warnsevent"] and guilds[self.guild.id]["warnsevent"]["kick"] == str(len(guilds[self.guild.id]["warns"][member.id])): 
-            member.kick(' '.join(self.args[1:]))
-            self.send(f"Wyrzucono użytkownika `{member.username}` z powodu `{' '.join(self.args[1:])}`")
+            member.kick(' '.join(ctx.args[1:]))
+            self.send(f"Wyrzucono użytkownika `{member.username}` z powodu `{' '.join(ctx.args[1:])}`")
 
         elif "warnsevent" in guilds[self.guild.id] and "ban" in guilds[self.guild.id]["warnsevent"] and guilds[self.guild.id]["warnsevent"]["ban"] == str(len(guilds[self.guild.id]["warns"][member.id])): 
-            member.ban(' '.join(self.args[1:]))
-            self.send(f"Zbanowano użytkownika `{self.data['mentions'][0]['username']}` z powodu `{' '.join(self.args[1:])}`")
+            member.ban(' '.join(ctx.args[1:]))
+            self.send(f"Zbanowano użytkownika `{self.data['mentions'][0]['username']}` z powodu `{' '.join(ctx.args[1:])}`")
 
         elif "warnsevent" in guilds[self.guild.id] and "mute" in guilds[self.guild.id]["warnsevent"] and guilds[self.guild.id]["warnsevent"]["mute"] == str(len(guilds[self.guild.id]["warns"][member.id])): 
             if not "mute_role" in guilds[self.guild.id]:
@@ -247,7 +247,7 @@ class Admin(ctx):
                 member.add_role(guilds[self.guild.id]["mute_role"])
                 self.send("Zmutowano użytkownika")
 
-        self.send(f"Użytkownik `{member.username}` dostał ostrzeżenie z powodu `{' '.join(self.args[1:])}`")
+        self.send(f"Użytkownik `{member.username}` dostał ostrzeżenie z powodu `{' '.join(ctx.args[1:])}`")
 
         write_json("guilds", guilds)
 

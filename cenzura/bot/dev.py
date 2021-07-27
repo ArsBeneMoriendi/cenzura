@@ -75,7 +75,7 @@ class Dev(ctx):
         args = self.args[2:]
         func = self.commands[command]["function"]
 
-        class su_self(self):
+        class su_self(ctx):
             def __init__(self, send, author: Member, command, args):
                 self.author = author
                 self.command = command
