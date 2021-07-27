@@ -22,9 +22,6 @@ def event(func):
     
 def command(**kwargs):
     def _command(func):                
-        while func.__name__[0] == "_":
-            func.__name__ = func.__name__[1:]
-
         kwargs["function"] = func
         ctx.commands[func.__name__] = kwargs
 

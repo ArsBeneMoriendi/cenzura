@@ -14,7 +14,7 @@ from .ctx import ctx
 from .discord import get_current_user, send
 
 ctx.bot_user = User(get_current_user())
-ctx.send = lambda self, *args, **kwargs: send(ctx.data["channel_id"], *args, **kwargs)
+ctx.send = lambda *args, **kwargs: send(ctx.data["channel_id"], *args, **kwargs)
 
 url = "wss://gateway.discord.gg/?v=9&encoding=json"
 
@@ -144,7 +144,7 @@ class Bot:
             if "mentions" in ctx.data:
                 ctx.mentions = [Member(member) for member in ctx.data["mentions"]]
             try:
-                ctx.events[msg["t"]](ctx.modules["Events"])
+                ctx.events[msg["t"]](ctx.modules["Events"], ctx)
             except:
                 import traceback
                 traceback.print_exc()
@@ -200,11 +200,13 @@ class Bot:
                     return
 
                 command = msg["d"]["content"].split(" ")[0][len(prefix):]
-
-                while command[0] == "_":
-                    command = command[1:]
-
                 args = msg["d"]["content"].split(" ")[1:]
+
+                if not command in ctx.commands:
+                    for cmd in ctx.commands:
+                        if "aliases" in ctx.commands[cmd] and command in ctx.commands[cmd]["aliases"]:
+                            command = cmd
+                            break
 
                 ctx.command = command
                 ctx.args = args
@@ -221,7 +223,7 @@ class Bot:
                 try:
                     if command in ctx.commands:
                         func = ctx.commands[command]["function"]
-                        needed_args = dict(list(signature(func).parameters.items())[1:])
+                        needed_args = dict(list(signature(func).parameters.items())[2:])
                         parsed_args = []
 
                         for needed_arg in needed_args:
@@ -242,12 +244,12 @@ class Bot:
                                 if arg.default == _empty:
                                     raise NoArgument(f"{needed_arg} was not specified", ctx.commands[command], list(needed_args), needed_arg)
                         
-                        func(ctx.modules[func.__qualname__.split(".")[0]], *parsed_args)
+                        func(ctx.modules[func.__qualname__.split(".")[0]], ctx, *parsed_args)
                     else:
                         raise CommandNotFound(f"{command} was not found")
                 except Exception as error:
                     if "Handler" in ctx.modules and "on_error" in ctx.events:
-                        ctx.events["on_error"](ctx.modules["Handler"], error)
+                        ctx.events["on_error"](ctx.modules["Handler"], ctx, error)
             else:
                 ctx.args = msg["d"]["content"].split(" ")
 

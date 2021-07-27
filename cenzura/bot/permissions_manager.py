@@ -1,60 +1,59 @@
 from lib import modules
-from lib.ctx import ctx
 import functions
 from lib.embed import Embed
 from lib.errors import NoPermission, NotFound
 from lib.types import Role
 
 @modules.module
-class PermissionsManager(ctx):
+class PermissionsManager:
     def __init__(self, bot, discord):
         self.bot = bot
         self.discord = discord
 
     @modules.command(description="Zarządzanie permisjami", usage="pm")
-    def pm(self, subcommand = None, role: Role = None, command = None):
-        if not self.author.has_permission("ADMINISTRATOR"):
-            raise NoPermission(f"{self.author.id} has no ADMINISTRATOR permission", "ADMINISTRATOR")
+    def pm(self, ctx, subcommand = None, role: Role = None, command = None):
+        if not ctx.author.has_permission("ADMINISTRATOR"):
+            raise NoPermission(f"{ctx.author.id} has no ADMINISTRATOR permission", "ADMINISTRATOR")
 
         help_embed = Embed(title="Komendy pm:", description="> `pm add (rola) (komenda)`, `pm remove (rola) (komenda)`, `pm delete (rola)`", color=0xe74c3c)
 
         if not subcommand and not role:
-            return self.send(embed=help_embed)
+            return ctx.send(embed=help_embed)
 
         blacklist = ["help", "botstats", "profile", "todo", "eval", "reload"]
         guilds = functions.read_json("guilds")
 
         if subcommand == "add":
-            if not command in self.commands:
+            if not command in ctx.commands:
                 raise NotFound()
             elif command in blacklist:
-                return self.send("Tej komendy nie można dodać/odebrać!")
+                return ctx.send("Tej komendy nie można dodać/odebrać!")
 
-            if not role.id in guilds[self.guild.id]["permissions"]:
-                guilds[self.guild.id]["permissions"][role.id] = {}
+            if not role.id in guilds[ctx.guild.id]["permissions"]:
+                guilds[ctx.guild.id]["permissions"][role.id] = {}
 
-            guilds[self.guild.id]["permissions"][role.id][command] = True
+            guilds[ctx.guild.id]["permissions"][role.id][command] = True
 
-            self.send("Dodano permisje")
+            ctx.send("Dodano permisje")
 
         elif subcommand == "remove":
-            if not command in self.commands:
+            if not command in ctx.commands:
                 raise NotFound()
             elif command in blacklist:
-                return self.send("Tej komendy nie można dodać/odebrać!")
+                return ctx.send("Tej komendy nie można dodać/odebrać!")
 
-            if not role.id in guilds[self.guild.id]["permissions"]:
-                guilds[self.guild.id]["permissions"][role.id] = {}
+            if not role.id in guilds[ctx.guild.id]["permissions"]:
+                guilds[ctx.guild.id]["permissions"][role.id] = {}
 
-            guilds[self.guild.id]["permissions"][role.id][command] = False
+            guilds[ctx.guild.id]["permissions"][role.id][command] = False
 
-            self.send("Usunięto permisje")
+            ctx.send("Usunięto permisje")
         
         elif subcommand == "delete":
-            del guilds[self.guild.id]["permissions"][role.id]
-            self.send("Usunięto role")
+            del guilds[ctx.guild.id]["permissions"][role.id]
+            ctx.send("Usunięto role")
 
         else:
-            return self.send(embed=help_embed)
+            return ctx.send(embed=help_embed)
 
         functions.write_json("guilds", guilds)

@@ -1,5 +1,4 @@
 from lib import modules
-from lib.ctx import ctx
 import random
 from PIL import Image, ImageDraw, ImageFont, ImageOps
 import os
@@ -20,55 +19,55 @@ interactions = []
 results = {}
 
 @modules.module
-class Fun(ctx):
+class Fun:
     def __init__(self, bot, discord):
         self.bot = bot
         self.discord = discord
         
     @modules.command(description="Losuje liczbe", usage="rnumber (od) (do)", default=True)
-    def rnumber(self, _from: int, to: int):
-        if not has_permission(self):
-            raise NoPermission(f"{self.author.id} has no {self.command} permission", self.command)
+    def rnumber(self, ctx, _from: int, to: int):
+        if not has_permission(ctx):
+            raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
         
-        self.send(random.randint(_from, to))
+        ctx.send(random.randint(_from, to))
 
     @modules.command(description="Losuje tekst z podanych", usage="rchoice (a) | (b) | [c] itd.", default=True)
-    def rchoice(self, args):
-        if not has_permission(self):
-            raise NoPermission(f"{self.author.id} has no {self.command} permission", self.command)
+    def rchoice(self, ctx, args):
+        if not has_permission(ctx):
+            raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
 
-        ctx.args = " ".join(self.args)
+        ctx.args = " ".join(ctx.args)
         ctx.args = ctx.args.split(" | ")
 
-        if not len(self.ctx) >= 2:
-            return self.send("Podaj chociaż więcej niż 2 argumenty")
+        if not len(ctx.ctx) >= 2:
+            return ctx.send("Podaj chociaż więcej niż 2 argumenty")
 
-        self.send(random.choice(ctx.args))
+        ctx.send(random.choice(ctx.args))
 
     @modules.command(description="Pokazuje avatar", usage="avatar [osoba]", default=True)
-    def avatar(self, user: User = None):
-        if not has_permission(self):
-            raise NoPermission(f"{self.author.id} has no {self.command} permission", self.command)
+    def avatar(self, ctx, user: User = None):
+        if not has_permission(ctx):
+            raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
 
-        user = user or self.author
-        image = self.requests.get(user.avatar_url).content
+        user = user or ctx.author
+        image = ctx.requests.get(user.avatar_url).content
 
-        self.send(files=[("avatar.png", image)])
+        ctx.send(files=[("avatar.png", image)])
 
     @modules.command(description="Pokazuje w ilu procentach osoby sie kochają", usage="ship (osoba) [osoba]", default=True)
-    def ship(self, user: User, user2: User = None):
-        if not has_permission(self):
-            raise NoPermission(f"{self.author.id} has no {self.command} permission", self.command)
+    def ship(self, ctx, user: User, user2: User = None):
+        if not has_permission(ctx):
+            raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
 
         if not user2:
             user2 = user
-            user = self.author
+            user = ctx.author
 
         if user == user2:
-            raise InvalidArgumentType("user is the same as user2", self.commands[self.command], ["user", "user2"], "user2")
+            raise InvalidArgumentType("user is the same as user2", ctx.commands[ctx.command], ["user", "user2"], "user2")
 
-        open("images/member1.png", "wb").write(self.requests.get(user.avatar_url).content)
-        open("images/member2.png", "wb").write(self.requests.get(user2.avatar_url).content)
+        open("images/member1.png", "wb").write(ctx.requests.get(user.avatar_url).content)
+        open("images/member2.png", "wb").write(ctx.requests.get(user2.avatar_url).content)
         
         para = Image.open("images/para.png").convert("RGBA")
         member1 = Image.open("images/member1.png").convert("RGBA")
@@ -83,103 +82,103 @@ class Fun(ctx):
         para.save("images/ship.png")
 
         random.seed(get_int(user, user2))
-        self.send(f"**{user.username}** + **{user2.username}** = **{user.username[:round(len(user.username) / 2)].lower()}{user2.username[round(len(user2.username) / 2):].lower()}**\nIch miłość jest równa **{random.randint(0, 100)}%**!", files=[("ship.png", open("images/ship.png", "rb"))])
+        ctx.send(f"**{user.username}** + **{user2.username}** = **{user.username[:round(len(user.username) / 2)].lower()}{user2.username[round(len(user2.username) / 2):].lower()}**\nIch miłość jest równa **{random.randint(0, 100)}%**!", files=[("ship.png", open("images/ship.png", "rb"))])
 
     @modules.command(description="Uderza osobe", usage="slap (osoba)", default=True)
-    def slap(self, user: User):
-        if not has_permission(self):
-            raise NoPermission(f"{self.author.id} has no {self.command} permission", self.command)
+    def slap(self, ctx, user: User):
+        if not has_permission(ctx):
+            raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
 
-        if user == self.author:
-            raise InvalidArgumentType("user is the same as author", self.commands[self.command], ["user"], "user")
+        if user == ctx.author:
+            raise InvalidArgumentType("user is the same as author", ctx.commands[ctx.command], ["user"], "user")
 
-        image_url = self.requests.get("https://nekos.life/api/v2/img/slap").json()["url"]
-        image = self.requests.get(image_url).content
+        image_url = ctx.requests.get("https://nekos.life/api/v2/img/slap").json()["url"]
+        image = ctx.requests.get(image_url).content
 
-        self.send(f"**{self.author.username}** uderzył **{user.username}**!", files=[("slap.gif", image)])
+        ctx.send(f"**{ctx.author.username}** uderzył **{user.username}**!", files=[("slap.gif", image)])
 
     @modules.command(description="Całuje osobe", usage="kiss (osoba)", default=True)
-    def kiss(self, user: User):
-        if not has_permission(self):
-            raise NoPermission(f"{self.author.id} has no {self.command} permission", self.command)
+    def kiss(self, ctx, user: User):
+        if not has_permission(ctx):
+            raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
 
-        if user == self.author:
-            raise InvalidArgumentType("user is the same as author", self.commands[self.command], ["user"], "user")
+        if user == ctx.author:
+            raise InvalidArgumentType("user is the same as author", ctx.commands[ctx.command], ["user"], "user")
 
-        image_url = self.requests.get("https://nekos.life/api/kiss").json()["url"]
-        image = self.requests.get(image_url).content
+        image_url = ctx.requests.get("https://nekos.life/api/kiss").json()["url"]
+        image = ctx.requests.get(image_url).content
 
-        self.send(f"**{self.author.username}** pocałował **{user.username}**!", files=[("kiss.gif", image)])
+        ctx.send(f"**{ctx.author.username}** pocałował **{user.username}**!", files=[("kiss.gif", image)])
 
     @modules.command(description="Przytula osobe", usage="hug (osoba)", default=True)
-    def hug(self, user: User):
-        if not has_permission(self):
-            raise NoPermission(f"{self.author.id} has no {self.command} permission", self.command)
+    def hug(self, ctx, user: User):
+        if not has_permission(ctx):
+            raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
 
-        if user == self.author:
-            raise InvalidArgumentType("user is the same as author", self.commands[self.command], ["user"], "user")
+        if user == ctx.author:
+            raise InvalidArgumentType("user is the same as author", ctx.commands[ctx.command], ["user"], "user")
 
-        image_url = self.requests.get("https://nekos.life/api/hug").json()["url"]
-        image = self.requests.get(image_url).content
+        image_url = ctx.requests.get("https://nekos.life/api/hug").json()["url"]
+        image = ctx.requests.get(image_url).content
 
-        self.send(f"**{self.author.username}** przytulił **{user.username}**!", files=[("hug.gif", image)])
+        ctx.send(f"**{ctx.author.username}** przytulił **{user.username}**!", files=[("hug.gif", image)])
 
     @modules.command(description="Pokazuje losowe zdjęcie kota", usage="cat", default=True)
     def cat(self):
-        if not has_permission(self):
-            raise NoPermission(f"{self.author.id} has no {self.command} permission", self.command)
+        if not has_permission(ctx):
+            raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
 
-        image_url = self.requests.get("https://some-random-api.ml/img/cat").json()["link"]
-        image = self.requests.get(image_url).content
+        image_url = ctx.requests.get("https://some-random-api.ml/img/cat").json()["link"]
+        image = ctx.requests.get(image_url).content
 
-        self.send(files=[("cat.png", image)])
+        ctx.send(files=[("cat.png", image)])
 
     @modules.command(description="Pokazuje losowe zdjęcie psa", usage="dog", default=True)
     def dog(self):
-        if not has_permission(self):
-            raise NoPermission(f"{self.author.id} has no {self.command} permission", self.command)
+        if not has_permission(ctx):
+            raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
 
-        image_url = self.requests.get("https://some-random-api.ml/img/dog").json()["link"]
-        image = self.requests.get(image_url).content
+        image_url = ctx.requests.get("https://some-random-api.ml/img/dog").json()["link"]
+        image = ctx.requests.get(image_url).content
 
-        self.send(files=[("dog.png", image)])
+        ctx.send(files=[("dog.png", image)])
 
     @modules.command(description="Pokazuje losowe zdjęcie pandy", usage="panda", default=True)
     def panda(self):
-        if not has_permission(self):
-            raise NoPermission(f"{self.author.id} has no {self.command} permission", self.command)
+        if not has_permission(ctx):
+            raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
 
-        image_url = self.requests.get("https://some-random-api.ml/img/panda").json()["link"]
-        image = self.requests.get(image_url).content
+        image_url = ctx.requests.get("https://some-random-api.ml/img/panda").json()["link"]
+        image = ctx.requests.get(image_url).content
 
-        self.send(files=[("panda.png", image)])
+        ctx.send(files=[("panda.png", image)])
 
-    @modules.command(description="Generuje tekst w ascii", usage="ascii (tekst)", default=True)
-    def _ascii(self, text):
-        if not has_permission(self):
-            raise NoPermission(f"{self.author.id} has no {self.command} permission", self.command)
+    @modules.command(description="Generuje tekst w ascii", usage="ascii (tekst)", aliases=["ascii"], default=True)
+    def _ascii(self, ctx, text):
+        if not has_permission(ctx):
+            raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
 
-        self.send("```" + pyfiglet.Figlet().renderText(" ".join(self.args)) + "```")
+        ctx.send("```" + pyfiglet.Figlet().renderText(" ".join(ctx.args)) + "```")
 
     @modules.command(description="Pokazuje w ilu procentach jest sie gejem", usage="howgay [osoba]", default=True)
-    def howgay(self, user: User = None):
-        if not has_permission(self):
-            raise NoPermission(f"{self.author.id} has no {self.command} permission", self.command)
+    def howgay(self, ctx, user: User = None):
+        if not has_permission(ctx):
+            raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
 
-        user = user or self.author
+        user = user or ctx.author
 
-        random.seed(get_int(self.bot_user, user))
-        self.send(f"{user.username} jest gejem w {random.randint(0, 100)}%!")
+        random.seed(get_int(ctx.bot_user, user))
+        ctx.send(f"{user.username} jest gejem w {random.randint(0, 100)}%!")
 
     @modules.command(description="Wysyła obrazek \"Achievement Get!\"", usage="achievement (tekst)", default=True)
-    def achievement(self, text):
-        if not has_permission(self):
-            raise NoPermission(f"{self.author.id} has no {self.command} permission", self.command)
+    def achievement(self, ctx, text):
+        if not has_permission(ctx):
+            raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
 
-        ctx.args = " ".join(self.args)
+        ctx.args = " ".join(ctx.args)
 
         if len(ctx.args) > 23:
-            return self.send("Tekst jest za długi (maksymalna długość to 23)")
+            return ctx.send("Tekst jest za długi (maksymalna długość to 23)")
 
         polish_chars = {
             "ą": "a",
@@ -201,19 +200,19 @@ class Fun(ctx):
             else:
                 text += char
 
-        image = self.requests.get(f"https://minecraftskinstealer.com/achievement/{random.randint(1, 40)}/Achievement+Get%21/{text}").content
+        image = ctx.requests.get(f"https://minecraftskinstealer.com/achievement/{random.randint(1, 40)}/Achievement+Get%21/{text}").content
 
-        self.send(files=[("achievement.png", image)])
+        ctx.send(files=[("achievement.png", image)])
 
     @modules.command(description="Wysyła tekst w emotkach garfield", usage="garfield (tekst)", default=True)
-    def garfield(self, text):
-        if not has_permission(self):
-            raise NoPermission(f"{self.author.id} has no {self.command} permission", self.command)
+    def garfield(self, ctx, text):
+        if not has_permission(ctx):
+            raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
 
-        ctx.args = (" ".join(self.args)).lower()
+        ctx.args = (" ".join(ctx.args)).lower()
 
         if len(ctx.args) > 100:
-            return self.send("Tekst jest za długi (maksymalna długość to 100)")
+            return ctx.send("Tekst jest za długi (maksymalna długość to 100)")
 
         other = {
             "ą": "a",
@@ -242,16 +241,16 @@ class Fun(ctx):
             else:
                 text += letter
 
-        self.send(text)
+        ctx.send(text)
 
     @modules.event
     def INTERACTION_CREATE(self):
-        if ("calc", self.member.id, self.channel.id, self.data["message"]["id"]) in interactions:
-            if not self.data["message"]["id"] in results:
-                results[self.data["message"]["id"]] = ""
+        if ("calc", ctx.member.id, ctx.channel.id, ctx.data["message"]["id"]) in interactions:
+            if not ctx.data["message"]["id"] in results:
+                results[ctx.data["message"]["id"]] = ""
 
-            custom_id = self.data["data"]["custom_id"]
-            message_id = self.data["message"]["id"]
+            custom_id = ctx.data["data"]["custom_id"]
+            message_id = ctx.data["message"]["id"]
 
             if "=" in results[message_id]:
                 results[message_id] = ""
@@ -295,7 +294,7 @@ class Fun(ctx):
             else:
                 results[message_id] += custom_id
 
-            self.requests.post(f"https://discord.com/api/v8/interactions/{self.data['id']}/{self.data['token']}/callback", json={
+            ctx.requests.post(f"https://discord.com/api/v8/interactions/{ctx.data['id']}/{ctx.data['token']}/callback", json={
                 "type": 7,
                 "data": {
                     "content": f"```{results[message_id] if results[message_id] else '0'}```{'https://imgur.com/a/N19WxP4' if results[message_id] == 'KABOOM!' else ''}",
@@ -305,8 +304,8 @@ class Fun(ctx):
 
     @modules.command(description="Kalkulator", usage="calc", default=True)
     def calc(self):
-        if not has_permission(self):
-            raise NoPermission(f"{self.author.id} has no {self.command} permission", self.command)
+        if not has_permission(ctx):
+            raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
 
         components = Components(
             Row(
@@ -343,17 +342,17 @@ class Fun(ctx):
             )
         )
 
-        msg = self.send("```0```", components=components)
+        msg = ctx.send("```0```", components=components)
 
         msg = msg.json()
-        interactions.append(("calc", self.author.id, self.channel.id, msg["id"]))
+        interactions.append(("calc", ctx.author.id, ctx.channel.id, msg["id"]))
 
     @modules.command(description="Ukrywa tekst w tekście", usage="encode (tekst wyświetlany) | (tekst ukryty)", default=True)
-    def encode(self, text):
-        if not has_permission(self):
-            raise NoPermission(f"{self.author.id} has no {self.command} permission", self.command)
+    def encode(self, ctx, text):
+        if not has_permission(ctx):
+            raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
 
-        ctx.args = " ".join(self.args).lower().split(" | ")
+        ctx.args = " ".join(ctx.args).lower().split(" | ")
 
         text = ctx.args[0][0]
 
@@ -379,14 +378,14 @@ class Fun(ctx):
 
         text += ctx.args[0][1:]
 
-        self.send("`" + text + "`")
+        ctx.send("`" + text + "`")
 
     @modules.command(description="Pokazuje ukryty tekst", usage="decode (tekst)", default=True)
-    def decode(self, text):
-        if not has_permission(self):
-            raise NoPermission(f"{self.author.id} has no {self.command} permission", self.command)
+    def decode(self, ctx, text):
+        if not has_permission(ctx):
+            raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
 
-        ctx.args = " ".join(self.args)
+        ctx.args = " ".join(ctx.args)
 
         text = ""
         letter = ""
@@ -401,54 +400,54 @@ class Fun(ctx):
                     letter += char
 
         if not text:
-            return self.send("W tej wiadomości nie ma ukrytego tekstu")
+            return ctx.send("W tej wiadomości nie ma ukrytego tekstu")
 
-        self.send("`" + text + "`")
+        ctx.send("`" + text + "`")
 
     @modules.command(description="\"nie widać mnie\" mem z poligonu", usage="cantseeme [tekst/osoba/obrazek/url]", default=True)
-    def cantseeme(self, text = None):
-        if not has_permission(self):
-            raise NoPermission(f"{self.author.id} has no {self.command} permission", self.command)
+    def cantseeme(self, ctx, text = None):
+        if not has_permission(ctx):
+            raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
 
         formats = ("image/png", "image/jpeg", "image/gif", "image/webp")
 
-        if not text and not self.data["attachments"]:
-            self.mentions.append(self.author)
+        if not text and not ctx.data["attachments"]:
+            ctx.mentions.append(ctx.author)
 
-        if self.mentions:
+        if ctx.mentions:
             message_type = "image"
-            content = self.requests.get(self.mentions[0].avatar_url).content
+            content = ctx.requests.get(ctx.mentions[0].avatar_url).content
             open("images/image.png", "wb").write(content)
 
-        elif self.data["attachments"]:
-            req = self.requests.get(self.data["attachments"][0]["url"])
+        elif ctx.data["attachments"]:
+            req = ctx.requests.get(ctx.data["attachments"][0]["url"])
             message_type = "text"
             if req.headers["content-type"] in formats:
                 message_type = "image"
                 open("images/image.png", "wb").write(req.content)
 
         elif text and text.startswith(("https://", "http://")):
-            req = self.requests.get(text)
+            req = ctx.requests.get(text)
             message_type = "text"
             if req.headers["content-type"] in formats:
                 message_type = "image"
                 open("images/image.png", "wb").write(req.content)
 
-        elif len(self.args) >= 1:
+        elif len(ctx.args) >= 1:
             message_type = "text"
 
-        elif not self.args:
+        elif not ctx.args:
             message_type = "image"
-            content = self.requests.get(self.author.avatar_url).content
+            content = ctx.requests.get(ctx.author.avatar_url).content
             open("images/image.png", "wb").write(content)
 
         krzak = Image.open("images/krzak.png")
         image = Image.open("images/image.png")
 
         if message_type == "text":
-            ctx.args = " ".join(self.args)
+            ctx.args = " ".join(ctx.args)
             center = [round(krzak.size[0] / 2) - 50, round(krzak.size[1] / 2) - 60]
-            if len(self.args) > 15:
+            if len(ctx.args) > 15:
                 new_args = ""
                 x = 0
                 for char in ctx.args:
@@ -482,16 +481,16 @@ class Fun(ctx):
             
         krzak.save("images/cantseeme.png")
         
-        self.send(files=[("cantseeme.png", open("images/cantseeme.png", "rb"))])
+        ctx.send(files=[("cantseeme.png", open("images/cantseeme.png", "rb"))])
 
     @modules.command(description="Wysyła zatęczowany avatar", usage="gay [osoba]", default=True)
-    def gay(self, user: User = None):
-        if not has_permission(self):
-            raise NoPermission(f"{self.author.id} has no {self.command} permission", self.command)
+    def gay(self, ctx, user: User = None):
+        if not has_permission(ctx):
+            raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
 
-        user = user or self.author
+        user = user or ctx.author
 
-        content = self.requests.get(user.avatar_url).content
+        content = ctx.requests.get(user.avatar_url).content
         open("images/image.png", "wb").write(content)
 
         image = Image.open("images/image.png").convert("RGBA")
@@ -505,33 +504,33 @@ class Fun(ctx):
         avatar = Image.composite(image, lgbt, mask)
         avatar.save("images/gay.png")
 
-        self.send(files=[("gay.png", open("images/gay.png", "rb"))])
+        ctx.send(files=[("gay.png", open("images/gay.png", "rb"))])
 
-    @modules.command(description="Wysyła losowego mema z jbzd", usage="meme", default=True)
+    @modules.command(description="Wysyła losowego mema z jbzd", usage="meme", aliases=["mem"], default=True)
     def meme(self):
-        if not has_permission(self):
-            raise NoPermission(f"{self.author.id} has no {self.command} permission", self.command)
+        if not has_permission(ctx):
+            raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
 
-        if not self.channel.nsfw:
-            return self.send("Kanał nie jest nsfw")
+        if not ctx.channel.nsfw:
+            return ctx.send("Kanał nie jest nsfw")
 
         memes = []
 
         while not memes:
-            memes_page = self.requests.get(f"https://jbzd.com.pl/str/{random.randint(1, 235)}").content
+            memes_page = ctx.requests.get(f"https://jbzd.com.pl/str/{random.randint(1, 235)}").content
             memes_soup = BeautifulSoup(memes_page, "lxml")
 
             memes = memes_soup.find_all("img", {"class": "article-image"})
             memes = [meme["src"] for meme in memes]
 
-        self.send(random.choice(memes))
+        ctx.send(random.choice(memes))
 
-    @modules.command(description="Pokazuje informacje o użytkowniku", usage="userinfo [osoba]", default=True)
-    def userinfo(self, user: find_working(Member, User) = None):
-        if not has_permission(self):
-            raise NoPermission(f"{self.author.id} has no {self.command} permission", self.command)
+    @modules.command(description="Pokazuje informacje o użytkowniku", usage="userinfo [osoba]", aliases=["ui", "user", "whois", "cotozacwel", "kimtykurwajestes", "ktoto"], default=True)
+    def userinfo(self, ctx, user: find_working(Member, User) = None):
+        if not has_permission(ctx):
+            raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
 
-        user = user or self.author
+        user = user or ctx.author
 
         embed = Embed(title=f"Informacje o {user.username}{' (bot)' if user.bot else ''}:", color=0xe74c3c)
         embed.set_thumbnail(url=user.avatar_url)
@@ -549,39 +548,39 @@ class Fun(ctx):
         if user.bot:
             embed.add_field(name="Zaproszenie:", value=f"[link](https://discord.com/oauth2/authorize?client_id={user.id}&scope=bot)")
 
-        self.send(embed=embed)
+        ctx.send(embed=embed)
 
-    @modules.command(description="Pokazuje informacje o serwerze", usage="serverinfo", default=True)
+    @modules.command(description="Pokazuje informacje o serwerze", usage="serverinfo", aliases=["si"], default=True)
     def serverinfo(self):
-        if not has_permission(self):
-            raise NoPermission(f"{self.author.id} has no {self.command} permission", self.command)
+        if not has_permission(ctx):
+            raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
 
-        embed = Embed(title=f"Informacje o {self.guild.name}:", color=0xe74c3c)
-        embed.set_thumbnail(url=self.guild.icon_url)
+        embed = Embed(title=f"Informacje o {ctx.guild.name}:", color=0xe74c3c)
+        embed.set_thumbnail(url=ctx.guild.icon_url)
 
-        embed.add_field(name="Właściciel:", value=f"{self.guild.owner.mention} ({self.guild.owner_id})")
-        embed.add_field(name="ID:", value=self.guild.id)
-        embed.add_field(name="Ilość osób:", value=self.guild.member_count)
-        embed.add_field(name="Ilość kanałów:", value=len(self.guild.channels))
-        embed.add_field(name="Ilość ról:", value=len(self.guild.roles))
-        embed.add_field(name="Ilość emotek:", value=len(self.guild.emojis))
-        embed.add_field(name="Został stworzony:", value=f"<t:{int(self.guild.created_at.timestamp())}:F>")
-        embed.add_field(name="Boosty:", value=f"{self.guild.boosts} boosty / {self.guild.level} poziom")
-        if self.guild.vanity_url:
-            embed.add_field(name="Własny link:", value=f"discord.gg/{self.guild.vanity_url}")
-        embed.add_field(name="Ikona:", value=f"[link]({self.guild.icon_url})")
-        if self.guild.banner:
-            embed.add_field(name="Banner:", value=f"[link]({self.guild.banner_url})")
-            embed.set_image(url=self.guild.banner_url)
+        embed.add_field(name="Właściciel:", value=f"{ctx.guild.owner.mention} ({ctx.guild.owner_id})")
+        embed.add_field(name="ID:", value=ctx.guild.id)
+        embed.add_field(name="Ilość osób:", value=ctx.guild.member_count)
+        embed.add_field(name="Ilość kanałów:", value=len(ctx.guild.channels))
+        embed.add_field(name="Ilość ról:", value=len(ctx.guild.roles))
+        embed.add_field(name="Ilość emotek:", value=len(ctx.guild.emojis))
+        embed.add_field(name="Został stworzony:", value=f"<t:{int(ctx.guild.created_at.timestamp())}:F>")
+        embed.add_field(name="Boosty:", value=f"{ctx.guild.boosts} boosty / {ctx.guild.level} poziom")
+        if ctx.guild.vanity_url:
+            embed.add_field(name="Własny link:", value=f"discord.gg/{ctx.guild.vanity_url}")
+        embed.add_field(name="Ikona:", value=f"[link]({ctx.guild.icon_url})")
+        if ctx.guild.banner:
+            embed.add_field(name="Banner:", value=f"[link]({ctx.guild.banner_url})")
+            embed.set_image(url=ctx.guild.banner_url)
 
-        self.send(embed=embed)
+        ctx.send(embed=embed)
 
     @modules.command(description="\U0001F633", usage="dick [osoba]", default=True)
-    def dick(self, user: User = None):
-        if not has_permission(self):
-            raise NoPermission(f"{self.author.id} has no {self.command} permission", self.command)
+    def dick(self, ctx, user: User = None):
+        if not has_permission(ctx):
+            raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
 
-        user = user or self.author
+        user = user or ctx.author
 
-        random.seed(get_int(self.bot_user, user))
-        self.send(f"Kuktas {user.username}\n8{'=' * random.randint(1, 20)}D")
+        random.seed(get_int(ctx.bot_user, user))
+        ctx.send(f"Kuktas {user.username}\n8{'=' * random.randint(1, 20)}D")
