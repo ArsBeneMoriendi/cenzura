@@ -53,11 +53,11 @@ class Admin:
             raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
 
         amount += 1
-        messages = [x["id"] for x in discord.get_messages(ctx.channel.id, amount)]
+        messages = [x["id"] for x in self.discord.get_messages(ctx.channel.id, amount)]
         ctx.channel.clear(messages)
 
-    @modules.command(description="Pokazuje pomoc komendy set", usage="set", aliases=["set", "ustaw"])
-    def _set(self, ctx, subcommand = None, arg: find_working(Channel, Role, str, Channel = lambda channel: channel.type == "GUILD_TEXT") = None, arg2 = None):
+    @modules.command(description="Pokazuje pomoc komendy set", usage="set", aliases=["ustaw"])
+    def set(self, ctx, subcommand = None, arg: find_working(Channel, Role, str, Channel = lambda channel: channel.type == "GUILD_TEXT") = None, arg2 = None):
         if not has_permission(ctx):
             raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
 

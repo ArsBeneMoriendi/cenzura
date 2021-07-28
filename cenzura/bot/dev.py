@@ -25,8 +25,8 @@ class Dev:
         if isinstance(body[-1], ast.With):
             insert_returns(body[-1].body)
 
-    @modules.command(description="Wywołuje skrypt", usage="eval (kod)", aliases=["eval"])
-    def _eval(self, ctx, code):
+    @modules.command(description="Wywołuje skrypt", usage="eval (kod)")
+    def eval(self, ctx, code):
         if not ctx.author.id in config.owners:
             raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
 

@@ -153,8 +153,8 @@ class Fun:
 
         ctx.send(files=[("panda.png", image)])
 
-    @modules.command(description="Generuje tekst w ascii", usage="ascii (tekst)", aliases=["ascii"], default=True)
-    def _ascii(self, ctx, text):
+    @modules.command(description="Generuje tekst w ascii", usage="ascii (tekst)", default=True)
+    def ascii(self, ctx, text):
         if not has_permission(ctx):
             raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
 
@@ -538,6 +538,8 @@ class Fun:
         embed.add_field(name="ID:", value=user.id)
         embed.add_field(name="Nick z tagiem:", value=user.user)
         if isinstance(user, Member):
+            if user.nick:
+                embed.add_field(name="Nick na serwerze:", value=user.nick)
             if user.roles[:-1]:
                 embed.add_field(name="Role:", value=", ".join([role.name for role in user.roles][:-1]))
             embed.add_field(name="Dołączył na serwer:", value=f"<t:{int(user.joined_at.timestamp())}:F>")
@@ -560,17 +562,18 @@ class Fun:
 
         embed.add_field(name="Właściciel:", value=f"{ctx.guild.owner.mention} ({ctx.guild.owner_id})")
         embed.add_field(name="ID:", value=ctx.guild.id)
-        embed.add_field(name="Ilość osób:", value=ctx.guild.member_count)
-        embed.add_field(name="Ilość kanałów:", value=len(ctx.guild.channels))
-        embed.add_field(name="Ilość ról:", value=len(ctx.guild.roles))
-        embed.add_field(name="Ilość emotek:", value=len(ctx.guild.emojis))
+        embed.add_field(name="Ludzie:", value=ctx.guild.member_count)
+        embed.add_field(name="Kanały:", value=len(ctx.guild.channels), inline=True)
+        embed.add_field(name="Role:", value=len(ctx.guild.roles), inline=True)
+        embed.add_field(name="Emotki:", value=len(ctx.guild.emojis), inline=True)
         embed.add_field(name="Został stworzony:", value=f"<t:{int(ctx.guild.created_at.timestamp())}:F>")
-        embed.add_field(name="Boosty:", value=f"{ctx.guild.boosts} boosty / {ctx.guild.level} poziom")
+        embed.add_field(name="Boosty:", value=ctx.guild.boosts, inline=True)
+        embed.add_field(name="Poziom:", value=ctx.guild.level, inline=True)
         if ctx.guild.vanity_url:
             embed.add_field(name="Własny link:", value=f"discord.gg/{ctx.guild.vanity_url}")
-        embed.add_field(name="Ikona:", value=f"[link]({ctx.guild.icon_url})")
+        embed.add_field(name="Ikona:", value=f"[link]({ctx.guild.icon_url})", inline=True)
         if ctx.guild.banner:
-            embed.add_field(name="Banner:", value=f"[link]({ctx.guild.banner_url})")
+            embed.add_field(name="Banner:", value=f"[link]({ctx.guild.banner_url})", inline=True)
             embed.set_image(url=ctx.guild.banner_url)
 
         ctx.send(embed=embed)

@@ -52,7 +52,7 @@ class Handler:
 
     @modules.command(description="Włącza debugowanie", usage="debug")
     def debug(self, ctx):
-        if not self.author.id in config.owners:
+        if not ctx.author.id in config.owners:
             raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
 
         if not hasattr(self, "debug"):

@@ -10,8 +10,8 @@ class Help:
         self.bot = bot
         self.discord = discord
 
-    @modules.command(description="Pokazuje pomoc", usage="help [komenda]", aliases=["help", "pomoc"], default=True)
-    def _help(self, ctx, command = None):
+    @modules.command(description="Pokazuje pomoc", usage="help [komenda]", aliases=["pomoc"], default=True)
+    def help(self, ctx, command = None):
         if command:
             if not command in ctx.commands:
                 for cmd in ctx.commands:
@@ -22,7 +22,11 @@ class Help:
             if not command in ctx.commands:
                 raise CommandNotFound(f"{command} was not found")
 
-            embed = Embed(title="POMOC:", description=f"Opis: `{ctx.commands[command]['description']}`\nUżycie: `{ctx.commands[command]['usage']}`\nAliasy: `{', '.join(ctx.commands[command]['aliases'])}`", color=0xe74c3c)
+            description = f"Opis: `{ctx.commands[command]['description']}`\nUżycie: `{ctx.commands[command]['usage']}`"
+            if "aliases" in ctx.commands[command]:
+                description += f"\nAliasy: `{', '.join(ctx.commands[command]['aliases'])}`"
+                
+            embed = Embed(title="POMOC:", description=description, color=0xe74c3c)
             embed.set_thumbnail(url=ctx.bot_user.avatar_url)
             embed.set_footer(text="() - obowiązkowe, [] - opcjonalne")
                 
