@@ -14,7 +14,6 @@ from .ctx import ctx
 from .discord import get_current_user, send
 
 ctx.bot_user = User(get_current_user())
-ctx.send = lambda *args, **kwargs: send(ctx.data["channel_id"], *args, **kwargs)
 
 url = "wss://gateway.discord.gg/?v=9&encoding=json"
 
@@ -139,6 +138,7 @@ class Bot:
                 ctx.guild = ctx.guilds[ctx.data["guild_id"]]
             if "channel_id" in ctx.data:
                 ctx.channel = ctx.guild.channels[ctx.data["channel_id"]]
+                ctx.send = ctx.channel.send
             if "role_id" in ctx.data:
                 ctx.role = Role(ctx.data["role_id"])
             if "mentions" in ctx.data:
@@ -218,6 +218,8 @@ class Bot:
                 ctx.guild = ctx.guilds[ctx.data["guild_id"]]
                 ctx.channel = ctx.guild.channels[ctx.data["channel_id"]]
                 ctx.mentions = [Member(member) for member in ctx.data["mentions"]]
+
+                ctx.send = ctx.channel.send
 
                 try:
                     if command in ctx.commands:

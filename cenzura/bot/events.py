@@ -4,12 +4,18 @@ import config
 import arrays
 import threading
 import time
+import re
+from lib.components import *
+from lib.embed import Embed
 
 @modules.module
 class Events:
     def __init__(self, bot, discord):
         self.bot = bot
         self.discord = discord
+        self.results = {}
+        self.embeds = {}
+        self.wait_for = []
 
     @modules.event
     def GUILD_MEMBER_ADD(self, ctx):
@@ -54,16 +60,21 @@ class Events:
         if not hasattr(self, "messages"):
             ctx.messages = {}
 
-        if not ctx.data["guild_id"] in ctx.messages:
+        if not ctx.guild.id in ctx.messages:
             ctx.messages[ctx.guild.id] = {}
 
-        ctx.messages[ctx.data["guild_id"]][ctx.data["id"]] = {
+        ctx.messages[ctx.guild.id][ctx.data["id"]] = {
             "author": ctx.author,
             "content": ctx.data["content"],
             "channel": ctx.channel
         }
 
         mentions = [member.id for member in ctx.mentions]
+
+        for func in self.wait_for:
+            if func[0] == "MESSAGE_CREATE":
+                if not func[1](func[2], func[3], ctx.data["content"]) == False:
+                    self.wait_for.remove(func)
         
         if ctx.bot_user.id in mentions and len(ctx.data["content"].split()) == 1:
             guilds = functions.read_json("guilds")
@@ -76,7 +87,39 @@ class Events:
             return ctx.send(f"Mój prefix na tym serwerze to `{prefix}`")
 
         if ctx.guild.id in guilds and "cmd" in guilds[ctx.guild.id] and ctx.data["content"] in guilds[ctx.guild.id]["cmd"]:
-            ctx.send(guilds[ctx.guild.id]["cmd"][ctx.data["content"]]["text"].replace("<>", ctx.author.username).replace("[]", ctx.author.mention))
+            cmd = guilds[ctx.guild.id]["cmd"][ctx.data["content"]]
+
+            text = None
+            embed = None
+            
+            if "text" in cmd:
+                text = cmd["text"].replace("<>", ctx.author.username).replace("[]", ctx.author.mention)
+
+            if "embed" in cmd:
+                embed = cmd["embed"]
+                
+                if "title" in embed:
+                    embed["title"] = embed["title"].replace("<>", ctx.author.username).replace("[]", ctx.author.mention)
+
+                if "description" in embed:
+                    embed["description"] = embed["description"].replace("<>", ctx.author.username).replace("[]", ctx.author.mention)
+
+                if "description" in embed:
+                    embed["description"] = embed["description"].replace("<>", ctx.author.username).replace("[]", ctx.author.mention)
+
+                if "footer" in embed and "text" in embed["footer"]:
+                    embed["footer"]["text"] = embed["footer"]["text"].replace("<>", ctx.author.username).replace("[]", ctx.author.mention)
+
+                if "author" in embed and "name" in embed["author"]:
+                    embed["author"]["name"] = embed["author"]["name"].replace("<>", ctx.author.username).replace("[]", ctx.author.mention)
+                
+                if "fields" in embed:
+                    for field in embed["fields"]:
+                        if "name" in field and "value" in field:
+                            field["name"] = field["name"].replace("<>", ctx.author.username).replace("[]", ctx.author.mention)
+                            field["value"] = field["value"].replace("<>", ctx.author.username).replace("[]", ctx.author.mention)
+
+            ctx.send(text, embed=embed)
 
         if ctx.author.has_permission("ADMINISTRATOR"):
             return
@@ -126,7 +169,10 @@ class Events:
         if not ctx.guild.id in ctx.snipe:
             ctx.snipe[ctx.guild.id] = []
             
-        if ctx.guild.id in ctx.messages:
+        if not ctx.guild.id in ctx.messages:
+            ctx.messages[ctx.guild.id] = {}
+
+        if ctx.data["id"] in ctx.messages[ctx.guild.id]:
             ctx.snipe[ctx.guild.id].append(ctx.messages[ctx.guild.id][ctx.data["id"]])
 
     @modules.event
@@ -136,3 +182,174 @@ class Events:
         if "mute_role" in guilds[ctx.guild.id] and guilds[ctx.guild.id]["mute_role"] == ctx.role.id:
             del guilds[ctx.guild.id]["mute_role"]
             functions.write_json("guilds", guilds)
+
+    @modules.event
+    def INTERACTION_CREATE(self, ctx):
+        if not hasattr(ctx, "interactions"):
+            ctx.interactions = []
+
+        guilds = functions.read_json("guilds")
+
+        if not "cmd" in guilds[ctx.guild.id]:
+            guilds[ctx.guild.id]["cmd"] = {}
+
+        message_id = ctx.data["message"]["id"]
+
+        if ("calc", ctx.member.id, ctx.channel.id, message_id) in ctx.interactions:
+            if not message_id in self.results:
+                self.results[message_id] = ""
+
+            custom_id = ctx.data["data"]["custom_id"]
+
+            if "=" in self.results[message_id]:
+                self.results[message_id] = ""
+
+            if custom_id == "leftbracket":
+                self.results[message_id] += "("
+            elif custom_id == "rightbracket":
+                self.results[message_id] += ")"
+            elif custom_id == "power":
+                self.results[message_id] += "**"
+            elif custom_id == "percent":
+                self.results[message_id] += "%"
+            elif custom_id == "backspace":
+                self.results[message_id] = self.results[message_id][:-1]
+            elif custom_id == "clear":
+                self.results[message_id] = ""
+            elif custom_id == "divide":
+                self.results[message_id] += "/"
+            elif custom_id == "multiply":
+                self.results[message_id] += "*"
+            elif custom_id == "minus":
+                self.results[message_id] += "-"
+            elif custom_id == "dot":
+                self.results[message_id] += "."
+            elif custom_id == "equal":
+                try:
+                    result = eval(self.results[message_id])
+                    if type(result) == float:
+                        result = round(result, 2)
+                    self.results[message_id] += "=" + str(result)
+                except:
+                    if self.results[message_id] == "/0":
+                        self.results[message_id] = "KABOOM!"
+                    else:
+                        self.results[message_id] = ""
+            elif custom_id == "add":
+                self.results[message_id] += "+"
+            elif custom_id == "0":
+                if not (self.results[message_id][0] == "0" and len(self.results[message_id]) == 1):
+                    self.results[message_id] += "0"
+            else:
+                self.results[message_id] += custom_id
+
+            ctx.requests.post(f"https://discord.com/api/v8/interactions/{ctx.data['id']}/{ctx.data['token']}/callback", json={
+                "type": 7,
+                "data": {
+                    "content": f"```{self.results[message_id] if self.results[message_id] else '0'}```{'https://imgur.com/a/N19WxP4' if self.results[message_id] == 'KABOOM!' else ''}",
+                    "components" if self.results[message_id] == "KABOOM!" else None: []
+                }
+            })
+
+        elif ("cmd_embed", ctx.member.id, ctx.channel.id, message_id) in ctx.interactions:
+            if not message_id in self.embeds:
+                self.embeds[message_id] = {
+                    "embed": {},
+                    "editing": False
+                }
+                
+            if not self.embeds[message_id]["editing"]:
+                if ctx.data["data"]["custom_id"] == "save":
+                    guilds[ctx.guild.id]["cmd"][ctx.channel.args[1]]["embed"] = self.embeds[message_id]["embed"]
+                    ctx.interactions.remove(("cmd_embed", ctx.member.id, ctx.channel.id, message_id))
+                    del self.embeds[message_id]
+                    
+                    ctx.requests.post(f"https://discord.com/api/v8/interactions/{ctx.data['id']}/{ctx.data['token']}/callback", json={
+                        "type": 4,
+                        "data": {
+                            "content": "Dodano embeda do komendy"
+                        }
+                    })
+                
+                elif ctx.data["data"]["custom_id"] == "remove":
+                    del guilds[ctx.guild.id]["cmd"][ctx.channel.args[1]]["embed"]
+                    ctx.interactions.remove(("cmd_embed", ctx.member.id, ctx.channel.id, message_id))
+                    del self.embeds[message_id]
+                    
+                    ctx.requests.post(f"https://discord.com/api/v8/interactions/{ctx.data['id']}/{ctx.data['token']}/callback", json={
+                        "type": 4,
+                        "data": {
+                            "content": "Usunięto embeda z komendy"
+                        }
+                    })
+                    
+                elif ctx.data["data"]["custom_id"] == "cancel":
+                    ctx.interactions.remove(("cmd_embed", ctx.member.id, ctx.channel.id, message_id))
+                    del self.embeds[message_id]
+
+                    ctx.requests.post(f"https://discord.com/api/v8/interactions/{ctx.data['id']}/{ctx.data['token']}/callback", json={
+                        "type": 4,
+                        "data": {
+                            "content": "Anulowano"
+                        }
+                    })
+
+                elif ctx.data["data"]["custom_id"] == "embed_creator":
+                    self.embeds[message_id]["editing"] = True
+                    selected = ctx.data["data"]["values"][0]
+                    
+                    data = {
+                        "flags": 1 << 6
+                    }
+
+                    if selected in ("title", "description", "color", "image", "thumbnail", "footer", "author"):
+                        data["content"] = "Wyślij wiadomość aby ustawić %s (jeśli chcesz usunąć to wpisz `usun`)" % {"title": "tytuł", "description": "opis", "color": "kolor (hex albo rgb)", "image": "obrazek", "thumbnail": "miniaturke", "footer": "footer", "author": "autora"}[selected]
+                        
+                        def func(channel, member, content):
+                            if not (channel == ctx.channel and member == ctx.author):
+                                return False
+
+                            if not content in ("usun", "usuń", "remove", "delete"):
+                                if selected == "color":
+                                    color = re.search(r"(?:[0-9a-fA-F]{3}){1,2}$", content)
+
+                                    if len(content.split(" ")) == 3:
+                                        color = int("%02x%02x%02x" % tuple((0 if not x.isdigit() else int(x)) for x in content.split(" ")), 16)
+                                    else:
+                                        color = int("ffffff" if not color else color.group(), 16)
+
+                                    content = color
+
+                                elif selected in ("image", "thumbnail"):
+                                    content = {
+                                        "url": content
+                                    }
+
+                                elif selected == "footer":
+                                    content = {
+                                        "text": content
+                                    }
+
+                                elif selected == "author":
+                                    content = {
+                                        "name": content
+                                    }
+
+                                self.embeds[message_id]["embed"][selected] = content
+                                ctx.send("Ustawiono %s" % {"title": "tytuł", "description": "opis", "color": "kolor", "image": "obrazek", "thumbnail": "miniaturke", "footer": "footer", "author": "autora"}[selected])
+                            else:
+                                if selected in self.embeds[message_id]["embed"]:
+                                    del self.embeds[message_id]["embed"][selected]
+                                ctx.send("Usunięto %s" % {"title": "tytuł", "description": "opis", "color": "kolor", "image": "obrazek", "thumbnail": "miniaturke", "footer": "footer", "author": "autora"}[selected])
+
+                            self.embeds[message_id]["editing"] = False
+                            self.discord.edit_message(channel.id, message_id, embed = self.embeds[message_id]["embed"])
+
+                        self.wait_for.append(("MESSAGE_CREATE", func, ctx.channel, ctx.member))
+
+                    ctx.requests.post(f"https://discord.com/api/v8/interactions/{ctx.data['id']}/{ctx.data['token']}/callback", json={
+                        "type": 4,
+                        "data": data
+                    })
+
+        functions.write_json("guilds", guilds)

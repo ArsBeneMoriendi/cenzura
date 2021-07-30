@@ -13,10 +13,7 @@ import cchardet
 from lib.errors import NoPermission, InvalidArgumentType
 from lib.types import User, Member
 from lib.embed import Embed
-from lib.components import Components, Row, Button, Styles
-
-interactions = []
-results = {}
+from lib.components import *
 
 @modules.module
 class Fun:
@@ -243,65 +240,6 @@ class Fun:
 
         ctx.send(text)
 
-    @modules.event
-    def INTERACTION_CREATE(self, ctx):
-        if ("calc", ctx.member.id, ctx.channel.id, ctx.data["message"]["id"]) in interactions:
-            if not ctx.data["message"]["id"] in results:
-                results[ctx.data["message"]["id"]] = ""
-
-            custom_id = ctx.data["data"]["custom_id"]
-            message_id = ctx.data["message"]["id"]
-
-            if "=" in results[message_id]:
-                results[message_id] = ""
-
-            if custom_id == "leftbracket":
-                results[message_id] += "("
-            elif custom_id == "rightbracket":
-                results[message_id] += ")"
-            elif custom_id == "power":
-                results[message_id] += "**"
-            elif custom_id == "percent":
-                results[message_id] += "%"
-            elif custom_id == "backspace":
-                results[message_id] = results[message_id][:-1]
-            elif custom_id == "clear":
-                results[message_id] = ""
-            elif custom_id == "divide":
-                results[message_id] += "/"
-            elif custom_id == "multiply":
-                results[message_id] += "*"
-            elif custom_id == "minus":
-                results[message_id] += "-"
-            elif custom_id == "dot":
-                results[message_id] += "."
-            elif custom_id == "equal":
-                try:
-                    result = eval(results[message_id])
-                    if type(result) == float:
-                        result = round(result, 2)
-                    results[message_id] += "=" + str(result)
-                except:
-                    if results[message_id] == "/0":
-                        results[message_id] = "KABOOM!"
-                    else:
-                        results[message_id] = ""
-            elif custom_id == "add":
-                results[message_id] += "+"
-            elif custom_id == "0":
-                if not (results[message_id][0] == "0" and len(results[message_id]) == 1):
-                    results[message_id] += "0"
-            else:
-                results[message_id] += custom_id
-
-            ctx.requests.post(f"https://discord.com/api/v8/interactions/{ctx.data['id']}/{ctx.data['token']}/callback", json={
-                "type": 7,
-                "data": {
-                    "content": f"```{results[message_id] if results[message_id] else '0'}```{'https://imgur.com/a/N19WxP4' if results[message_id] == 'KABOOM!' else ''}",
-                    "components" if results[message_id] == "KABOOM!" else None: []
-                }
-            })
-
     @modules.command(description="Kalkulator", usage="calc", default=True)
     def calc(self, ctx):
         if not has_permission(ctx):
@@ -342,10 +280,12 @@ class Fun:
             )
         )
 
-        msg = ctx.send("```0```", components=components)
+        msg = ctx.send("```0```", components=components).json()
 
-        msg = msg.json()
-        interactions.append(("calc", ctx.author.id, ctx.channel.id, msg["id"]))
+        if not hasattr(ctx, "interactions"):
+            ctx.interactions = []
+
+        ctx.interactions.append(("calc", ctx.author.id, ctx.channel.id, msg["id"]))
 
     @modules.command(description="Ukrywa tekst w tekście", usage="encode (tekst wyświetlany) | (tekst ukryty)", default=True)
     def encode(self, ctx, text):

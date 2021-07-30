@@ -86,12 +86,12 @@ class Guild:
         return datetime.fromtimestamp(int(((int(self.id) >> 22) + 1420070400000) / 1000))
 
     def create_role(self, name) -> dict:
-        status = create_guild_role(self.id, {"name": name})
+        response = create_guild_role(self.id, {"name": name})
 
-        if status.status_code == 403:
+        if response.status_code == 403:
             raise Forbidden()
 
-        return status
+        return response
 
 class Channel(ctx):
     def __init__(self, arg):
@@ -165,21 +165,25 @@ class Channel(ctx):
     def mention(self) -> str:
         return f"<#{self.id}>"
 
-    def clear(self, messages: list):
-        status = bulk_delete_messages(self.channel.id, {"messages": messages})
+    def send(self, *args, **kwargs):
+        response = send(self.id, *args, **kwargs)
+        return response
 
-        if status.status_code == 403:
+    def clear(self, messages: list):
+        response = bulk_delete_messages(self.channel.id, {"messages": messages})
+
+        if response.status_code == 403:
             raise Forbidden()
 
-        return status
+        return response
 
     def edit_permissions(self, role, data) -> dict:
-        status = edit_channel_permissions(self.id, role, data)
+        response = edit_channel_permissions(self.id, role, data)
 
-        if status.status_code == 403:
+        if response.status_code == 403:
             raise Forbidden()
 
-        return status
+        return response
 
 class Role(ctx):
     def __init__(self, arg):
@@ -340,6 +344,15 @@ class User(ctx):
     def created_at(self) -> datetime:
         return datetime.fromtimestamp(int(((int(self.id) >> 22) + 1420070400000) / 1000))
 
+    def send(self, *args, **kwargs):
+        if not self.id in ctx.dms:
+            self.dms[self.id] = open_dm(self.id)["id"]
+
+        kwargs["reply"] = False
+
+        response = send(self.dms[self.id], *args, **kwargs)
+        return response
+
 class Member(ctx):
     def __init__(self, arg):
         if isinstance(arg, dict):
@@ -469,37 +482,46 @@ class Member(ctx):
     def mention(self) -> str:
         return f"<@!{self.id}>"
 
-    def kick(self, reason = None) -> dict:
-        status = remove_guild_member(self.guild.id, self.id, reason)
+    def send(self, *args, **kwargs):
+        if not self.id in ctx.dms:
+            self.dms[self.id] = open_dm(self.id)["id"]
 
-        if status.status_code == 403:
+        kwargs["reply"] = False
+
+        response = send(self.dms[self.id], *args, **kwargs)
+        return response
+
+    def kick(self, reason = None):
+        response = remove_guild_member(self.guild.id, self.id, reason)
+
+        if response.status_code == 403:
             raise Forbidden()
 
-        return status
+        return response
 
-    def ban(self, reason = None, delete_message_days = 0) -> dict:
-        status = create_guild_ban(self.guild.id, self.id, reason, delete_message_days)
+    def ban(self, reason = None, delete_message_days = 0):
+        response = create_guild_ban(self.guild.id, self.id, reason, delete_message_days)
         
-        if status.status_code == 403:
+        if response.status_code == 403:
             raise Forbidden()
 
-        return status
+        return response
 
-    def add_role(self, role) -> dict:
-        status = add_guild_member_role(self.guild.id, self.id, role)
+    def add_role(self, role):
+        response = add_guild_member_role(self.guild.id, self.id, role)
         
-        if status.status_code == 403:
+        if response.status_code == 403:
             raise Forbidden()
 
-        return status
+        return response
 
-    def remove_role(self, role) -> dict:
-        status = remove_guild_member_role(self.guild.id, self.id, role)
+    def remove_role(self, role):
+        response = remove_guild_member_role(self.guild.id, self.id, role)
         
-        if status.status_code == 403:
+        if response.status_code == 403:
             raise Forbidden()
 
-        return status
+        return response
 
     def has_permission(self, permission: str) -> bool:
         if self.id == self.guild.owner_id:

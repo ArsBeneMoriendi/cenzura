@@ -5,6 +5,7 @@ import re
 from lib.embed import Embed
 from lib.errors import NoPermission, Forbidden
 from lib.types import User, Member
+from lib.components import *
 
 @modules.module
 class Inne:
@@ -78,12 +79,13 @@ class Inne:
         write_json("users", users)
 
     @modules.command(description="Własne komendy", usage="cmd", aliases=["komenda"])
-    def cmd(self, ctx, subcommand = None, arg = None, arg2 = None):
+    def cmd(self, ctx, subcommand = None, arg = None, arg2 = None, arg3 = None):
         if not has_permission(ctx):
             raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
 
-        help_embed = Embed(title="Komendy cmd:", description="> `cmd add (komenda) (tekst)`, `cmd remove (komenda)`, `cmd info (komenda)`, `cmd list`", color=0xe74c3c)
-        help_embed.set_footer(text="<> = nazwa użytkownika, [] = wzmianka")
+        help_embed = Embed(title="Komendy cmd:", description="> `cmd create (komenda)`, `cmd set`, `cmd remove (komenda)`, `cmd info (komenda)`, `cmd list`", color=0xe74c3c)
+        help_embed2 = Embed(title="Komendy cmd set:", description="> `cmd set (komenda) text (tekst (puste jeśli chcesz usunąć))`, `cmd set (komenda) embed`", color=0xe74c3c)
+        help_embed2.set_footer(text="<> = nazwa użytkownika, [] = wzmianka")
 
         if not subcommand:
             return ctx.send(embed=help_embed)
@@ -93,15 +95,73 @@ class Inne:
         if not "cmd" in guilds[ctx.guild.id]:
             guilds[ctx.guild.id]["cmd"] = {}
 
-        if subcommand == "add":
-            if not arg2:
+        if subcommand == "create":
+            if not arg:
                 return ctx.send(embed=help_embed)
 
             guilds[ctx.guild.id]["cmd"][arg] = {}
             guilds[ctx.guild.id]["cmd"][arg]["author_id"] = ctx.author.id
-            guilds[ctx.guild.id]["cmd"][arg]["text"] = " ".join(ctx.args[2:])
 
-            ctx.send("Dodano komende")
+            ctx.send(f"Stworzono komende, teraz wpisz `cmd set {arg} text (tekst)` aby dodać do tej komendy wiadomość")
+
+        elif subcommand == "set":
+            if not arg2:
+                return ctx.send(embed=help_embed2)
+
+            if arg2 == "text":
+                if arg3:
+                    guilds[ctx.guild.id]["cmd"][arg]["text"] = " ".join(ctx.args[3:])
+                    ctx.send("Dodano tekst do komendy")
+                else:
+                    del guilds[ctx.guild.id]["cmd"][arg]["text"]
+                    ctx.send("Usunięto tekst z komendy")
+
+            elif arg2 == "embed":
+                if not arg in guilds[ctx.guild.id]["cmd"]:
+                    raise KeyError
+
+                components = Components(
+                    Row(
+                        SelectMenu(
+                            custom_id = "embed_creator",
+                            placeholder = "Wybierz co chcesz ustawić",
+                            options = [
+                                Option("Tytuł", "title"),
+                                Option("Opis", "description"),
+                                Option("Kolor", "color"),
+                                Option("Footer", "footer"),
+                                Option("Link do obrazka", "image"),
+                                Option("Link do miniaturki", "thumbnail"),
+                                Option("Autor", "author"),
+                            ]
+                        )
+                    ),
+                    Row(
+                        Button("Zapisz", custom_id="save", style=Styles.Green),
+                        Button("Usuń", custom_id="remove", style=Styles.Red),
+                        Button("Anuluj", custom_id="cancel", style=Styles.Gray)
+                    )
+                )
+
+                embed = Embed(title="Tytuł", description="Opis", color=0x2f3136)
+                embed.set_image(url="https://media.discordapp.net/attachments/826832321478918154/870702062680297522/unknown.png")
+                embed.set_thumbnail(url="https://media.discordapp.net/attachments/826832321478918154/870702467808120903/unknown.png")
+                embed.set_footer(text="Footer")
+                embed.set_author(name="Autor")
+
+                if "embed" in guilds[ctx.guild.id]["cmd"][arg]:
+                    embed = guilds[ctx.guild.id]["cmd"][arg]["embed"]
+
+                msg = ctx.send(embed=embed, components=components).json()
+
+                if not hasattr(ctx, "interactions"):
+                    ctx.interactions = []
+
+                ctx.channel.args = ctx.args
+                ctx.interactions.append(("cmd_embed", ctx.author.id, ctx.channel.id, msg["id"]))
+
+            else:
+                return ctx.send(embed=help_embed2)
 
         elif subcommand == "remove":
             if not arg:
@@ -118,12 +178,11 @@ class Inne:
 
             embed = Embed(title=f"Informacje o {arg}:", color=0xe74c3c)
             embed.add_field(name="Autor:", value=f"{user.user} ({user.id})")
-            embed.add_field(name="Tekst w komendzie:", value=guilds[ctx.guild.id]["cmd"][arg]["text"])
 
             ctx.send(embed=embed)
 
         elif subcommand == "list":
-            embed = Embed(title=f"Lista komend ({len(guilds[ctx.guild.id]['cmd'])}):", description="\n".join([x for x in guilds[ctx.guild.id]["cmd"]]), color=0xe74c3c)
+            embed = Embed(title=f"Lista komend ({len(guilds[ctx.guild.id]['cmd'])}):", description=", ".join([f"`{x}`" for x in guilds[ctx.guild.id]["cmd"]]), color=0xe74c3c)
             ctx.send(embed=embed)
 
         else:

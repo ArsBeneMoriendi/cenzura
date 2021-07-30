@@ -27,7 +27,8 @@ class Admin:
         if ctx.author <= member:
             return ctx.send("Nie możesz wyrzucić osoby równej lub wyższej od ciebie")
 
-        member.kick(' '.join(ctx.args[1:]))
+        member.kick(" ".join(ctx.args[1:]))
+        member.send(f"Zostałeś wyrzucony z serwera `{ctx.guild.name}` przez `{ctx.author.username}` z powodu `{' '.join(ctx.args[1:])}`")
         ctx.send(f"Wyrzucono użytkownika `{member.username}` z powodu `{' '.join(ctx.args[1:])}`")
 
     @modules.command(description="Banuje osobe na serwerze", usage="ban (osoba) [powód]")
@@ -44,7 +45,8 @@ class Admin:
         if ctx.author <= member:
             return ctx.send("Nie możesz zbanować osoby równej lub wyższej od ciebie")
 
-        member.ban(' '.join(ctx.args[1:]))
+        member.ban(" ".join(ctx.args[1:]))
+        member.send(f"Zostałeś zbanowany na serwerze `{ctx.guild.name}` przez `{ctx.author.username}` z powodu `{' '.join(ctx.args[1:])}`")
         ctx.send(f"Zbanowano użytkownika `{member.username}` z powodu `{' '.join(ctx.args[1:])}`")
 
     @modules.command(description="Usuwa wiadomości na kanale", usage="clear (2-99)")
@@ -172,6 +174,7 @@ class Admin:
             write_json("guilds", guilds)
 
         member.add_role(guilds[ctx.guild.id]["mute_role"])
+        member.send(f"Zostałeś zmutowany na serwerze `{ctx.guild.name}` przez `{ctx.author.username}` z powodu `{' '.join(ctx.args[1:])}`")
         ctx.send(f"Zmutowano użytkownika `{member.username}` z powodu `{' '.join(ctx.args[1:])}`")
 
     @modules.command(description="Odmutuje użytkownika", usage="unmute (osoba)")
@@ -188,6 +191,7 @@ class Admin:
         guilds = read_json("guilds")
 
         member.remove_role(guilds[ctx.guild.id]["mute_role"])
+        member.send(f"Zostałeś odmutowany na serwerze `{ctx.guild.name}` przez `{ctx.author.username}`")
         ctx.send("Odmutowano użytkownika")
 
     @modules.command(description="Daje ostrzeżenie", usage="warn (osoba) [powód]")
@@ -215,11 +219,13 @@ class Admin:
         guilds[ctx.guild.id]["warns"][member.id].append(' '.join(ctx.args[1:]))
 
         if "warnsevent" in guilds[ctx.guild.id] and "kick" in guilds[ctx.guild.id]["warnsevent"] and guilds[ctx.guild.id]["warnsevent"]["kick"] == str(len(guilds[ctx.guild.id]["warns"][member.id])): 
-            member.kick(' '.join(ctx.args[1:]))
+            member.kick(" ".join(ctx.args[1:]))
+            member.send(f"Zostałeś wyrzucony z serwera `{ctx.guild.name}` przez `{ctx.author.username}` z powodu `{' '.join(ctx.args[1:])}`")
             ctx.send(f"Wyrzucono użytkownika `{member.username}` z powodu `{' '.join(ctx.args[1:])}`")
 
         elif "warnsevent" in guilds[ctx.guild.id] and "ban" in guilds[ctx.guild.id]["warnsevent"] and guilds[ctx.guild.id]["warnsevent"]["ban"] == str(len(guilds[ctx.guild.id]["warns"][member.id])): 
-            member.ban(' '.join(ctx.args[1:]))
+            member.ban(" ".join(ctx.args[1:]))
+            member.send(f"Zostałeś zbanowany na serwerze `{ctx.guild.name}` przez `{ctx.author.username}` z powodu `{' '.join(ctx.args[1:])}`")
             ctx.send(f"Zbanowano użytkownika `{ctx.data['mentions'][0]['username']}` z powodu `{' '.join(ctx.args[1:])}`")
 
         elif "warnsevent" in guilds[ctx.guild.id] and "mute" in guilds[ctx.guild.id]["warnsevent"] and guilds[ctx.guild.id]["warnsevent"]["mute"] == str(len(guilds[ctx.guild.id]["warns"][member.id])): 
@@ -244,8 +250,10 @@ class Admin:
                         })
 
                 member.add_role(guilds[ctx.guild.id]["mute_role"])
+                member.send(f"Zostałeś zmutowany na serwerze `{ctx.guild.name}` przez `{ctx.author.username}` z powodu `{' '.join(ctx.args[1:])}`")
                 ctx.send("Zmutowano użytkownika")
 
+        member.send(f"Dostałeś ostrzeżenie na serwerze `{ctx.guild.name}` przez `{ctx.author.username}` z powodu `{' '.join(ctx.args[1:])}`")
         ctx.send(f"Użytkownik `{member.username}` dostał ostrzeżenie z powodu `{' '.join(ctx.args[1:])}`")
 
         write_json("guilds", guilds)

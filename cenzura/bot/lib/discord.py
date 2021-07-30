@@ -78,10 +78,13 @@ def send(channel, content = None, *, embed: Embed = None, components: Components
     if content:
         data["content"] = content
 
-    if embed:
-        data["embed"] = embed.__dict__
+    if not embed == None:
+        if isinstance(embed, Embed):
+            data["embed"] = embed.__dict__
+        else:
+            data["embed"] = embed
 
-    if components:
+    if not components == None:
         data.update(components.__dict__)
     
     if other_data:
@@ -101,13 +104,19 @@ def edit_message(channel, message, content = None, *, embed: Embed = None, other
     if content:
         data["content"] = content
 
-    if embed:
-        data["embed"] = embed.__dict__
+    if not embed == None:
+        if isinstance(embed, Embed):
+            data["embed"] = embed.__dict__
+        else:
+            data["embed"] = embed
     
     if other_data:
         data.update(other_data)
 
     return request("PATCH", "/channels/" + channel + "/messages/" + message, data)
+
+def open_dm(user):
+    return request("POST", "/users/@me/channels", {"recipient_id": user}).json()
 
 def delete_message(channel, message):
     return request("DELETE", "/channels/" + channel + "/messages/" + message)

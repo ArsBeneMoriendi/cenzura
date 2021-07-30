@@ -19,9 +19,9 @@ class Components:
         self.components.append(row.__dict__)
 
 class Row:
-    def __init__(self, *buttons):
+    def __init__(self, *items):
         self.type = 1
-        self.components = [button.__dict__ for button in buttons]
+        self.components = [item.__dict__ for item in items]
 
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__} {' '.join(['{}={!r}'.format(k, v) for k,v in self.guild.items()])}>"
@@ -29,8 +29,8 @@ class Row:
     def __str__(self) -> str:
         return f"<{self.__class__.__name__} {' '.join(['{}={!r}'.format(k, v) for k,v in self.guild.items()])}>"
 
-    def add_button(self, button):
-        self.components.append(button.__dict__)
+    def add_button(self, item):
+        self.components.append(item.__dict__)
 
 class Button:
     def __init__(self, label: str = None, *, custom_id: str = None, style: int, url: str = None, disabled: bool = False, emoji: dict = None):
@@ -45,6 +45,39 @@ class Button:
             self.disabled = disabled
         if emoji:
             self.emoji = emoji
+
+    def __repr__(self) -> str:
+        return f"<{self.__class__.__name__} {' '.join(['{}={!r}'.format(k, v) for k,v in self.guild.items()])}>"
+
+    def __str__(self) -> str:
+        return f"<{self.__class__.__name__} {' '.join(['{}={!r}'.format(k, v) for k,v in self.guild.items()])}>"
+
+class SelectMenu:
+    def __init__(self, *, custom_id: str, placeholder: str, min_values: int = 1, max_values: int = 1, disabled: bool = False, options):
+        self.type = 3
+        self.custom_id = custom_id
+        self.placeholder = placeholder
+        self.min_values = min_values
+        self.max_values = max_values
+        self.disabled = disabled
+        self.options = [option.__dict__ for option in options]
+
+    def __repr__(self) -> str:
+        return f"<{self.__class__.__name__} {' '.join(['{}={!r}'.format(k, v) for k,v in self.guild.items()])}>"
+
+    def __str__(self) -> str:
+        return f"<{self.__class__.__name__} {' '.join(['{}={!r}'.format(k, v) for k,v in self.guild.items()])}>"
+
+    def add_option(self, option):
+        self.components.append(option.__dict__)
+
+class Option:
+    def __init__(self, label: str, value: str, *, description: str = None, emoji: dict = None, default: bool = False):
+        self.label = label
+        self.value = value
+        self.description = description
+        self.emoji = emoji
+        self.default = default
 
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__} {' '.join(['{}={!r}'.format(k, v) for k,v in self.guild.items()])}>"

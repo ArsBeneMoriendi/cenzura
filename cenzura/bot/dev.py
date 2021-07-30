@@ -59,12 +59,12 @@ class Dev:
             ctx.send(f"```{response.json()}```")
 
     @modules.command(description="Przeładowuje moduł", usage="reload (moduł)")
-    def reload(self, ctx, module):
+    def reload(self, ctx, _modules):
         if not ctx.author.id in config.owners:
             raise NoPermission(f"{ctx.author.id} has no {ctx.command} permission", ctx.command)
 
-        modules.reload(module)
-        ctx.send(f"Przeładowano `{module}`")
+        modules.reload(*_modules.split(";"))
+        ctx.send(f"Przeładowano {', '.join([f'`{module}`' for module in _modules.split(';')])}")
 
     @modules.command(description="Wywołuje komende za kogoś", usage="su (osoba) (komenda) [argumenty]")
     def su(self, ctx, user: Member, command, args = None):
