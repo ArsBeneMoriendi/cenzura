@@ -146,7 +146,8 @@ class Bot:
             try:
                 ctx.events[msg["t"]](ctx.modules["Events"], ctx)
             except:
-                pass
+                import traceback
+                traceback.print_exc()
 
         if msg["t"] in ("GUILD_CREATE", "GUILD_UPDATE"):
             channels = {}

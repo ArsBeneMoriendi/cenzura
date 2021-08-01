@@ -92,7 +92,7 @@ def send(channel, content = None, *, embed: Embed = None, components: Components
 
     return request("POST", "/channels/" + channel + "/messages", data, files)
 
-def edit_message(channel, message, content = None, *, embed: Embed = None, other_data: dict = None):
+def edit_message(channel, message, content = None, *, embed: Embed = None, components: Components = None, other_data: dict = None):
     data = {}
 
     data["allowed_mentions"] = {
@@ -109,6 +109,9 @@ def edit_message(channel, message, content = None, *, embed: Embed = None, other
             data["embed"] = embed.__dict__
         else:
             data["embed"] = embed
+
+    if not components == None:
+        data.update(components.__dict__)
     
     if other_data:
         data.update(other_data)

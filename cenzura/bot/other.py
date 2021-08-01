@@ -129,10 +129,10 @@ class Inne:
                                 Option("Tytuł", "title"),
                                 Option("Opis", "description"),
                                 Option("Kolor", "color"),
-                                Option("Footer", "footer"),
                                 Option("Link do obrazka", "image"),
                                 Option("Link do miniaturki", "thumbnail"),
-                                Option("Autor", "author"),
+                                Option("Footer", "footer", description="konfigurator footera"),
+                                Option("Autor", "author", description="konfigurator autora")
                             ]
                         )
                     ),
@@ -146,8 +146,8 @@ class Inne:
                 embed = Embed(title="Tytuł", description="Opis", color=0x2f3136)
                 embed.set_image(url="https://media.discordapp.net/attachments/826832321478918154/870702062680297522/unknown.png")
                 embed.set_thumbnail(url="https://media.discordapp.net/attachments/826832321478918154/870702467808120903/unknown.png")
-                embed.set_footer(text="Footer")
-                embed.set_author(name="Autor")
+                embed.set_footer(text="Footer", icon_url="https://media.discordapp.net/attachments/826832321478918154/871532499153604628/unknown.png")
+                embed.set_author(name="Autor", icon_url="https://media.discordapp.net/attachments/826832321478918154/871532532879994890/unknown.png")
 
                 if "embed" in guilds[ctx.guild.id]["cmd"][arg]:
                     embed = guilds[ctx.guild.id]["cmd"][arg]["embed"]

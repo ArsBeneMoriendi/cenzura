@@ -294,6 +294,109 @@ class Events:
                         }
                     })
 
+                elif ctx.data["data"]["custom_id"] in ("author_save", "footer_save"):
+                    guilds[ctx.guild.id]["cmd"][ctx.channel.args[1]]["embed"] = self.embeds[message_id]["embed"]
+
+                    components = Components(
+                        Row(
+                            SelectMenu(
+                                custom_id = "embed_creator",
+                                placeholder = "Wybierz co chcesz ustawić",
+                                options = [
+                                    Option("Tytuł", "title"),
+                                    Option("Opis", "description"),
+                                    Option("Kolor", "color"),
+                                    Option("Link do obrazka", "image"),
+                                    Option("Link do miniaturki", "thumbnail"),
+                                    Option("Footer", "footer", description="konfigurator footera"),
+                                    Option("Autor", "author", description="konfigurator autora")
+                                ]
+                            )
+                        ),
+                        Row(
+                            Button("Zapisz", custom_id="save", style=Styles.Green),
+                            Button("Usuń", custom_id="remove", style=Styles.Red),
+                            Button("Anuluj", custom_id="cancel", style=Styles.Gray)
+                        )
+                    )
+
+                    self.discord.edit_message(ctx.channel.id, message_id, components=components)
+                    
+                    ctx.requests.post(f"https://discord.com/api/v8/interactions/{ctx.data['id']}/{ctx.data['token']}/callback", json={
+                        "type": 4,
+                        "data": {
+                            "content": f"Usunięto {ctx.data['data']['custom_id'].split('_')[0]}a"
+                        }
+                    })
+
+                elif ctx.data["data"]["custom_id"] in ("author_remove", "footer_remove"):
+                    del self.embeds[message_id]["embed"][ctx.data["data"]["custom_id"].split("_")[0]]
+
+                    components = Components(
+                        Row(
+                            SelectMenu(
+                                custom_id = "embed_creator",
+                                placeholder = "Wybierz co chcesz ustawić",
+                                options = [
+                                    Option("Tytuł", "title"),
+                                    Option("Opis", "description"),
+                                    Option("Kolor", "color"),
+                                    Option("Link do obrazka", "image"),
+                                    Option("Link do miniaturki", "thumbnail"),
+                                    Option("Footer", "footer", description="konfigurator footera"),
+                                    Option("Autor", "author", description="konfigurator autora")
+                                ]
+                            )
+                        ),
+                        Row(
+                            Button("Zapisz", custom_id="save", style=Styles.Green),
+                            Button("Usuń", custom_id="remove", style=Styles.Red),
+                            Button("Anuluj", custom_id="cancel", style=Styles.Gray)
+                        )
+                    )
+
+                    self.discord.edit_message(ctx.channel.id, message_id, components=components)
+                    
+                    ctx.requests.post(f"https://discord.com/api/v8/interactions/{ctx.data['id']}/{ctx.data['token']}/callback", json={
+                        "type": 4,
+                        "data": {
+                            "content": f"Usunięto {ctx.data['data']['custom_id'].split('_')[0]}a"
+                        }
+                    })
+
+                elif ctx.data["data"]["custom_id"] in ("author_cancel", "footer_cancel"):
+                    components = Components(
+                        Row(
+                            SelectMenu(
+                                custom_id = "embed_creator",
+                                placeholder = "Wybierz co chcesz ustawić",
+                                options = [
+                                    Option("Tytuł", "title"),
+                                    Option("Opis", "description"),
+                                    Option("Kolor", "color"),
+                                    Option("Link do obrazka", "image"),
+                                    Option("Link do miniaturki", "thumbnail"),
+                                    Option("Footer", "footer", description="konfigurator footera"),
+                                    Option("Autor", "author", description="konfigurator autora")
+                                ]
+                            )
+                        ),
+                        Row(
+                            Button("Zapisz", custom_id="save", style=Styles.Green),
+                            Button("Usuń", custom_id="remove", style=Styles.Red),
+                            Button("Anuluj", custom_id="cancel", style=Styles.Gray)
+                        )
+                    )
+
+                    self.discord.edit_message(ctx.channel.id, message_id, components=components)
+                    
+                    ctx.requests.post(f"https://discord.com/api/v8/interactions/{ctx.data['id']}/{ctx.data['token']}/callback", json={
+                        "type": 4,
+                        "data": {
+                            "content": "Anulowano"
+                        }
+                    })
+
                 elif ctx.data["data"]["custom_id"] == "embed_creator":
                     self.embeds[message_id]["editing"] = True
                     selected = ctx.data["data"]["values"][0]
@@ -302,12 +405,14 @@ class Events:
                         "flags": 1 << 6
                     }
 
-                    if selected in ("title", "description", "color", "image", "thumbnail", "footer", "author"):
-                        data["content"] = "Wyślij wiadomość aby ustawić %s (jeśli chcesz usunąć to wpisz `usun`)" % {"title": "tytuł", "description": "opis", "color": "kolor (hex albo rgb)", "image": "obrazek", "thumbnail": "miniaturke", "footer": "footer", "author": "autora"}[selected]
+                    if selected in ("title", "description", "color", "image", "thumbnail", "footer_text", "footer_icon", "author_name", "author_icon"):
+                        data["content"] = "Wyślij wiadomość aby ustawić %s (jeśli chcesz usunąć to wpisz `usun`)" % {"title": "tytuł", "description": "opis", "color": "kolor (hex albo rgb)", "image": "obrazek", "thumbnail": "miniaturke", "footer": "footer", "author": "autora", "author_name": "nazwe autora", "author_icon": "ikonke autora", "footer_text": "tekst footera", "footer_icon": "ikonke footera"}[selected]
                         
                         def func(channel, member, content):
                             if not (channel == ctx.channel and member == ctx.author):
                                 return False
+
+                            _components = None
 
                             if not content in ("usun", "usuń", "remove", "delete"):
                                 if selected == "color":
@@ -325,27 +430,128 @@ class Events:
                                         "url": content
                                     }
 
-                                elif selected == "footer":
-                                    content = {
-                                        "text": content
-                                    }
-
-                                elif selected == "author":
+                                elif selected == "author_name":
                                     content = {
                                         "name": content
                                     }
 
-                                self.embeds[message_id]["embed"][selected] = content
-                                ctx.send("Ustawiono %s" % {"title": "tytuł", "description": "opis", "color": "kolor", "image": "obrazek", "thumbnail": "miniaturke", "footer": "footer", "author": "autora"}[selected])
+                                    components = Components(
+                                        Row(
+                                            SelectMenu(
+                                                custom_id = "embed_creator",
+                                                placeholder = "Wybierz co chcesz ustawić",
+                                                options = [
+                                                    Option("Nazwa", "author_name"),
+                                                    Option("Link do ikonki", "author_icon")
+                                                ]
+                                            )
+                                        ),
+                                        Row(
+                                            Button("Zapisz", custom_id="author_save", style=Styles.Green),
+                                            Button("Usuń", custom_id="author_remove", style=Styles.Red),
+                                            Button("Anuluj", custom_id="author_cancel", style=Styles.Gray)
+                                        )
+                                    )
+
+                                    _components = components
+
+                                elif selected == "author_icon":
+                                    content = {
+                                        "name": self.embeds[message_id]["embed"]["author"]["name"],
+                                        "icon_url": content
+                                    }
+
+                                elif selected == "footer_text":
+                                    content = {
+                                        "text": content
+                                    }
+
+                                    components = Components(
+                                        Row(
+                                            SelectMenu(
+                                                custom_id = "embed_creator",
+                                                placeholder = "Wybierz co chcesz ustawić",
+                                                options = [
+                                                    Option("Tekst", "footer_name"),
+                                                    Option("Link do ikonki", "footer_icon")
+                                                ]
+                                            )
+                                        ),
+                                        Row(
+                                            Button("Zapisz", custom_id="footer_save", style=Styles.Green),
+                                            Button("Usuń", custom_id="footer_remove", style=Styles.Red),
+                                            Button("Anuluj", custom_id="footer_cancel", style=Styles.Gray)
+                                        )
+                                    )
+
+                                    _components = components
+
+                                elif selected == "footer_icon":
+                                    content = {
+                                        "text": self.embeds[message_id]["embed"]["footer"]["text"],
+                                        "icon_url": content
+                                    }
+
+                                self.embeds[message_id]["embed"][selected.split("_")[0]] = content
+                                ctx.send("Ustawiono %s" % {"title": "tytuł", "description": "opis", "color": "kolor", "image": "obrazek", "thumbnail": "miniaturke", "footer": "footer", "author": "autora", "author_name": "nazwe autora", "author_icon": "ikonke autora", "footer_text": "tekst footera", "footer_icon": "ikonke footera"}[selected])
                             else:
                                 if selected in self.embeds[message_id]["embed"]:
                                     del self.embeds[message_id]["embed"][selected]
-                                ctx.send("Usunięto %s" % {"title": "tytuł", "description": "opis", "color": "kolor", "image": "obrazek", "thumbnail": "miniaturke", "footer": "footer", "author": "autora"}[selected])
+                                ctx.send("Usunięto %s" % {"title": "tytuł", "description": "opis", "color": "kolor", "image": "obrazek", "thumbnail": "miniaturke", "footer": "footer", "author": "autora", "author_name": "nazwe autora", "author_icon": "ikonke autora", "footer_text": "tekst footera", "footer_icon": "ikonke footera"}[selected])
 
                             self.embeds[message_id]["editing"] = False
-                            self.discord.edit_message(channel.id, message_id, embed = self.embeds[message_id]["embed"])
+                            if not _components:
+                                self.discord.edit_message(channel.id, message_id, embed = self.embeds[message_id]["embed"])
+                            else:
+                                self.discord.edit_message(channel.id, message_id, embed = self.embeds[message_id]["embed"], components = _components)
 
                         self.wait_for.append(("MESSAGE_CREATE", func, ctx.channel, ctx.member))
+
+                    elif selected == "author":
+                        data["content"] = "Naciśnij na liste jeszcze raz"
+                        
+                        components = Components(
+                            Row(
+                                SelectMenu(
+                                    custom_id = "embed_creator",
+                                    placeholder = "Wybierz co chcesz ustawić",
+                                    options = [
+                                        Option("Nazwa", "author_name")
+                                    ]
+                                )
+                            ),
+                            Row(
+                                Button("Zapisz", custom_id="author_save", style=Styles.Green),
+                                Button("Usuń", custom_id="author_remove", style=Styles.Red),
+                                Button("Anuluj", custom_id="author_cancel", style=Styles.Gray)
+                            )
+                        )
+
+                        self.embeds[message_id]["editing"] = False
+                        self.discord.edit_message(ctx.channel.id, message_id, components=components)
+
+                    elif selected == "footer":
+                        data["content"] = "Naciśnij na liste jeszcze raz"
+                        
+                        components = Components(
+                            Row(
+                                SelectMenu(
+                                    custom_id = "embed_creator",
+                                    placeholder = "Wybierz co chcesz ustawić",
+                                    options = [
+                                        Option("Tekst", "footer_text")
+                                    ]
+                                )
+                            ),
+                            Row(
+                                Button("Zapisz", custom_id="footer_save", style=Styles.Green),
+                                Button("Usuń", custom_id="footer_remove", style=Styles.Red),
+                                Button("Anuluj", custom_id="footer_cancel", style=Styles.Gray)
+                            )
+                        )
+
+                        self.embeds[message_id]["editing"] = False
+                        self.discord.edit_message(ctx.channel.id, message_id, components=components)
 
                     ctx.requests.post(f"https://discord.com/api/v8/interactions/{ctx.data['id']}/{ctx.data['token']}/callback", json={
                         "type": 4,
