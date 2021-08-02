@@ -69,4 +69,4 @@ def is_in(*args):
     return func
 
 def get_int(user, user2):
-    return round((int(user.id) / int(user2.created_at.timestamp())) + (int(user2.id) / int(user.created_at.timestamp())))
+    return round(((int(user.id) + int(user2.id) / int(user.created_at.timestamp()) + int(user2.created_at.timestamp())) % 10001) / 100)
