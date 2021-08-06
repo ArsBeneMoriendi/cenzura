@@ -346,7 +346,8 @@ class User(ctx):
 
     def send(self, *args, **kwargs):
         if not self.id in ctx.dms:
-            self.dms[self.id] = open_dm(self.id)["id"]
+            dm = open_dm(self.id)
+            self.dms[self.id] = "0" if not "id" in dm else dm["id"]
 
         kwargs["reply"] = False
 
@@ -484,7 +485,8 @@ class Member(ctx):
 
     def send(self, *args, **kwargs):
         if not self.id in ctx.dms:
-            self.dms[self.id] = open_dm(self.id)["id"]
+            dm = open_dm(self.id)
+            self.dms[self.id] = "0" if not "id" in dm else dm["id"]
 
         kwargs["reply"] = False
 
