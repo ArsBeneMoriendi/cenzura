@@ -5,3 +5,7 @@ humanize
 pillow
 pyfiglet
 python-dateutil
+flask
+cchardet
+lxml
+beautifulsoup4
