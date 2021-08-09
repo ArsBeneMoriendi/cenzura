@@ -9,15 +9,15 @@ def main():
 
 @app.route("/discord", methods=["GET"])
 def discord():
-    return flask.redirect("https://discord.gg/tDQURnVtGC")
+    return flask.redirect("https://discord.gg/tDQURnVtGC", code=301)
 
 @app.route("/invite", methods=["GET"])
 def invite():
-    return flask.redirect("https://discord.com/api/oauth2/authorize?client_id=705552952600952960&permissions=268561494&scope=bot")
+    return flask.redirect("https://discord.com/api/oauth2/authorize?client_id=705552952600952960&permissions=268561494&scope=bot", code=301)
 
 @app.route("/sourcecode", methods=["GET"])
 def sourcecode():
-    return flask.redirect("https://github.com/CZUBIX/cenzura")
+    return flask.redirect("https://github.com/CZUBIX/cenzura", code=301)
 
 @app.route("/sitemap.xml")
 def sitemap():

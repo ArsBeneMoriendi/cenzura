@@ -14,13 +14,26 @@ from lib.errors import NoPermission, InvalidArgumentType
 from lib.types import User, Member
 from lib.embed import Embed
 from lib.components import *
+import threading
 
 @modules.module
 class Fun:
     def __init__(self, bot, discord):
         self.bot = bot
         self.discord = discord
-        
+        self.ustawione_kurwa = {
+            ("ship", "636096693712060416", "290881759732563982"): 100,
+            ("howgay", "290881759732563982"): 100,
+            ("howgay", "746038046310531084c"): 100,
+            ("howgay", "264905890824585216"): 10,
+            ("howgay", "327899255249436672"): 5,
+            ("howgay", "563718132863074324"): 98,
+            ("howgay", "634766934486810624"): 100,
+            ("dick", "264905890824585216"): 20,
+            ("dick", "327899255249436672"): 19,
+        }
+        self.cleverbots = {}
+
     @modules.command(description="Losuje liczbe", usage="rnumber (od) (do)", default=True)
     def rnumber(self, ctx, _from: int, to: int):
         if not has_permission(ctx):
@@ -78,8 +91,14 @@ class Fun:
         
         para.save("images/ship.png")
 
-        random.seed(get_int(user, user2))
-        ctx.send(f"**{user.username}** + **{user2.username}** = **{user.username[:round(len(user.username) / 2)].lower()}{user2.username[round(len(user2.username) / 2):].lower()}**\nIch miłość jest równa **{random.randint(0, 100)}%**!", files=[("ship.png", open("images/ship.png", "rb"))])
+        if ("ship", user.id, user2.id) in self.ustawione_kurwa:
+            percent = self.ustawione_kurwa[("ship", user.id, user2.id)]
+        elif ("ship", user2.id, user.id) in self.ustawione_kurwa:
+            percent = self.ustawione_kurwa[("ship", user2.id, user.id)]
+        else:
+            percent = get_int(user, user2)
+
+        ctx.send(f"**{user.username}** + **{user2.username}** = **{user.username[:round(len(user.username) / 2)].lower()}{user2.username[round(len(user2.username) / 2):].lower()}**\nIch miłość jest równa **{percent}%**!", files=[("ship.png", open("images/ship.png", "rb"))])
 
     @modules.command(description="Uderza osobe", usage="slap (osoba)", default=True)
     def slap(self, ctx, user: User):
@@ -164,8 +183,12 @@ class Fun:
 
         user = user or ctx.author
 
-        random.seed(get_int(ctx.bot_user, user))
-        ctx.send(f"{user.username} jest gejem w {random.randint(0, 100)}%!")
+        if ("howgay", user.id) in self.ustawione_kurwa:
+            percent = self.ustawione_kurwa[("howgay", user.id)]
+        else:
+            percent = get_int(ctx.bot_user, user)
+
+        ctx.send(f"{user.username} jest gejem w {percent}%!")
 
     @modules.command(description="Wysyła obrazek \"Achievement Get!\"", usage="achievement (tekst)", default=True)
     def achievement(self, ctx, text):
@@ -525,5 +548,9 @@ class Fun:
 
         user = user or ctx.author
 
-        random.seed(get_int(ctx.bot_user, user))
-        ctx.send(f"Kuktas {user.username}\n8{'=' * random.randint(1, 20)}D")
+        if ("dick", user.id) in self.ustawione_kurwa:
+            percent = self.ustawione_kurwa[("dick", user.id)] * 5
+        else:
+            percent = get_int(ctx.bot_user, user)
+
+        ctx.send(f"Kuktas {user.username}\n8{'=' * int(percent / 5)}D")

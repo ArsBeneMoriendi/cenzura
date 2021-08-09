@@ -58,6 +58,8 @@ class Admin:
         messages = [x["id"] for x in self.discord.get_messages(ctx.channel.id, amount)]
         ctx.channel.clear(messages)
 
+        ctx.send("ok", reply=False)
+
     @modules.command(description="Pokazuje pomoc komendy set", usage="set", aliases=["ustaw"])
     def set(self, ctx, subcommand = None, arg: find_working(Channel, Role, str, Channel = lambda channel: channel.type == "GUILD_TEXT") = None, arg2 = None):
         if not has_permission(ctx):

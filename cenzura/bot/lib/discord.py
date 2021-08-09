@@ -118,6 +118,9 @@ def edit_message(channel, message, content = None, *, embed: Embed = None, compo
 
     return request("PATCH", "/channels/" + channel + "/messages/" + message, data)
 
+def start_typing(channel):
+    return request("POST", "/channels/" + channel + "/typing")
+
 def open_dm(user):
     return request("POST", "/users/@me/channels", {"recipient_id": user}).json()
 

@@ -11,7 +11,7 @@ from .errors import *
 from .types import *
 from inspect import signature, _empty
 from .ctx import ctx
-from .discord import get_current_user, send
+from .discord import get_current_user, send, start_typing
 
 ctx.bot_user = User(get_current_user())
 
@@ -197,6 +197,8 @@ class Bot:
             if msg["d"]["content"].startswith(prefix):
                 if "bot" in msg["d"]["author"]:
                     return
+
+                start_typing(msg["d"]["channel_id"])
 
                 command = msg["d"]["content"].split(" ")[0][len(prefix):]
                 args = msg["d"]["content"].split(" ")[1:]

@@ -15,6 +15,7 @@ class Handler:
     def on_error(self, ctx, error):
         if self.debug == True:
             result = traceback.format_exc()
+            print(result)
             return ctx.send(f"```{result}```")
 
         if isinstance(error, NoArgument):
