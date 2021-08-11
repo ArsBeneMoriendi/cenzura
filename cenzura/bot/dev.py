@@ -80,7 +80,7 @@ class Dev:
         args = ctx.args[2:]
         func = ctx.commands[command]["function"]
 
-        class su_self(ctx):
+        class su_ctx(ctx):
             def __init__(self, send, author: Member, command, args):
                 self.author = author
                 self.command = command
@@ -108,7 +108,7 @@ class Dev:
                 if arg.default == _empty:
                     raise NoArgument(f"{needed_arg} was not specified", ctx.commands[command], list(needed_args), needed_arg)
 
-        func(ctx.modules[func.__qualname__.split(".")[0]], su_self(send, user, command, args), *parsed_args)
+        func(ctx.modules[func.__qualname__.split(".")[0]], su_ctx(send, user, command, args), *parsed_args)
 
     @modules.command(description="Aktualizuje statystyki", usage="updatestats")
     def updatestats(self, ctx):
