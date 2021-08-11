@@ -7,6 +7,7 @@ import time
 import re
 from lib.components import *
 from lib.embed import Embed
+from lib.types import Member
 
 @modules.module
 class Events:
@@ -192,6 +193,71 @@ class Events:
 
         if not "cmd" in guilds[ctx.guild.id]:
             guilds[ctx.guild.id]["cmd"] = {}
+
+        if ctx.data["type"] == 2:
+            user = ctx.data["data"]["resolved"]["users"][ctx.data["data"]["target_id"]]
+            member = ctx.data["data"]["resolved"]["members"][ctx.data["data"]["target_id"]]
+            user["member"] = member
+            member = Member(user)
+
+            class ctx_app(ctx):
+                def __init__(self, discord, send):
+                    self.discord = discord
+                    self.author = self.member
+                    self.command = self.data["data"]["name"]
+                    self.args = []
+
+                def send(self, content = None, *, embed: Embed = None, components: Components = None, other_data: dict = None, files: list = None, reply = False, mentions: list = []):
+                    data = {}
+
+                    if reply and not files:
+                        data["allowed_mentions"] = {
+                            "parse": mentions,
+                            "users": [],
+                            "replied_user": False
+                        }
+
+                        data["message_reference"] = {
+                            "guild_id": self.data["guild_id"],
+                            "channel_id": self.data["channel_id"],
+                            "message_id": self.data["id"]
+                        }
+
+                    if content:
+                        data["content"] = content
+
+                    if not embed == None:
+                        if isinstance(embed, Embed):
+                            data["embeds"] = [embed.__dict__]
+                        else:
+                            data["embeds"] = [embed]
+
+                    if not components == None:
+                        data.update(components.__dict__)
+                    
+                    if other_data:
+                        data.update(other_data)
+
+                    return self.discord.request("POST", "/interactions/" + self.data["id"] + "/" + self.data["token"] + "/callback", {"type": 4, "data": data}, files)
+
+            new_ctx = ctx_app(self.discord, ctx.send)
+
+            if ctx.data["data"]["name"] == "avatar":
+                ctx.commands["avatar"]["function"](ctx.modules["Fun"], new_ctx, member)
+
+            elif ctx.data["data"]["name"] == "profile":
+                ctx.commands["profile"]["function"](ctx.modules["Inne"], new_ctx, "view", member)
+
+            elif ctx.data["data"]["name"] == "todo":
+                ctx.commands["todo"]["function"](ctx.modules["Inne"], new_ctx, "view", member)
+
+            elif ctx.data["data"]["name"] == "userinfo":
+                ctx.commands["userinfo"]["function"](ctx.modules["Fun"], new_ctx, member)
+
+            elif ctx.data["data"]["name"] == "kiss":
+                ctx.commands["kiss"]["function"](ctx.modules["Fun"], new_ctx, member)
+
+            return
 
         message_id = ctx.data["message"]["id"]
 
