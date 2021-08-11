@@ -254,9 +254,6 @@ class Events:
             elif ctx.data["data"]["name"] == "userinfo":
                 ctx.commands["userinfo"]["function"](ctx.modules["Fun"], new_ctx, member)
 
-            elif ctx.data["data"]["name"] == "kiss":
-                ctx.commands["kiss"]["function"](ctx.modules["Fun"], new_ctx, member)
-
             return
 
         message_id = ctx.data["message"]["id"]
