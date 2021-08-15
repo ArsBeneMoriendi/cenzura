@@ -85,7 +85,10 @@ def send(channel, content = None, *, embed: Embed = None, components: Components
             data["embed"] = embed
 
     if not components == None:
-        data.update(components.__dict__)
+        if isinstance(components, Components):
+            data.update(components.__dict__)
+        else:
+            data.update(components)
     
     if other_data:
         data.update(other_data)
@@ -111,12 +114,48 @@ def edit_message(channel, message, content = None, *, embed: Embed = None, compo
             data["embed"] = embed
 
     if not components == None:
-        data.update(components.__dict__)
+        if isinstance(components, Components):
+            data.update(components.__dict__)
+        else:
+            data.update(components)
     
     if other_data:
         data.update(other_data)
 
     return request("PATCH", "/channels/" + channel + "/messages/" + message, data)
+
+def interaction_response(_type: int, _id, token, content = None, *, embed: Embed = None, components: Components = None, other_data: dict = None, files: list = None, reply = False, mentions: list = []):
+    data = {}
+
+    if reply and not files:
+        data["allowed_mentions"] = {
+            "parse": mentions,
+            "users": [],
+            "replied_user": False
+        }
+
+        data["message_reference"] = {
+            "guild_id": ctx.data["guild_id"],
+            "channel_id": ctx.data["channel_id"],
+            "message_id": ctx.data["id"]
+        }
+
+    if content:
+        data["content"] = content
+
+    if not embed == None:
+        if isinstance(embed, Embed):
+            data["embeds"] = [embed.__dict__]
+        else:
+            data["embeds"] = [embed]
+
+    if not components == None:
+        data.update(components.__dict__)
+    
+    if other_data:
+        data.update(other_data)
+
+    return request("POST", "/interactions/" + _id + "/" + token + "/callback", {"type": _type, "data": data}, files)
 
 def start_typing(channel):
     return request("POST", "/channels/" + channel + "/typing")

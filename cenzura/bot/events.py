@@ -621,4 +621,16 @@ class Events:
                         "data": data
                     })
 
+        elif ("korrumzthegame", ctx.member.id, ctx.channel.id, message_id) in ctx.interactions:
+            renderer = ctx.modules["Gry"].players[("korrumzthegame", ctx.member.id)]
+            custom_id = ctx.data["data"]["custom_id"]
+
+            if custom_id == "close":
+                renderer.player.ws.close()
+                self.discord.delete_message(renderer.channel.id, renderer.message_id)
+                del ctx.modules["Gry"].players[("korrumzthegame", ctx.member.id)]
+                return ctx.interactions.remove(("korrumzthegame", ctx.member.id, ctx.channel.id, message_id))
+
+            renderer.player.move(custom_id, ctx.data["id"], ctx.data["token"])
+
         functions.write_json("guilds", guilds)

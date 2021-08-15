@@ -1,7 +1,7 @@
-import flask
-import os
+import flask, os, io
 
 app = flask.Flask(__name__)
+images = {}
 
 @app.route("/", methods=["GET"])
 def main():
@@ -18,6 +18,15 @@ def invite():
 @app.route("/sourcecode", methods=["GET"])
 def sourcecode():
     return flask.redirect("https://github.com/CZUBIX/cenzura", code=301)
+
+@app.route("/ktg", methods=["POST"])
+def ktg_post():
+    images[str(len(images) + 1)] = flask.request.files["file"].read()
+    return flask.jsonify(code=len(images)), 201
+
+@app.route("/ktg/<code>", methods=["GET"])
+def ktg_get(code):
+    return flask.send_file(io.BytesIO(images[code]), mimetype="image/jpeg", as_attachment=True, attachment_filename=f"{code}.jpg")
 
 @app.route("/sitemap.xml")
 def sitemap():
