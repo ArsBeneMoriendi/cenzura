@@ -627,7 +627,14 @@ class Events:
 
             if custom_id == "close":
                 renderer.player.ws.close()
-                self.discord.delete_message(renderer.channel.id, renderer.message_id)
+                ctx.requests.post(f"https://discord.com/api/v8/interactions/{ctx.data['id']}/{ctx.data['token']}/callback", json={
+                    "type": 7,
+                    "data": {
+                        "content": "Dziękujemy za gre",
+                        "embeds": [],
+                        "components": []
+                    }
+                })
                 del ctx.modules["Gry"].players[("korrumzthegame", ctx.member.id)]
                 return ctx.interactions.remove(("korrumzthegame", ctx.member.id, ctx.channel.id, message_id))
 

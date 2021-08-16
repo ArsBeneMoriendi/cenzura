@@ -29,12 +29,13 @@ class Renderer:
             self.image.paste(Image.open(f"korrumzthegamediscord/assets/bugs/bug{b.image_number}.png"), (b.x, b.y))
 
         self.image.save(self.img, format="JPEG")
-
+    
         code = requests.post("https://cenzurabot.com/ktg", files={"file": ("unknown.jpeg", self.img.getvalue())}).json()["code"]
         self.embed.title = "Pull requesty"
         self.embed.description = "\n".join([f"{player.username if not self.player.username == player.username else player.username + ' (ty)'} {player.pull_requests}" for player in sorted(self.player.players + [self.player], reverse=True, key=lambda player: player.pull_requests)])
         self.embed.set_image(url=f"https://cenzurabot.com/ktg/{code}")
         self.embed.set_thumbnail(url=f"https://korrumzthegame.cf/images/player{self.player.image_number}.png")
+        self.embed.set_footer(text="www.korrumzthegame.cf")
         self.discord.interaction_response(7, _id, token, embed=self.embed)
 
         self.image = Image.new("RGB", (1920, 1080), (32, 32, 32))
