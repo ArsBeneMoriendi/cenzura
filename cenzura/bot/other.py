@@ -111,10 +111,10 @@ class Inne:
             if arg2 == "text":
                 if arg3:
                     guilds[ctx.guild.id]["cmd"][arg]["text"] = " ".join(ctx.args[3:])
-                    ctx.send("Dodano tekst do komendy")
+                    ctx.send("Ustawiono tekst komendy")
                 else:
                     del guilds[ctx.guild.id]["cmd"][arg]["text"]
-                    ctx.send("Usunięto tekst z komendy")
+                    ctx.send("Usunięto tekst komendy")
 
             elif arg2 == "embed":
                 if not arg in guilds[ctx.guild.id]["cmd"]:

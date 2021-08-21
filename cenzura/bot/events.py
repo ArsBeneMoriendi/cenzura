@@ -140,7 +140,7 @@ class Events:
                                 status = self.discord.delete_message(ctx.channel.id, ctx.data["id"])
 
                                 if status.status_code == 204:
-                                    ctx.send("Na tym serwerze przeklinanie jest wyłączone", reply=False)
+                                    ctx.send("Na tym serwerze wysyłanie wulgaryzmów jest niedozwolone", reply=False)
 
                     break
 
