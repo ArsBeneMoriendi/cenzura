@@ -32,7 +32,6 @@ class Fun:
             ("dick", "264905890824585216"): 20,
             ("dick", "327899255249436672"): 19,
         }
-        self.cleverbots = {}
 
     @modules.command(description="Losuje liczbe", usage="rnumber (od) (do)", default=True)
     def rnumber(self, ctx, _from: int, to: int):
